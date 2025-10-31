@@ -1,0 +1,63 @@
+# generated: 2025-10-31
+# project: metricfortune
+# project_key: metricfortune
+# tracking_system: file-system
+# story_location: {project-root}/docs/stories
+
+# STATUS DEFINITIONS:
+# ==================
+# Epic Status:
+#   - backlog: Epic exists in epic file but not contexted
+#   - contexted: Epic tech context created (required before drafting stories)
+#
+# Story Status:
+#   - backlog: Story only exists in epic file
+#   - drafted: Story file created in stories folder
+#   - ready-for-dev: Draft approved and story context created
+#   - in-progress: Developer actively working on implementation
+#   - review: Under SM review (via code-review workflow)
+#   - done: Story completed
+#
+# Retrospective Status:
+#   - optional: Can be completed but not required
+#   - completed: Retrospective has been done
+#
+# WORKFLOW NOTES:
+# ===============
+# - Epics should be 'contexted' before stories can be 'drafted'
+# - Stories can be worked in parallel if team capacity allows
+# - SM typically drafts next story after previous one is 'done' to incorporate learnings
+# - Dev moves story to 'review', SM reviews, then Dev moves to 'done'
+
+generated: 2025-10-31
+project: metricfortune
+project_key: metricfortune
+tracking_system: file-system
+story_location: "{project-root}/docs/stories"
+
+development_status:
+  epic-1: backlog
+  1-1-project-foundation-development-environment: drafted
+  1-2-tracking-script-development: backlog
+  1-3-data-ingestion-api: backlog
+  1-4-user-registration-business-profile: backlog
+  1-5-business-matching-algorithm: backlog
+  1-6-session-aggregation-journey-mapping: backlog
+  1-7-pattern-detection-engine: backlog
+  1-8-recommendation-generation-engine: backlog
+  1-9-shopify-integration: backlog
+  1-10-system-testing-validation: backlog
+  epic-1-retrospective: optional
+
+  epic-2: backlog
+  2-1-dashboard-home-navigation: backlog
+  2-2-recommendations-tab-list-view: backlog
+  2-3-recommendation-detail-view: backlog
+  2-4-journey-insights-tab-visual-funnels: backlog
+  2-5-peer-benchmarks-tab: backlog
+  2-6-implementation-tracking-results: backlog
+  2-7-email-notifications-digests: backlog
+  2-8-business-profile-management: backlog
+  2-9-onboarding-flow-polish-first-run-experience: backlog
+  2-10-performance-optimization-launch-preparation: backlog
+  epic-2-retrospective: optional
