@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetricFortune - Color Theme Explorer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+        }
+
+        .theme-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(600px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .theme {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .theme-header {
+            padding: 24px;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .theme-title {
+            font-size: 24px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .theme-personality {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 4px;
+        }
+
+        .theme-best-for {
+            font-size: 13px;
+            color: #888;
+            font-style: italic;
+        }
+
+        .color-palette {
+            padding: 24px;
+            background: #fafafa;
+        }
+
+        .palette-section {
+            margin-bottom: 20px;
+        }
+
+        .palette-section:last-child {
+            margin-bottom: 0;
+        }
+
+        .palette-label {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            color: #666;
+            margin-bottom: 12px;
+            letter-spacing: 0.5px;
+        }
+
+        .color-row {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .color-swatch {
+            flex: 1;
+            min-width: 100px;
+        }
+
+        .color-box {
+            height: 60px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 600;
+            border: 1px solid rgba(0,0,0,0.1);
+        }
+
+        .color-label {
+            font-size: 11px;
+            font-weight: 600;
+            color: #444;
+            margin-bottom: 2px;
+        }
+
+        .color-hex {
+            font-size: 10px;
+            color: #888;
+            font-family: 'Courier New', monospace;
+        }
+
+        .components-preview {
+            padding: 24px;
+        }
+
+        .component-group {
+            margin-bottom: 24px;
+        }
+
+        .component-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #666;
+            margin-bottom: 12px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+
+        .card {
+            border-radius: 8px;
+            padding: 20px;
+            margin-bottom: 12px;
+        }
+
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 8px;
+        }
+
+        .card-text {
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 13px;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        .form-input {
+            width: 100%;
+            padding: 10px 12px;
+            border-radius: 6px;
+            border: 2px solid #e5e5e5;
+            font-size: 14px;
+            transition: border-color 0.2s;
+        }
+
+        .form-input:focus {
+            outline: none;
+            border-color: var(--primary);
+        }
+
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 12px;
+        }
+
+        /* Theme 1: Trust Blue */
+        .theme-1 {
+            --primary: #2563eb;
+            --primary-dark: #1d4ed8;
+            --secondary: #8b5cf6;
+            --accent: #10b981;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --error: #ef4444;
+            --info: #3b82f6;
+            --bg: #ffffff;
+            --bg-secondary: #f8fafc;
+            --text: #1e293b;
+            --text-secondary: #64748b;
+            --border: #e2e8f0;
+        }
+
+        /* Theme 2: Modern Indigo */
+        .theme-2 {
+            --primary: #6366f1;
+            --primary-dark: #4f46e5;
+            --secondary: #ec4899;
+            --accent: #14b8a6;
+            --success: #22c55e;
+            --warning: #eab308;
+            --error: #f43f5e;
+            --info: #3b82f6;
+            --bg: #ffffff;
+            --bg-secondary: #fafaf9;
+            --text: #18181b;
+            --text-secondary: #71717a;
+            --border: #e4e4e7;
+        }
+
+        /* Theme 3: Growth Emerald */
+        .theme-3 {
+            --primary: #059669;
+            --primary-dark: #047857;
+            --secondary: #0891b2;
+            --accent: #8b5cf6;
+            --success: #10b981;
+            --warning: #f97316;
+            --error: #dc2626;
+            --info: #0ea5e9;
+            --bg: #ffffff;
+            --bg-secondary: #f0fdf4;
+            --text: #14532d;
+            --text-secondary: #4b5563;
+            --border: #d1fae5;
+        }
+
+        /* Theme 4: Bold Purple */
+        .theme-4 {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --secondary: #f97316;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #fbbf24;
+            --error: #ef4444;
+            --info: #3b82f6;
+            --bg: #ffffff;
+            --bg-secondary: #faf5ff;
+            --text: #1e1b4b;
+            --text-secondary: #6b7280;
+            --border: #e9d5ff;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 MetricFortune Color Theme Explorer</h1>
+        <p>Explore 4 carefully crafted color themes designed for trust, clarity, and action-oriented analytics. Each theme includes complete color palettes and live UI component examples.</p>
+    </div>
+
+    <div class="theme-container">
+        <!-- Theme 1: Trust Blue -->
+        <div class="theme theme-1">
+            <div class="theme-header">
+                <div class="theme-title">1. Trust Blue</div>
+                <div class="theme-personality">Professional & Trustworthy</div>
+                <div class="theme-best-for">Best for: Established analytics feel, enterprise-friendly, data confidence</div>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Primary Colors</div>
+                    <div class="color-row">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #2563eb; color: white;">#2563eb</div>
+                            <div class="color-label">Primary</div>
+                            <div class="color-hex">Main actions, links</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #8b5cf6; color: white;">#8b5cf6</div>
+                            <div class="color-label">Secondary</div>
+                            <div class="color-hex">Supporting actions</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #10b981; color: white;">#10b981</div>
+                            <div class="color-label">Accent</div>
+                            <div class="color-hex">Highlights, success</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Semantic Colors</div>
+                    <div class="color-row">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #10b981; color: white;">#10b981</div>
+                            <div class="color-label">Success</div>
+                            <div class="color-hex">Positive results</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #f59e0b; color: white;">#f59e0b</div>
+                            <div class="color-label">Warning</div>
+                            <div class="color-hex">Caution states</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #ef4444; color: white;">#ef4444</div>
+                            <div class="color-label">Error</div>
+                            <div class="color-hex">Problems, alerts</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #3b82f6; color: white;">#3b82f6</div>
+                            <div class="color-label">Info</div>
+                            <div class="color-hex">Information</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Neutral Palette</div>
+                    <div class="color-row">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #f8fafc; color: #1e293b;">#f8fafc</div>
+                            <div class="color-label">Background</div>
+                            <div class="color-hex">Page background</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #1e293b; color: white;">#1e293b</div>
+                            <div class="color-label">Text Primary</div>
+                            <div class="color-hex">Headings, body</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #64748b; color: white;">#64748b</div>
+                            <div class="color-label">Text Secondary</div>
+                            <div class="color-hex">Descriptions</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #e2e8f0; color: #1e293b;">#e2e8f0</div>
+                            <div class="color-label">Border</div>
+                            <div class="color-hex">Dividers, outlines</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components-preview">
+                <div class="component-group">
+                    <div class="component-label">Buttons</div>
+                    <div class="button-group">
+                        <button class="btn" style="background: var(--primary); color: white;">View Recommendations</button>
+                        <button class="btn" style="background: var(--bg-secondary); color: var(--text); border: 2px solid var(--border);">Dismiss</button>
+                        <button class="btn" style="background: var(--success); color: white;">Mark Implemented</button>
+                    </div>
+                </div>
+
+                <div class="component-group">
+                    <div class="component-label">Recommendation Card</div>
+                    <div class="card" style="background: var(--bg-secondary); border: 2px solid var(--border);">
+                        <div class="card-title" style="color: var(--text);">43% cart abandonment at shipping step</div>
+                        <div class="card-text" style="color: var(--text-secondary);">Display shipping costs earlier in checkout. Sites like yours saw 18% improvement.</div>
+                    </div>
+                </div>
+
+                <div class="component-group">
+                    <div class="component-label">Forms</div>
+                    <div class="form-group">
+                        <label class="form-label" style="color: var(--text);">Business Name</label>
+                        <input type="text" class="form-input" placeholder="Enter your business name" style="border-color: var(--border); color: var(--text);">
+                    </div>
+                </div>
+
+                <div class="component-group">
+                    <div class="component-label">Alerts</div>
+                    <div class="alert" style="background: #d1fae5; color: #065f46; border-left: 4px solid var(--success);">
+                        ✓ Your implementation improved conversion by 23%
+                    </div>
+                    <div class="alert" style="background: #fee2e2; color: #991b1b; border-left: 4px solid var(--error);">
+                        ⚠ Tracking script not detected on your website
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 2: Modern Indigo -->
+        <div class="theme theme-2">
+            <div class="theme-header">
+                <div class="theme-title">2. Modern Indigo</div>
+                <div class="theme-personality">Contemporary & Energetic</div>
+                <div class="theme-best-for">Best for: Modern SaaS feel, vibrant but professional, stands out from competitors</div>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Primary Colors</div>
+                    <div class="color-row">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #6366f1; color: white;">#6366f1</div>
+                            <div class="color-label">Primary</div>
+                            <div class="color-hex">Main actions, links</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #ec4899; color: white;">#ec4899</div>
+                            <div class="color-label">Secondary</div>
+                            <div class="color-hex">Supporting actions</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #14b8a6; color: white;">#14b8a6</div>
+                            <div class="color-label">Accent</div>
+                            <div class="color-hex">Highlights, success</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Semantic Colors</div>
+                    <div class="color-row">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #22c55e; color: white;">#22c55e</div>
+                            <div class="color-label">Success</div>
+                            <div class="color-hex">Positive results</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #eab308; color: white;">#eab308</div>
+                            <div class="color-label">Warning</div>
+                            <div class="color-hex">Caution states</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #f43f5e; color: white;">#f43f5e</div>
+                            <div class="color-label">Error</div>
+                            <div class="color-hex">Problems, alerts</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #3b82f6; color: white;">#3b82f6</div>
+                            <div class="color-label">Info</div>
+                            <div class="color-hex">Information</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Neutral Palette</div>
+                    <div class="color-row">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #fafaf9; color: #18181b;">#fafaf9</div>
+                            <div class="color-label">Background</div>
+                            <div class="color-hex">Page background</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #18181b; color: white;">#18181b</div>
+                            <div class="color-label">Text Primary</div>
+                            <div class="color-hex">Headings, body</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #71717a; color: white;">#71717a</div>
+                            <div class="color-label">Text Secondary</div>
+                            <div class="color-hex">Descriptions</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #e4e4e7; color: #18181b;">#e4e4e7</div>
+                            <div class="color-label">Border</div>
+                            <div class="color-hex">Dividers, outlines</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components-preview">
+                <div class="component-group">
+                    <div class="component-label">Buttons</div>
+                    <div class="button-group">
+                        <button class="btn" style="background: var(--primary); color: white;">View Recommendations</button>
+                        <button class="btn" style="background: var(--bg-secondary); color: var(--text); border: 2px solid var(--border);">Dismiss</button>
+                        <button class="btn" style="background: var(--success); color: white;">Mark Implemented</button>
+                    </div>
+                </div>
+
+                <div class="component-group">
+                    <div class="component-label">Recommendation Card</div>
+                    <div class="card" style="background: var(--bg-secondary); border: 2px solid var(--border);">
+                        <div class="card-title" style="color: var(--text);">43% cart abandonment at shipping step</div>
+                        <div class="card-text" style="color: var(--text-secondary);">Display shipping costs earlier in checkout. Sites like yours saw 18% improvement.</div>
+                    </div>
+                </div>
+
+                <div class="component-group">
+                    <div class="component-label">Forms</div>
+                    <div class="form-group">
+                        <label class="form-label" style="color: var(--text);">Business Name</label>
+                        <input type="text" class="form-input" placeholder="Enter your business name" style="border-color: var(--border); color: var(--text);">
+                    </div>
+                </div>
+
+                <div class="component-group">
+                    <div class="component-label">Alerts</div>
+                    <div class="alert" style="background: #d1fae5; color: #065f46; border-left: 4px solid var(--success);">
+                        ✓ Your implementation improved conversion by 23%
+                    </div>
+                    <div class="alert" style="background: #fee2e2; color: #991b1b; border-left: 4px solid var(--error);">
+                        ⚠ Tracking script not detected on your website
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 3: Growth Emerald -->
+        <div class="theme theme-3">
+            <div class="theme-header">
+                <div class="theme-title">3. Growth Emerald</div>
+                <div class="theme-personality">Optimistic & Results-Focused</div>
+                <div class="theme-best-for">Best for: Emphasizing growth/improvement, positive transformation, achievement-oriented</div>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Primary Colors</div>
+                    <div class="color-row">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #059669; color: white;">#059669</div>
+                            <div class="color-label">Primary</div>
+                            <div class="color-hex">Main actions, links</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #0891b2; color: white;">#0891b2</div>
+                            <div class="color-label">Secondary</div>
+                            <div class="color-hex">Supporting actions</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #8b5cf6; color: white;">#8b5cf6</div>
+                            <div class="color-label">Accent</div>
+                            <div class="color-hex">Highlights, insights</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Semantic Colors</div>
+                    <div class="color-row">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #10b981; color: white;">#10b981</div>
+                            <div class="color-label">Success</div>
+                            <div class="color-hex">Positive results</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #f97316; color: white;">#f97316</div>
+                            <div class="color-label">Warning</div>
+                            <div class="color-hex">Caution states</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #dc2626; color: white;">#dc2626</div>
+                            <div class="color-label">Error</div>
+                            <div class="color-hex">Problems, alerts</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #0ea5e9; color: white;">#0ea5e9</div>
+                            <div class="color-label">Info</div>
+                            <div class="color-hex">Information</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Neutral Palette</div>
+                    <div class="color-row">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #f0fdf4; color: #14532d;">#f0fdf4</div>
+                            <div class="color-label">Background</div>
+                            <div class="color-hex">Page background</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #14532d; color: white;">#14532d</div>
+                            <div class="color-label">Text Primary</div>
+                            <div class="color-hex">Headings, body</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #4b5563; color: white;">#4b5563</div>
+                            <div class="color-label">Text Secondary</div>
+                            <div class="color-hex">Descriptions</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #d1fae5; color: #14532d;">#d1fae5</div>
+                            <div class="color-label">Border</div>
+                            <div class="color-hex">Dividers, outlines</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components-preview">
+                <div class="component-group">
+                    <div class="component-label">Buttons</div>
+                    <div class="button-group">
+                        <button class="btn" style="background: var(--primary); color: white;">View Recommendations</button>
+                        <button class="btn" style="background: var(--bg); color: var(--text); border: 2px solid var(--border);">Dismiss</button>
+                        <button class="btn" style="background: var(--success); color: white;">Mark Implemented</button>
+                    </div>
+                </div>
+
+                <div class="component-group">
+                    <div class="component-label">Recommendation Card</div>
+                    <div class="card" style="background: var(--bg); border: 2px solid var(--border);">
+                        <div class="card-title" style="color: var(--text);">43% cart abandonment at shipping step</div>
+                        <div class="card-text" style="color: var(--text-secondary);">Display shipping costs earlier in checkout. Sites like yours saw 18% improvement.</div>
+                    </div>
+                </div>
+
+                <div class="component-group">
+                    <div class="component-label">Forms</div>
+                    <div class="form-group">
+                        <label class="form-label" style="color: var(--text);">Business Name</label>
+                        <input type="text" class="form-input" placeholder="Enter your business name" style="border-color: var(--border); color: var(--text);">
+                    </div>
+                </div>
+
+                <div class="component-group">
+                    <div class="component-label">Alerts</div>
+                    <div class="alert" style="background: #d1fae5; color: #065f46; border-left: 4px solid var(--success);">
+                        ✓ Your implementation improved conversion by 23%
+                    </div>
+                    <div class="alert" style="background: #fee2e2; color: #991b1b; border-left: 4px solid var(--error);">
+                        ⚠ Tracking script not detected on your website
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Theme 4: Bold Purple -->
+        <div class="theme theme-4">
+            <div class="theme-header">
+                <div class="theme-title">4. Bold Purple</div>
+                <div class="theme-personality">Confident & Distinctive</div>
+                <div class="theme-best-for">Best for: Standing out from analytics crowd, premium feel, creative differentiation</div>
+            </div>
+
+            <div class="color-palette">
+                <div class="palette-section">
+                    <div class="palette-label">Primary Colors</div>
+                    <div class="color-row">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #7c3aed; color: white;">#7c3aed</div>
+                            <div class="color-label">Primary</div>
+                            <div class="color-hex">Main actions, links</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #f97316; color: white;">#f97316</div>
+                            <div class="color-label">Secondary</div>
+                            <div class="color-hex">Supporting actions</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #06b6d4; color: white;">#06b6d4</div>
+                            <div class="color-label">Accent</div>
+                            <div class="color-hex">Highlights, data</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Semantic Colors</div>
+                    <div class="color-row">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #10b981; color: white;">#10b981</div>
+                            <div class="color-label">Success</div>
+                            <div class="color-hex">Positive results</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #fbbf24; color: white;">#fbbf24</div>
+                            <div class="color-label">Warning</div>
+                            <div class="color-hex">Caution states</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #ef4444; color: white;">#ef4444</div>
+                            <div class="color-label">Error</div>
+                            <div class="color-hex">Problems, alerts</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #3b82f6; color: white;">#3b82f6</div>
+                            <div class="color-label">Info</div>
+                            <div class="color-hex">Information</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="palette-section">
+                    <div class="palette-label">Neutral Palette</div>
+                    <div class="color-row">
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #faf5ff; color: #1e1b4b;">#faf5ff</div>
+                            <div class="color-label">Background</div>
+                            <div class="color-hex">Page background</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #1e1b4b; color: white;">#1e1b4b</div>
+                            <div class="color-label">Text Primary</div>
+                            <div class="color-hex">Headings, body</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #6b7280; color: white;">#6b7280</div>
+                            <div class="color-label">Text Secondary</div>
+                            <div class="color-hex">Descriptions</div>
+                        </div>
+                        <div class="color-swatch">
+                            <div class="color-box" style="background: #e9d5ff; color: #1e1b4b;">#e9d5ff</div>
+                            <div class="color-label">Border</div>
+                            <div class="color-hex">Dividers, outlines</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="components-preview">
+                <div class="component-group">
+                    <div class="component-label">Buttons</div>
+                    <div class="button-group">
+                        <button class="btn" style="background: var(--primary); color: white;">View Recommendations</button>
+                        <button class="btn" style="background: var(--bg); color: var(--text); border: 2px solid var(--border);">Dismiss</button>
+                        <button class="btn" style="background: var(--success); color: white;">Mark Implemented</button>
+                    </div>
+                </div>
+
+                <div class="component-group">
+                    <div class="component-label">Recommendation Card</div>
+                    <div class="card" style="background: var(--bg); border: 2px solid var(--border);">
+                        <div class="card-title" style="color: var(--text);">43% cart abandonment at shipping step</div>
+                        <div class="card-text" style="color: var(--text-secondary);">Display shipping costs earlier in checkout. Sites like yours saw 18% improvement.</div>
+                    </div>
+                </div>
+
+                <div class="component-group">
+                    <div class="component-label">Forms</div>
+                    <div class="form-group">
+                        <label class="form-label" style="color: var(--text);">Business Name</label>
+                        <input type="text" class="form-input" placeholder="Enter your business name" style="border-color: var(--border); color: var(--text);">
+                    </div>
+                </div>
+
+                <div class="component-group">
+                    <div class="component-label">Alerts</div>
+                    <div class="alert" style="background: #d1fae5; color: #065f46; border-left: 4px solid var(--success);">
+                        ✓ Your implementation improved conversion by 23%
+                    </div>
+                    <div class="alert" style="background: #fee2e2; color: #991b1b; border-left: 4px solid var(--error);">
+                        ⚠ Tracking script not detected on your website
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="header">
+        <h2 style="margin-bottom: 12px;">How to Choose</h2>
+        <p><strong>Theme 1 (Trust Blue):</strong> Classic, reliable, data-focused. Best if you want to feel like an established analytics platform.</p>
+        <p><strong>Theme 2 (Modern Indigo):</strong> Contemporary and vibrant while staying professional. Best for standing out with modern SaaS energy.</p>
+        <p><strong>Theme 3 (Growth Emerald):</strong> Optimistic and results-oriented. Best for emphasizing the "improvement" and "success" outcomes.</p>
+        <p><strong>Theme 4 (Bold Purple):</strong> Confident and distinctive. Best for premium differentiation and creative positioning.</p>
+    </div>
+</body>
+</html>

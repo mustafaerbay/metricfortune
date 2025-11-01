@@ -37,14 +37,16 @@ This establishes the base architecture with these decisions:
 | Database (Operational) | PostgreSQL | 15/16/17 | All | Relational data, ACID compliance |
 | Database (Time-Series) | TimescaleDB | 2.22.1 | Epic 1 (1.3, 1.6, 1.7) | High-volume tracking data, PostgreSQL extension |
 | ORM | Prisma | 6.17.0 | All | Type-safe database client, migrations |
-| Authentication | NextAuth.js | Latest | Epic 1 (1.1, 1.4), Epic 2 | Next.js integration, email/password auth |
+| Authentication | NextAuth.js (Auth.js) | 5.0.0-beta.25 | Epic 1 (1.1, 1.4), Epic 2 | Next.js integration, email/password auth |
 | API Pattern | Next.js Server Actions | Built-in | All | Type-safe, simplest for internal APIs |
 | Background Jobs | Inngest | 3.44.3 | Epic 1 (1.6, 1.7, 1.8), Epic 2 (2.7) | Scheduled jobs, async workflows, Next.js integration |
-| Email Service | Resend + React Email | Latest + 4.2.3 | Epic 1 (1.4), Epic 2 (2.7) | Modern email API, React templates |
+| Email Service | Resend + React Email | 6.2.0 + 4.2.3 | Epic 1 (1.4), Epic 2 (2.7) | Modern email API, React templates |
 | Testing (Unit/Integration) | Vitest | 4.0 | All | Fast, TypeScript support, modern API |
 | Testing (E2E) | Playwright | 1.56.1 | Epic 1 (1.10), Epic 2 (2.10) | Browser automation, user journey testing |
 | CDN | Vercel Edge Network | Included | Epic 1 (1.2) | Global edge distribution, zero setup |
-| Deployment | Vercel | Latest | All | Next.js optimized, serverless functions |
+| Deployment | Vercel (CLI 48.6.4) | Platform | All | Next.js optimized, serverless functions |
+
+**Version Verification:** All versions verified via WebSearch on 2025-10-31. NextAuth.js v5 is currently in beta (stable release pending); using latest beta for Next.js 15 compatibility.
 
 ## Project Structure
 
@@ -198,7 +200,7 @@ metricfortune/
 - Next.js API Routes - External endpoints (tracking)
 - Next.js Server Actions - Internal data mutations
 - Prisma 6.17.0 - Type-safe database client
-- NextAuth.js - Authentication and session management
+- NextAuth.js (Auth.js) 5.0.0-beta.25 - Authentication and session management
 
 **Databases:**
 - PostgreSQL 15/16/17 - Primary operational database
@@ -208,7 +210,7 @@ metricfortune/
 - Inngest 3.44.3 - Scheduled jobs and async workflows
 
 **Email:**
-- Resend - Email delivery API
+- Resend 6.2.0 - Email delivery API
 - React Email 4.2.3 - Email templates as React components
 
 **Testing:**
@@ -217,7 +219,8 @@ metricfortune/
 - @testing-library/react - Component testing utilities
 
 **Deployment:**
-- Vercel - Hosting and serverless functions
+- Vercel (Platform) - Hosting and serverless functions
+- Vercel CLI 48.6.4 - Local development and deployment tooling
 - Vercel Edge Network - CDN for static assets and tracking script
 
 ### Integration Points
@@ -856,32 +859,38 @@ CREATE EXTENSION IF NOT EXISTS timescaledb;
 **Rationale:** Handles 1M-10M sessions/month comfortably, integrates seamlessly with existing PostgreSQL, simpler operational model than running ClickHouse, allows joining time-series and relational data easily
 **Alternatives considered:** ClickHouse (more complex), PostgreSQL alone (less optimized for time-series)
 
-### ADR-003: Server Actions over REST API
+### ADR-003: NextAuth.js v5 (Auth.js) for Authentication
+**Decision:** Use NextAuth.js 5.0.0-beta.25 (Auth.js) for authentication
+**Rationale:** NextAuth.js v5 is required for Next.js 15 compatibility. While still in beta, it's production-ready and widely used. Provides seamless Next.js integration, simplified API with universal `auth()` function, and improved environment variable handling with `AUTH_*` prefix pattern.
+**Alternatives considered:** Clerk (vendor lock-in), Auth0 (complex pricing), custom auth (reinventing the wheel)
+**Note:** Version 5 is in beta but stable; monitor for official release and upgrade path.
+
+### ADR-004: Server Actions over REST API
 **Decision:** Use Next.js Server Actions for internal data mutations instead of building REST API
 **Rationale:** Built-in type safety, simplest pattern, no separate API layer needed, works seamlessly with React
 **Alternatives considered:** tRPC (extra dependency), traditional REST (more boilerplate), GraphQL (overkill)
 
-### ADR-004: Inngest for Background Jobs
-**Decision:** Use Inngest for scheduled jobs and async workflows
+### ADR-005: Inngest for Background Jobs
+**Decision:** Use Inngest 3.44.3 for scheduled jobs and async workflows
 **Rationale:** Built for Next.js/Vercel, handles scheduling + retries + monitoring, excellent local dev experience, visual dashboard
 **Alternatives considered:** BullMQ (requires Redis), Vercel Cron (limited to scheduled only)
 
-### ADR-005: Prisma as ORM
-**Decision:** Use Prisma for all database operations
+### ADR-006: Prisma as ORM
+**Decision:** Use Prisma 6.17.0 for all database operations
 **Rationale:** Excellent TypeScript integration, type-safe queries, migration management, works perfectly with TimescaleDB (PostgreSQL under the hood)
 **Alternatives considered:** Drizzle (newer, less mature), raw SQL (no type safety)
 
-### ADR-006: Resend for Email
-**Decision:** Use Resend with React Email for transactional emails
+### ADR-007: Resend for Email
+**Decision:** Use Resend 6.2.0 with React Email 4.2.3 for transactional emails
 **Rationale:** Best DX for Next.js developers, React-based templates, affordable, great deliverability
 **Alternatives considered:** SendGrid (more complex), Amazon SES (poor DX)
 
-### ADR-007: Vitest + Playwright Testing Stack
-**Decision:** Use Vitest for unit/integration tests and Playwright for E2E tests
+### ADR-008: Vitest + Playwright Testing Stack
+**Decision:** Use Vitest 4.0 for unit/integration tests and Playwright 1.56.1 for E2E tests
 **Rationale:** Modern tooling matching TypeScript-first stack, Vitest is fast with great DX, Playwright handles E2E perfectly
 **Alternatives considered:** Jest (slower), Cypress (older E2E tool)
 
-### ADR-008: Vercel Edge for CDN
+### ADR-009: Vercel Edge for CDN
 **Decision:** Use Vercel's built-in edge network for tracking script CDN
 **Rationale:** Zero additional setup, automatic with Vercel deployment, global distribution, simple versioning
 **Alternatives considered:** Cloudflare CDN (separate service), CloudFront (AWS complexity)

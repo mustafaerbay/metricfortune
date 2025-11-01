@@ -37,7 +37,7 @@ workflow_status:
   # Phase 2: Planning
   prd: docs/PRD.md
   validate-prd: optional
-  create-design: conditional
+  create-design: docs/ux-design-specification.md
   tech-spec: optional
 
   # Phase 3: Solutioning
@@ -46,4 +46,4 @@ workflow_status:
   solutioning-gate-check: docs/implementation-readiness-report-2025-10-31.md
 
   # Phase 4: Implementation
-  sprint-planning: required
+  sprint-planning: docs/sprint-status.yaml

@@ -1,0 +1,339 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>1</storyId>
+    <title>Project Foundation & Development Environment</title>
+    <status>drafted</status>
+    <generatedAt>2025-10-31</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-1-project-foundation-development-environment.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a developer</asA>
+    <iWant>a fully configured Next.js project with database, authentication, and deployment pipeline</iWant>
+    <soThat>I have a solid foundation to build features rapidly</soThat>
+    <tasks>
+- Initialize Next.js project with required configuration (AC: #1)
+  - Run `npx create-next-app@latest metricfortune --typescript --tailwind --eslint --app --src-dir --import-alias "@/*" --turbopack --no-git` (already completed per architecture)
+  - Verify TypeScript 5.x, Tailwind CSS 4.x, and ESLint configuration
+  - Confirm src/ directory structure with App Router
+  - Test development server startup
+
+- Set up PostgreSQL database with Prisma ORM (AC: #2)
+  - Choose and provision managed PostgreSQL service (Supabase, Neon, or Railway recommended)
+  - Install Prisma: `npm install prisma @prisma/client`
+  - Initialize Prisma: `npx prisma init`
+  - Define initial schema in `prisma/schema.prisma` with models: User, Business, Session (initial tables)
+  - Create and run first migration: `npx prisma migrate dev --name init`
+  - Generate Prisma Client: `npx prisma generate`
+  - Create Prisma client singleton at `src/lib/prisma.ts`
+
+- Implement NextAuth.js authentication (AC: #3)
+  - Install NextAuth.js: `npm install next-auth`
+  - Create auth configuration at `src/lib/auth.ts`
+  - Set up API route at `src/app/api/auth/[...nextauth]/route.ts`
+  - Configure email/password credentials provider
+  - Implement password hashing with bcrypt
+  - Add authentication middleware at `src/middleware.ts`
+  - Create basic login/signup pages in `src/app/(auth)/`
+
+- Document development environment (AC: #4)
+  - Create `.env.example` with all required environment variables
+  - Document setup instructions in README.md
+  - List required Node.js version (20.x+)
+  - Document database connection setup
+  - Add instructions for running development server
+  - Document testing commands
+
+- Configure CI/CD pipeline (AC: #5)
+  - Set up GitHub repository (if not already done)
+  - Configure Vercel project and link to repository
+  - Set up automatic deployments on push to main branch
+  - Add environment variables to Vercel project settings
+  - Configure build command and output directory
+  - Test automated deployment flow
+
+- Deploy to Vercel hosting (AC: #6)
+  - Connect Vercel project to managed database
+  - Configure DATABASE_URL environment variable
+  - Run Prisma migrations in production: `npx prisma migrate deploy`
+  - Verify deployment is live and accessible
+  - Test basic functionality on production URL
+  - Document production URL
+
+- Set up testing framework (AC: implicit from architecture)
+  - Install Vitest: `npm install -D vitest @vitest/ui`
+  - Install Playwright: `npm install -D @playwright/test`
+  - Create `vitest.config.ts` configuration
+  - Create `playwright.config.ts` configuration
+  - Add test scripts to `package.json`
+  - Create example unit test in `tests/unit/example.test.ts`
+  - Create example E2E test in `tests/e2e/example.spec.ts`
+  - Verify tests run successfully
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. Next.js 16+ project initialized with TypeScript and Tailwind CSS
+2. PostgreSQL database provisioned with initial schema (users, businesses, sessions tables)
+3. Authentication system implemented (NextAuth.js with email/password)
+4. Development environment documented (setup instructions, environment variables)
+5. CI/CD pipeline configured for automated testing and deployment
+6. Hosting environment live (Vercel for frontend, managed database service)
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture</title>
+        <section>Project Initialization</section>
+        <snippet>Defines the create-next-app command already executed and establishes base architecture decisions for TypeScript 5.x, Tailwind CSS 4.x, App Router structure, and @/* path aliases.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture</title>
+        <section>Decision Summary</section>
+        <snippet>Complete technology stack: Next.js 16.0.1, TypeScript 5.x, PostgreSQL/TimescaleDB, Prisma 6.17.0, NextAuth.js 5.0.0-beta.25, Vitest 4.0, Playwright 1.56.1, Vercel deployment.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture</title>
+        <section>Project Structure</section>
+        <snippet>Defines complete directory structure with src/app/ for App Router pages, src/lib/ for shared libraries, authentication routes, and test organization.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture</title>
+        <section>Data Architecture</section>
+        <snippet>Initial Prisma schema models: User (id, email, passwordHash, emailVerified), Business (userId, name, industry, siteId), Session (siteId, sessionId, duration, pageCount, bounced).</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture</title>
+        <section>Security Architecture</section>
+        <snippet>NextAuth.js email/password auth, bcrypt password hashing (10+ rounds), middleware protects dashboard routes, TLS 1.3 for transit.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture</title>
+        <section>Implementation Patterns</section>
+        <snippet>Naming conventions: PascalCase for components, camelCase for functions/variables, kebab-case for utilities/routes, UPPER_SNAKE_CASE for constants.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-1-foundation-core-analytics-engine.md</path>
+        <title>Epic 1: Foundation & Core Analytics Engine</title>
+        <section>Story 1.1</section>
+        <snippet>This is the foundational story establishing Next.js project, PostgreSQL database, NextAuth authentication, CI/CD pipeline, and Vercel hosting.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Non-Functional Requirements</section>
+        <snippet>NFR001: Dashboard <2s load, <500ms navigation, tracking script <100ms impact, 99.9% uptime. NFR003: GDPR/CCPA compliance, TLS 1.3, AES-256.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>package.json</path>
+        <kind>config</kind>
+        <symbol>project dependencies</symbol>
+        <lines>1-27</lines>
+        <reason>Existing Next.js 16.0.1, React 19.2.0, TypeScript 5.x, Tailwind 4.x already installed. Story will add Prisma, NextAuth, testing frameworks.</reason>
+      </artifact>
+      <artifact>
+        <path>tsconfig.json</path>
+        <kind>config</kind>
+        <symbol>TypeScript configuration</symbol>
+        <lines>1-35</lines>
+        <reason>TypeScript strict mode enabled, @/* path alias configured pointing to src/*, App Router structure ready.</reason>
+      </artifact>
+      <artifact>
+        <path>next.config.ts</path>
+        <kind>config</kind>
+        <symbol>Next.js configuration</symbol>
+        <lines>1-7</lines>
+        <reason>Base Next.js config established, may need updates for auth or deployment settings.</reason>
+      </artifact>
+      <artifact>
+        <path>src/app/layout.tsx</path>
+        <kind>component</kind>
+        <symbol>RootLayout</symbol>
+        <lines>1-35</lines>
+        <reason>Root layout with Geist fonts configured. Will need to update metadata and potentially add auth session provider.</reason>
+      </artifact>
+      <artifact>
+        <path>src/app/page.tsx</path>
+        <kind>component</kind>
+        <symbol>Home page</symbol>
+        <lines>all</lines>
+        <reason>Landing page exists, will need customization for MetricFortune branding.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <runtime>
+        <node version="24.10.0" required="20.x+" />
+        <npm version="11.6.0" />
+      </runtime>
+      <nodejs>
+        <existing>
+          <package name="next" version="16.0.1" />
+          <package name="react" version="19.2.0" />
+          <package name="react-dom" version="19.2.0" />
+          <package name="typescript" version="^5" dev="true" />
+          <package name="@types/node" version="^20" dev="true" />
+          <package name="@types/react" version="^19" dev="true" />
+          <package name="@types/react-dom" version="^19" dev="true" />
+          <package name="tailwindcss" version="^4" dev="true" />
+          <package name="@tailwindcss/postcss" version="^4" dev="true" />
+          <package name="eslint" version="^9" dev="true" />
+          <package name="eslint-config-next" version="16.0.1" dev="true" />
+        </existing>
+        <to-install>
+          <package name="prisma" version="6.17.0" dev="true" purpose="Database ORM and migration tool" />
+          <package name="@prisma/client" version="6.17.0" purpose="Type-safe database client" />
+          <package name="next-auth" version="5.0.0-beta.25" purpose="Authentication for Next.js" />
+          <package name="bcrypt" version="latest" purpose="Password hashing" />
+          <package name="@types/bcrypt" version="latest" dev="true" purpose="TypeScript types for bcrypt" />
+          <package name="vitest" version="4.0" dev="true" purpose="Unit and integration testing" />
+          <package name="@vitest/ui" version="4.0" dev="true" purpose="Vitest UI dashboard" />
+          <package name="@playwright/test" version="1.56.1" dev="true" purpose="E2E browser testing" />
+        </to-install>
+      </nodejs>
+      <database>
+        <postgresql version="15/16/17" provider="Supabase, Neon, or Railway (managed service)" />
+      </database>
+      <deployment>
+        <platform name="Vercel" service="hosting + serverless functions" />
+        <cdn name="Vercel Edge Network" purpose="Global static asset delivery" />
+      </deployment>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>MUST use TypeScript strict mode (already configured in tsconfig.json)</constraint>
+    <constraint>MUST follow @/* import alias pattern for all src/ imports</constraint>
+    <constraint>MUST use Next.js App Router structure in src/app/ (no pages/ directory)</constraint>
+    <constraint>MUST implement authentication with NextAuth.js v5 beta (Next.js 15+ compatibility)</constraint>
+    <constraint>MUST use Prisma as ORM (version 6.17.0 per architecture)</constraint>
+    <constraint>MUST hash passwords with bcrypt (minimum 10 rounds)</constraint>
+    <constraint>MUST follow naming conventions: PascalCase components, camelCase functions, kebab-case routes</constraint>
+    <constraint>MUST place Prisma schema at prisma/schema.prisma (project root)</constraint>
+    <constraint>MUST create Prisma client singleton at src/lib/prisma.ts</constraint>
+    <constraint>MUST configure Vitest for unit/integration tests, Playwright for E2E tests</constraint>
+    <constraint>MUST deploy to Vercel platform</constraint>
+    <constraint>MUST use managed PostgreSQL service (Supabase, Neon, or Railway recommended)</constraint>
+    <constraint>MUST never commit secrets (.env files must be gitignored, use .env.example for reference)</constraint>
+    <constraint>MUST achieve <2s dashboard load time (NFR001)</constraint>
+    <constraint>MUST achieve 99.9% uptime target (NFR001)</constraint>
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>Prisma Client Singleton</name>
+      <kind>module export</kind>
+      <signature>export const prisma: PrismaClient</signature>
+      <path>src/lib/prisma.ts</path>
+      <note>To be created. Singleton pattern prevents multiple Prisma clients in development hot reload.</note>
+    </interface>
+    <interface>
+      <name>NextAuth Configuration</name>
+      <kind>auth config</kind>
+      <signature>export const authOptions: NextAuthConfig</signature>
+      <path>src/lib/auth.ts</path>
+      <note>To be created. Defines credentials provider, session strategy, callbacks.</note>
+    </interface>
+    <interface>
+      <name>NextAuth API Route</name>
+      <kind>API route handler</kind>
+      <signature>GET/POST /api/auth/[...nextauth]</signature>
+      <path>src/app/api/auth/[...nextauth]/route.ts</path>
+      <note>To be created. Handles all NextAuth.js authentication flows.</note>
+    </interface>
+    <interface>
+      <name>Authentication Middleware</name>
+      <kind>middleware</kind>
+      <signature>export default from 'next-auth/middleware'</signature>
+      <path>src/middleware.ts</path>
+      <note>To be created. Protects dashboard routes requiring authentication.</note>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>
+Testing framework consists of Vitest 4.0 for unit and integration tests, and Playwright 1.56.1 for end-to-end browser tests. Unit tests verify individual functions and components in isolation. Integration tests validate API routes, database operations, and Server Actions. E2E tests use Playwright to simulate complete user journeys including authentication flows. All tests should be written in TypeScript with strict type checking. Test files use .test.ts extension for Vitest and .spec.ts for Playwright. Configure vitest.config.ts and playwright.config.ts at project root. CI/CD pipeline runs Vitest tests before deployment and Playwright E2E tests post-deployment.
+    </standards>
+    <locations>
+      <location>tests/unit/</location>
+      <location>tests/integration/</location>
+      <location>tests/e2e/</location>
+      <location>vitest.config.ts (project root)</location>
+      <location>playwright.config.ts (project root)</location>
+    </locations>
+    <ideas>
+      <test ac="1" type="unit">
+        <description>Verify TypeScript configuration is valid and strict mode enabled</description>
+        <approach>Read tsconfig.json and assert strict: true, @/* paths configured</approach>
+      </test>
+      <test ac="1" type="unit">
+        <description>Verify Next.js dev server starts successfully</description>
+        <approach>Test that next dev command starts without errors</approach>
+      </test>
+      <test ac="2" type="unit">
+        <description>Validate Prisma schema models</description>
+        <approach>Test schema has User, Business, Session models with correct fields and relationships</approach>
+      </test>
+      <test ac="2" type="integration">
+        <description>Test database connection and Prisma client initialization</description>
+        <approach>Import Prisma singleton, verify connection, run simple query</approach>
+      </test>
+      <test ac="2" type="integration">
+        <description>Test Prisma migrations are applied correctly</description>
+        <approach>Verify all three tables exist in database with correct schema</approach>
+      </test>
+      <test ac="3" type="unit">
+        <description>Verify password hashing uses bcrypt with sufficient rounds</description>
+        <approach>Test bcrypt.hash with password, verify rounds >= 10, test bcrypt.compare</approach>
+      </test>
+      <test ac="3" type="integration">
+        <description>Test NextAuth API route responds correctly</description>
+        <approach>Make requests to /api/auth endpoints, verify responses</approach>
+      </test>
+      <test ac="3" type="e2e">
+        <description>Complete signup flow creates user in database</description>
+        <approach>Navigate to signup, fill form, submit, verify redirect and database record</approach>
+      </test>
+      <test ac="3" type="e2e">
+        <description>Complete login flow authenticates existing user</description>
+        <approach>Create test user, navigate to login, authenticate, verify session and dashboard access</approach>
+      </test>
+      <test ac="3" type="e2e">
+        <description>Authentication middleware protects dashboard routes</description>
+        <approach>Attempt to access /dashboard without auth, verify redirect to login</approach>
+      </test>
+      <test ac="4" type="unit">
+        <description>Verify .env.example contains all required variables</description>
+        <approach>Read .env.example, assert presence of DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL, NODE_ENV</approach>
+      </test>
+      <test ac="5" type="integration">
+        <description>Verify Vercel project is configured and linked</description>
+        <approach>Check vercel.json or .vercel directory, verify project link</approach>
+      </test>
+      <test ac="6" type="e2e">
+        <description>Production deployment is accessible and returns 200</description>
+        <approach>Fetch production URL, verify status 200 and page renders</approach>
+      </test>
+      <test ac="6" type="integration">
+        <description>Production database is accessible from deployed app</description>
+        <approach>Test API route that queries database returns expected result</approach>
+      </test>
+      <test ac="implicit" type="unit">
+        <description>Vitest configuration is valid</description>
+        <approach>Load vitest.config.ts, verify test paths and coverage settings</approach>
+      </test>
+      <test ac="implicit" type="unit">
+        <description>Playwright configuration is valid</description>
+        <approach>Load playwright.config.ts, verify browser settings and base URL</approach>
+      </test>
+    </ideas>
+  </tests>
+</story-context>

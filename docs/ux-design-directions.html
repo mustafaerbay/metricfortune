@@ -1,0 +1,1373 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MetricFortune - Design Direction Mockups</title>
+    <style>
+        :root {
+            --primary: #7c3aed;
+            --primary-dark: #6d28d9;
+            --secondary: #f97316;
+            --accent: #06b6d4;
+            --success: #10b981;
+            --warning: #fbbf24;
+            --error: #ef4444;
+            --info: #3b82f6;
+            --bg: #faf5ff;
+            --bg-white: #ffffff;
+            --text: #1e1b4b;
+            --text-secondary: #6b7280;
+            --border: #e9d5ff;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: #f5f5f5;
+            padding: 20px;
+        }
+
+        .header {
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+            margin-bottom: 30px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        .header p {
+            color: #666;
+            font-size: 16px;
+            line-height: 1.6;
+        }
+
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+        }
+
+        .controls button {
+            padding: 10px 20px;
+            border-radius: 8px;
+            border: 2px solid var(--primary);
+            background: white;
+            color: var(--primary);
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .controls button:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        .controls button.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .direction-container {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            overflow: hidden;
+            margin-bottom: 30px;
+        }
+
+        .direction-header {
+            padding: 24px;
+            background: var(--bg);
+            border-bottom: 2px solid var(--border);
+        }
+
+        .direction-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .direction-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .direction-meta {
+            display: flex;
+            gap: 24px;
+            font-size: 14px;
+        }
+
+        .meta-item {
+            color: var(--text-secondary);
+        }
+
+        .meta-item strong {
+            color: var(--text);
+        }
+
+        .mockup {
+            display: none;
+            min-height: 600px;
+        }
+
+        .mockup.active {
+            display: block;
+        }
+
+        /* Direction 1: Hero-Focused Dashboard */
+        .hero-dashboard {
+            padding: 0;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 48px;
+        }
+
+        .hero-content {
+            max-width: 800px;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-title {
+            font-size: 36px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            line-height: 1.2;
+        }
+
+        .hero-description {
+            font-size: 18px;
+            opacity: 0.95;
+            margin-bottom: 24px;
+            line-height: 1.6;
+        }
+
+        .hero-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .hero-btn {
+            padding: 14px 28px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 16px;
+            transition: all 0.2s;
+        }
+
+        .hero-btn-primary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .hero-btn-secondary {
+            background: rgba(255,255,255,0.15);
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+
+        .dashboard-content {
+            padding: 32px 48px;
+            background: var(--bg);
+        }
+
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 24px;
+            border-radius: 12px;
+            border: 2px solid var(--border);
+        }
+
+        .stat-label {
+            font-size: 13px;
+            color: var(--text-secondary);
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .stat-change {
+            font-size: 14px;
+            font-weight: 600;
+        }
+
+        .stat-change.positive {
+            color: var(--success);
+        }
+
+        .recommendations-section {
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            border: 2px solid var(--border);
+        }
+
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .section-title {
+            font-size: 24px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .view-all-link {
+            color: var(--primary);
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .rec-card {
+            background: var(--bg);
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            transition: all 0.2s;
+        }
+
+        .rec-card:hover {
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+        }
+
+        .rec-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 12px;
+        }
+
+        .rec-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: var(--text);
+            flex: 1;
+            line-height: 1.4;
+        }
+
+        .impact-badge {
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .impact-high {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .impact-medium {
+            background: #fef3c7;
+            color: #a16207;
+        }
+
+        .rec-description {
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+            line-height: 1.6;
+        }
+
+        .rec-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .peer-proof {
+            font-size: 13px;
+            color: var(--success);
+            font-weight: 600;
+        }
+
+        .rec-actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .rec-btn {
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            transition: all 0.2s;
+        }
+
+        .rec-btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .rec-btn-secondary {
+            background: white;
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        /* Direction 2: Sidebar Navigation */
+        .sidebar-layout {
+            display: flex;
+            height: 800px;
+        }
+
+        .sidebar {
+            width: 260px;
+            background: var(--text);
+            color: white;
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-logo {
+            font-size: 24px;
+            font-weight: 700;
+            margin-bottom: 32px;
+            color: white;
+        }
+
+        .sidebar-nav {
+            flex: 1;
+        }
+
+        .nav-item {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: rgba(255,255,255,0.7);
+            font-weight: 500;
+        }
+
+        .nav-item:hover, .nav-item.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        .sidebar-footer {
+            padding-top: 24px;
+            border-top: 1px solid rgba(255,255,255,0.1);
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: var(--primary);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+        }
+
+        .user-info {
+            flex: 1;
+        }
+
+        .user-name {
+            font-size: 14px;
+            font-weight: 600;
+            color: white;
+        }
+
+        .user-email {
+            font-size: 12px;
+            color: rgba(255,255,255,0.5);
+        }
+
+        .main-content {
+            flex: 1;
+            background: var(--bg);
+            overflow-y: auto;
+        }
+
+        .top-bar {
+            background: white;
+            padding: 20px 32px;
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .page-title {
+            font-size: 28px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .top-bar-actions {
+            display: flex;
+            gap: 12px;
+        }
+
+        .content-area {
+            padding: 32px;
+        }
+
+        /* Direction 3: Dense Information Layout */
+        .dense-layout {
+            background: white;
+            padding: 0;
+        }
+
+        .dense-header {
+            padding: 20px 32px;
+            background: var(--bg);
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .dense-grid {
+            display: grid;
+            grid-template-columns: 280px 1fr;
+            min-height: 700px;
+        }
+
+        .left-panel {
+            background: var(--bg);
+            padding: 24px;
+            border-right: 2px solid var(--border);
+        }
+
+        .panel-section {
+            margin-bottom: 24px;
+        }
+
+        .panel-heading {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            color: var(--text-secondary);
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .metric-item {
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            border: 1px solid var(--border);
+        }
+
+        .metric-label {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-bottom: 4px;
+        }
+
+        .metric-value {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+        }
+
+        .right-panel {
+            padding: 32px;
+            background: white;
+        }
+
+        .rec-list-dense {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .rec-card-dense {
+            padding: 16px;
+            border: 2px solid var(--border);
+            border-radius: 8px;
+            background: var(--bg);
+            display: flex;
+            gap: 16px;
+            align-items: flex-start;
+        }
+
+        .rec-priority {
+            width: 48px;
+            height: 48px;
+            border-radius: 8px;
+            background: var(--primary);
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .rec-content {
+            flex: 1;
+        }
+
+        .rec-title-dense {
+            font-size: 16px;
+            font-weight: 600;
+            color: var(--text);
+            margin-bottom: 6px;
+        }
+
+        .rec-meta {
+            display: flex;
+            gap: 16px;
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Direction 4: Card Gallery */
+        .gallery-layout {
+            padding: 32px;
+            background: var(--bg);
+        }
+
+        .gallery-header {
+            margin-bottom: 32px;
+        }
+
+        .gallery-title {
+            font-size: 36px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 8px;
+        }
+
+        .gallery-subtitle {
+            font-size: 16px;
+            color: var(--text-secondary);
+        }
+
+        .card-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+            gap: 24px;
+        }
+
+        .gallery-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 2px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .gallery-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 12px 24px rgba(124, 58, 237, 0.15);
+            border-color: var(--primary);
+        }
+
+        .card-image {
+            height: 140px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--accent) 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 48px;
+        }
+
+        .card-content {
+            padding: 24px;
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 12px;
+            line-height: 1.3;
+        }
+
+        .card-description {
+            font-size: 14px;
+            color: var(--text-secondary);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .card-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-top: 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Direction 5: Minimal Clean */
+        .minimal-layout {
+            background: white;
+            padding: 48px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .minimal-header {
+            margin-bottom: 48px;
+            text-align: center;
+        }
+
+        .minimal-title {
+            font-size: 48px;
+            font-weight: 300;
+            color: var(--text);
+            margin-bottom: 16px;
+            letter-spacing: -1px;
+        }
+
+        .minimal-subtitle {
+            font-size: 18px;
+            color: var(--text-secondary);
+            font-weight: 400;
+        }
+
+        .minimal-rec-list {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .minimal-rec-card {
+            padding: 32px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .minimal-rec-card:last-child {
+            border-bottom: none;
+        }
+
+        .minimal-rec-header {
+            display: flex;
+            align-items: baseline;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .minimal-rec-number {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+        }
+
+        .minimal-rec-title {
+            font-size: 24px;
+            font-weight: 600;
+            color: var(--text);
+            flex: 1;
+        }
+
+        .minimal-rec-body {
+            padding-left: 32px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 20px;
+        }
+
+        .minimal-rec-actions {
+            padding-left: 32px;
+            display: flex;
+            gap: 16px;
+        }
+
+        /* Direction 6: Split View */
+        .split-layout {
+            display: grid;
+            grid-template-columns: 1fr 480px;
+            height: 800px;
+        }
+
+        .split-left {
+            background: white;
+            padding: 48px;
+            overflow-y: auto;
+        }
+
+        .split-right {
+            background: var(--text);
+            color: white;
+            padding: 48px;
+            overflow-y: auto;
+        }
+
+        .split-section {
+            margin-bottom: 48px;
+        }
+
+        .split-section-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--text-secondary);
+            margin-bottom: 16px;
+        }
+
+        .split-main-title {
+            font-size: 40px;
+            font-weight: 700;
+            color: var(--text);
+            margin-bottom: 24px;
+            line-height: 1.2;
+        }
+
+        .split-description {
+            font-size: 16px;
+            color: var(--text-secondary);
+            line-height: 1.8;
+            margin-bottom: 32px;
+        }
+
+        .insight-panel {
+            margin-bottom: 32px;
+        }
+
+        .insight-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: white;
+            margin-bottom: 12px;
+        }
+
+        .insight-content {
+            font-size: 14px;
+            color: rgba(255,255,255,0.8);
+            line-height: 1.6;
+            margin-bottom: 16px;
+        }
+
+        .insight-stat {
+            display: inline-block;
+            padding: 8px 16px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 8px;
+            font-weight: 600;
+            color: var(--success);
+        }
+
+        .btn {
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            border: none;
+            font-size: 14px;
+            transition: all 0.2s;
+            display: inline-block;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--text);
+            border: 2px solid var(--border);
+        }
+
+        .btn-outline-light {
+            background: transparent;
+            color: white;
+            border: 2px solid rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🎨 MetricFortune Design Direction Mockups</h1>
+        <p>Explore 6 different design approaches for MetricFortune's dashboard. Each direction represents a complete vision for the app's look, feel, and interaction patterns. Click the buttons below to navigate between mockups.</p>
+    </div>
+
+    <div class="controls">
+        <button class="active" onclick="showMockup(1)">1. Hero-Focused</button>
+        <button onclick="showMockup(2)">2. Sidebar Nav</button>
+        <button onclick="showMockup(3)">3. Dense Information</button>
+        <button onclick="showMockup(4)">4. Card Gallery</button>
+        <button onclick="showMockup(5)">5. Minimal Clean</button>
+        <button onclick="showMockup(6)">6. Split View</button>
+    </div>
+
+    <!-- Direction 1: Hero-Focused Dashboard -->
+    <div class="direction-container">
+        <div class="direction-header">
+            <div class="direction-title">Direction 1: Hero-Focused Dashboard</div>
+            <div class="direction-subtitle">Bold & Action-Oriented</div>
+            <div class="direction-meta">
+                <div class="meta-item"><strong>Layout:</strong> Hero section + card list</div>
+                <div class="meta-item"><strong>Density:</strong> Spacious</div>
+                <div class="meta-item"><strong>Best For:</strong> Immediate call-to-action, emphasis on top priority</div>
+            </div>
+        </div>
+        <div class="mockup active hero-dashboard" id="mockup-1">
+            <div class="hero-section">
+                <div class="hero-content">
+                    <div class="hero-badge">HIGH IMPACT OPPORTUNITY</div>
+                    <div class="hero-title">43% of users abandon at shipping step</div>
+                    <div class="hero-description">Display shipping costs earlier in checkout flow. Sites like yours saw 18% average improvement with this change.</div>
+                    <div class="hero-actions">
+                        <button class="hero-btn hero-btn-primary">View Full Details</button>
+                        <button class="hero-btn hero-btn-secondary">Mark as Planned</button>
+                    </div>
+                </div>
+            </div>
+            <div class="dashboard-content">
+                <div class="stats-row">
+                    <div class="stat-card">
+                        <div class="stat-label">Conversion Rate</div>
+                        <div class="stat-value">3.2%</div>
+                        <div class="stat-change positive">↑ 0.4% this week</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Active Recommendations</div>
+                        <div class="stat-value">5</div>
+                        <div class="stat-change">2 high impact</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Peer Benchmark</div>
+                        <div class="stat-value">vs 3.8%</div>
+                        <div class="stat-change">52 similar stores</div>
+                    </div>
+                </div>
+                <div class="recommendations-section">
+                    <div class="section-header">
+                        <div class="section-title">More Recommendations</div>
+                        <a href="#" class="view-all-link">View All →</a>
+                    </div>
+                    <div class="rec-card">
+                        <div class="rec-header">
+                            <div class="rec-title">Product page load time averaging 4.2 seconds</div>
+                            <div class="impact-badge impact-medium">Medium Impact</div>
+                        </div>
+                        <div class="rec-description">
+                            Optimize image sizes and lazy-loading. Every 1 second delay reduces conversions by ~7%.
+                        </div>
+                        <div class="rec-footer">
+                            <div class="peer-proof">✓ 8 similar stores improved speed</div>
+                            <div class="rec-actions">
+                                <button class="rec-btn rec-btn-primary">Details</button>
+                                <button class="rec-btn rec-btn-secondary">Dismiss</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rec-card">
+                        <div class="rec-header">
+                            <div class="rec-title">67% of mobile users exit on first product image</div>
+                            <div class="impact-badge impact-high">High Impact</div>
+                        </div>
+                        <div class="rec-description">
+                            Add zoom functionality to product images on mobile. Peer data shows 12% conversion lift.
+                        </div>
+                        <div class="rec-footer">
+                            <div class="peer-proof">✓ 15 stores saw +12% conversions</div>
+                            <div class="rec-actions">
+                                <button class="rec-btn rec-btn-primary">Details</button>
+                                <button class="rec-btn rec-btn-secondary">Dismiss</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Direction 2: Sidebar Navigation -->
+    <div class="direction-container">
+        <div class="direction-header">
+            <div class="direction-title">Direction 2: Sidebar Navigation</div>
+            <div class="direction-subtitle">Professional & Structured</div>
+            <div class="direction-meta">
+                <div class="meta-item"><strong>Layout:</strong> Persistent sidebar + main content</div>
+                <div class="meta-item"><strong>Density:</strong> Balanced</div>
+                <div class="meta-item"><strong>Best For:</strong> Power users, frequent navigation between sections</div>
+            </div>
+        </div>
+        <div class="mockup sidebar-layout" id="mockup-2">
+            <div class="sidebar">
+                <div class="sidebar-logo">MetricFortune</div>
+                <div class="sidebar-nav">
+                    <div class="nav-item active">📊 Dashboard</div>
+                    <div class="nav-item">⭐ Recommendations</div>
+                    <div class="nav-item">🔍 Journey Insights</div>
+                    <div class="nav-item">📈 Peer Benchmarks</div>
+                    <div class="nav-item">✓ Implemented</div>
+                    <div class="nav-item">⚙️ Settings</div>
+                </div>
+                <div class="sidebar-footer">
+                    <div class="user-profile">
+                        <div class="user-avatar">SF</div>
+                        <div class="user-info">
+                            <div class="user-name">Sarah's Fashion</div>
+                            <div class="user-email">Premium Plan</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="main-content">
+                <div class="top-bar">
+                    <div class="page-title">Recommendations</div>
+                    <div class="top-bar-actions">
+                        <button class="btn btn-secondary">Filter</button>
+                        <button class="btn btn-primary">New Insights Available</button>
+                    </div>
+                </div>
+                <div class="content-area">
+                    <div class="rec-card">
+                        <div class="rec-header">
+                            <div class="rec-title">43% cart abandonment at shipping step</div>
+                            <div class="impact-badge impact-high">High Impact</div>
+                        </div>
+                        <div class="rec-description">
+                            Display estimated shipping cost earlier in checkout flow. Sites like yours saw 18% improvement.
+                        </div>
+                        <div class="rec-footer">
+                            <div class="peer-proof">✓ 12 similar stores saw +18% avg improvement</div>
+                            <div class="rec-actions">
+                                <button class="rec-btn rec-btn-primary">View Details</button>
+                                <button class="rec-btn rec-btn-secondary">Dismiss</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="rec-card">
+                        <div class="rec-header">
+                            <div class="rec-title">Product page load time averaging 4.2 seconds</div>
+                            <div class="impact-badge impact-medium">Medium Impact</div>
+                        </div>
+                        <div class="rec-description">
+                            Optimize image sizes and implement lazy-loading. Every 1 second delay reduces conversions by ~7%.
+                        </div>
+                        <div class="rec-footer">
+                            <div class="peer-proof">✓ 8 similar stores improved speed</div>
+                            <div class="rec-actions">
+                                <button class="rec-btn rec-btn-primary">View Details</button>
+                                <button class="rec-btn rec-btn-secondary">Dismiss</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Direction 3: Dense Information -->
+    <div class="direction-container">
+        <div class="direction-header">
+            <div class="direction-title">Direction 3: Dense Information Layout</div>
+            <div class="direction-subtitle">Data-Rich & Efficient</div>
+            <div class="direction-meta">
+                <div class="meta-item"><strong>Layout:</strong> Side metrics panel + main list</div>
+                <div class="meta-item"><strong>Density:</strong> Dense</div>
+                <div class="meta-item"><strong>Best For:</strong> Power users who want all info visible</div>
+            </div>
+        </div>
+        <div class="mockup dense-layout" id="mockup-3">
+            <div class="dense-header">
+                <div class="page-title">MetricFortune Dashboard</div>
+                <div class="top-bar-actions">
+                    <button class="btn btn-secondary">Export</button>
+                    <button class="btn btn-primary">Refresh Data</button>
+                </div>
+            </div>
+            <div class="dense-grid">
+                <div class="left-panel">
+                    <div class="panel-section">
+                        <div class="panel-heading">Key Metrics</div>
+                        <div class="metric-item">
+                            <div class="metric-label">Conversion Rate</div>
+                            <div class="metric-value">3.2%</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Cart Abandonment</div>
+                            <div class="metric-value">43%</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Avg Session Time</div>
+                            <div class="metric-value">2:34</div>
+                        </div>
+                    </div>
+                    <div class="panel-section">
+                        <div class="panel-heading">Peer Benchmarks</div>
+                        <div class="metric-item">
+                            <div class="metric-label">Your Group Avg</div>
+                            <div class="metric-value">3.8%</div>
+                        </div>
+                        <div class="metric-item">
+                            <div class="metric-label">Similar Stores</div>
+                            <div class="metric-value">52</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="right-panel">
+                    <div class="section-title">Priority Recommendations</div>
+                    <div class="rec-list-dense">
+                        <div class="rec-card-dense">
+                            <div class="rec-priority">1</div>
+                            <div class="rec-content">
+                                <div class="rec-title-dense">43% cart abandonment at shipping step</div>
+                                <div class="rec-meta">
+                                    <span>High Impact</span>
+                                    <span>•</span>
+                                    <span>12 stores saw +18% improvement</span>
+                                </div>
+                            </div>
+                            <div class="rec-actions">
+                                <button class="rec-btn rec-btn-primary">View</button>
+                            </div>
+                        </div>
+                        <div class="rec-card-dense">
+                            <div class="rec-priority">2</div>
+                            <div class="rec-content">
+                                <div class="rec-title-dense">Product page load time averaging 4.2s</div>
+                                <div class="rec-meta">
+                                    <span>Medium Impact</span>
+                                    <span>•</span>
+                                    <span>8 stores optimized images</span>
+                                </div>
+                            </div>
+                            <div class="rec-actions">
+                                <button class="rec-btn rec-btn-primary">View</button>
+                            </div>
+                        </div>
+                        <div class="rec-card-dense">
+                            <div class="rec-priority">3</div>
+                            <div class="rec-content">
+                                <div class="rec-title-dense">67% mobile users exit on first product image</div>
+                                <div class="rec-meta">
+                                    <span>High Impact</span>
+                                    <span>•</span>
+                                    <span>15 stores added zoom +12%</span>
+                                </div>
+                            </div>
+                            <div class="rec-actions">
+                                <button class="rec-btn rec-btn-primary">View</button>
+                            </div>
+                        </div>
+                        <div class="rec-card-dense">
+                            <div class="rec-priority">4</div>
+                            <div class="rec-content">
+                                <div class="rec-title-dense">Search bar not prominent on mobile</div>
+                                <div class="rec-meta">
+                                    <span>Medium Impact</span>
+                                    <span>•</span>
+                                    <span>6 stores repositioned search</span>
+                                </div>
+                            </div>
+                            <div class="rec-actions">
+                                <button class="rec-btn rec-btn-primary">View</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Direction 4: Card Gallery -->
+    <div class="direction-container">
+        <div class="direction-header">
+            <div class="direction-title">Direction 4: Card Gallery</div>
+            <div class="direction-subtitle">Visual & Scannable</div>
+            <div class="direction-meta">
+                <div class="meta-item"><strong>Layout:</strong> Grid of cards</div>
+                <div class="meta-item"><strong>Density:</strong> Spacious</div>
+                <div class="meta-item"><strong>Best For:</strong> Visual learners, quick scanning of multiple items</div>
+            </div>
+        </div>
+        <div class="mockup gallery-layout" id="mockup-4">
+            <div class="gallery-header">
+                <div class="gallery-title">Your Optimization Opportunities</div>
+                <div class="gallery-subtitle">5 recommendations ready to improve conversions</div>
+            </div>
+            <div class="card-grid">
+                <div class="gallery-card">
+                    <div class="card-image">🛒</div>
+                    <div class="card-content">
+                        <div class="impact-badge impact-high" style="margin-bottom: 12px;">High Impact</div>
+                        <div class="card-title">43% cart abandonment at shipping step</div>
+                        <div class="card-description">
+                            Display estimated shipping cost earlier in checkout flow to reduce surprises.
+                        </div>
+                        <div class="card-footer">
+                            <div class="peer-proof">+18% avg lift</div>
+                            <button class="btn btn-primary">View Details</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-card">
+                    <div class="card-image">⚡</div>
+                    <div class="card-content">
+                        <div class="impact-badge impact-medium" style="margin-bottom: 12px;">Medium Impact</div>
+                        <div class="card-title">Product page load time 4.2 seconds</div>
+                        <div class="card-description">
+                            Optimize image sizes and implement lazy-loading for faster page loads.
+                        </div>
+                        <div class="card-footer">
+                            <div class="peer-proof">+7% per second</div>
+                            <button class="btn btn-primary">View Details</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-card">
+                    <div class="card-image">📱</div>
+                    <div class="card-content">
+                        <div class="impact-badge impact-high" style="margin-bottom: 12px;">High Impact</div>
+                        <div class="card-title">67% mobile users exit on product images</div>
+                        <div class="card-description">
+                            Add zoom and swipe functionality to product images on mobile devices.
+                        </div>
+                        <div class="card-footer">
+                            <div class="peer-proof">+12% mobile conv</div>
+                            <button class="btn btn-primary">View Details</button>
+                        </div>
+                    </div>
+                </div>
+                <div class="gallery-card">
+                    <div class="card-image">🔍</div>
+                    <div class="card-content">
+                        <div class="impact-badge impact-medium" style="margin-bottom: 12px;">Medium Impact</div>
+                        <div class="card-title">Search bar not prominent on mobile</div>
+                        <div class="card-description">
+                            Reposition search to top navigation for better discoverability.
+                        </div>
+                        <div class="card-footer">
+                            <div class="peer-proof">+8% search usage</div>
+                            <button class="btn btn-primary">View Details</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Direction 5: Minimal Clean -->
+    <div class="direction-container">
+        <div class="direction-header">
+            <div class="direction-title">Direction 5: Minimal Clean</div>
+            <div class="direction-subtitle">Focus & Elegance</div>
+            <div class="direction-meta">
+                <div class="meta-item"><strong>Layout:</strong> Centered, sequential</div>
+                <div class="meta-item"><strong>Density:</strong> Very spacious</div>
+                <div class="meta-item"><strong>Best For:</strong> Focused attention, premium feel</div>
+            </div>
+        </div>
+        <div class="mockup minimal-layout" id="mockup-5">
+            <div class="minimal-header">
+                <div class="minimal-title">Your Recommendations</div>
+                <div class="minimal-subtitle">Prioritized opportunities to improve conversions</div>
+            </div>
+            <div class="minimal-rec-list">
+                <div class="minimal-rec-card">
+                    <div class="minimal-rec-header">
+                        <div class="minimal-rec-number">01</div>
+                        <div class="minimal-rec-title">43% cart abandonment at shipping step</div>
+                        <div class="impact-badge impact-high">High Impact</div>
+                    </div>
+                    <div class="minimal-rec-body">
+                        Display estimated shipping cost earlier in checkout flow. Users are abandoning when they see unexpected shipping charges at the final step. 12 similar fashion stores implemented this change and saw an average 18% improvement in checkout completion.
+                    </div>
+                    <div class="minimal-rec-actions">
+                        <button class="btn btn-primary">View Full Details</button>
+                        <button class="btn btn-secondary">Mark as Planned</button>
+                        <button class="btn btn-secondary">Dismiss</button>
+                    </div>
+                </div>
+                <div class="minimal-rec-card">
+                    <div class="minimal-rec-header">
+                        <div class="minimal-rec-number">02</div>
+                        <div class="minimal-rec-title">Product page load time averaging 4.2 seconds</div>
+                        <div class="impact-badge impact-medium">Medium Impact</div>
+                    </div>
+                    <div class="minimal-rec-body">
+                        Optimize image sizes and implement lazy-loading. Page speed directly correlates with conversions—every 1 second delay reduces conversions by approximately 7%. 8 similar stores optimized their images and saw measurable improvements.
+                    </div>
+                    <div class="minimal-rec-actions">
+                        <button class="btn btn-primary">View Full Details</button>
+                        <button class="btn btn-secondary">Mark as Planned</button>
+                        <button class="btn btn-secondary">Dismiss</button>
+                    </div>
+                </div>
+                <div class="minimal-rec-card">
+                    <div class="minimal-rec-header">
+                        <div class="minimal-rec-number">03</div>
+                        <div class="minimal-rec-title">67% of mobile users exit on first product image</div>
+                        <div class="impact-badge impact-high">High Impact</div>
+                    </div>
+                    <div class="minimal-rec-body">
+                        Add zoom and swipe functionality to product images on mobile. Mobile users expect interactive product viewing. 15 fashion stores added zoom functionality and saw a 12% increase in mobile conversions.
+                    </div>
+                    <div class="minimal-rec-actions">
+                        <button class="btn btn-primary">View Full Details</button>
+                        <button class="btn btn-secondary">Mark as Planned</button>
+                        <button class="btn btn-secondary">Dismiss</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Direction 6: Split View -->
+    <div class="direction-container">
+        <div class="direction-header">
+            <div class="direction-title">Direction 6: Split View</div>
+            <div class="direction-subtitle">Context & Action</div>
+            <div class="direction-meta">
+                <div class="meta-item"><strong>Layout:</strong> 60/40 split screen</div>
+                <div class="meta-item"><strong>Density:</strong> Balanced</div>
+                <div class="meta-item"><strong>Best For:</strong> Showing recommendation + supporting data simultaneously</div>
+            </div>
+        </div>
+        <div class="mockup split-layout" id="mockup-6">
+            <div class="split-left">
+                <div class="split-section">
+                    <div class="split-section-title">Priority Recommendation</div>
+                    <div class="split-main-title">Display shipping costs earlier in checkout</div>
+                    <div class="split-description">
+                        43% of your customers are abandoning their carts at the shipping calculation step. This suggests that unexpected shipping costs are causing friction at a critical moment in the purchase journey.
+                    </div>
+                </div>
+                <div class="split-section">
+                    <div class="split-section-title">Recommended Action</div>
+                    <div class="split-description">
+                        Show estimated shipping costs on the cart page, before users begin checkout. This transparency helps set expectations early and reduces abandonment at the final step.
+                    </div>
+                </div>
+                <div class="split-section">
+                    <div class="split-section-title">Implementation Steps</div>
+                    <div class="split-description">
+                        1. Add shipping calculator to cart page<br>
+                        2. Display estimate prominently above "Checkout" button<br>
+                        3. Include message: "Final shipping calculated at checkout"<br>
+                        4. Test on mobile and desktop
+                    </div>
+                </div>
+                <div class="split-section">
+                    <button class="btn btn-primary" style="margin-right: 12px;">Mark as Implemented</button>
+                    <button class="btn btn-secondary">Dismiss Recommendation</button>
+                </div>
+            </div>
+            <div class="split-right">
+                <div class="insight-panel">
+                    <div class="insight-title">Impact Potential</div>
+                    <div class="insight-content">
+                        Based on peer data from similar fashion e-commerce stores, implementing this change could reduce cart abandonment by:
+                    </div>
+                    <div class="insight-stat">15-20% improvement expected</div>
+                </div>
+                <div class="insight-panel">
+                    <div class="insight-title">Peer Proof</div>
+                    <div class="insight-content">
+                        12 stores similar to yours (fashion, $1-5M revenue, Shopify) implemented shipping transparency and saw these results:
+                    </div>
+                    <div class="insight-stat">+18% avg conversion lift</div>
+                </div>
+                <div class="insight-panel">
+                    <div class="insight-title">Confidence Level</div>
+                    <div class="insight-content">
+                        Medium-High confidence based on:<br>
+                        • 1,247 sessions analyzed<br>
+                        • Clear drop-off pattern<br>
+                        • Strong peer validation<br>
+                        • Industry best practices
+                    </div>
+                </div>
+                <div class="insight-panel">
+                    <div class="insight-title">Your Current Data</div>
+                    <div class="insight-content">
+                        • Cart abandonment rate: 43%<br>
+                        • Drop-off at shipping: 67% of abandonments<br>
+                        • Avg cart value: $84.50<br>
+                        • Potential monthly revenue gain: $3,200
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showMockup(num) {
+            // Hide all mockups
+            document.querySelectorAll('.mockup').forEach(m => m.classList.remove('active'));
+            // Show selected mockup
+            document.getElementById('mockup-' + num).classList.add('active');
+
+            // Update button states
+            document.querySelectorAll('.controls button').forEach((btn, idx) => {
+                if (idx === num - 1) {
+                    btn.classList.add('active');
+                } else {
+                    btn.classList.remove('active');
+                }
+            });
+        }
+    </script>
+</body>
+</html>

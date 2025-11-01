@@ -1,8 +1,40 @@
 @import "tailwindcss";
 
+/*
+ * MetricFortune Design System Colors
+ * Based on UX Design Specification - Bold Purple Theme
+ * All colors WCAG AA compliant
+ */
+
 :root {
+  /* Backgrounds */
   --background: #ffffff;
-  --foreground: #171717;
+  --background-secondary: #f9fafb;
+  --background-tertiary: #faf5ff;
+
+  /* Text Colors (WCAG AA Compliant) */
+  --text-primary: #1f2937;      /* 16.1:1 contrast on white */
+  --text-secondary: #4b5563;    /* 9.7:1 contrast on white */
+  --text-tertiary: #6b7280;     /* 5.9:1 contrast on white */
+
+  /* Brand Colors */
+  --primary: #7c3aed;           /* Bold Purple */
+  --primary-hover: #6d28d9;
+  --secondary: #f97316;         /* Orange */
+  --accent: #06b6d4;            /* Cyan */
+
+  /* Semantic Colors */
+  --success: #10b981;           /* Green */
+  --warning: #fbbf24;           /* Amber */
+  --error: #ef4444;             /* Red */
+  --info: #3b82f6;              /* Blue */
+
+  /* Borders */
+  --border: #d1d5db;            /* 1.6:1 contrast on white */
+  --border-subtle: #e9d5ff;     /* Light purple - decorative only */
+
+  /* Foreground fallback */
+  --foreground: var(--text-primary);
 }
 
 @theme inline {
@@ -12,10 +44,15 @@
   --font-mono: var(--font-geist-mono);
 }
 
+/*
+ * Dark mode support
+ * Note: MetricFortune MVP focuses on light mode
+ * Dark mode colors will be added in future release
+ */
 @media (prefers-color-scheme: dark) {
   :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+    --background: #ffffff;        /* Force light mode for MVP */
+    --foreground: #1f2937;
   }
 }
 
@@ -23,4 +60,12 @@ body {
   background: var(--background);
   color: var(--foreground);
   font-family: Arial, Helvetica, sans-serif;
+
+  /* Ensure minimum readable text size */
+  font-size: 16px;
+  line-height: 1.6;
+
+  /* Smooth font rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }

@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                     String    @id @default(cuid())
+  email                  String    @unique
+  passwordHash           String
+  emailVerified          Boolean   @default(false)
+  emailVerificationToken String?
+  business               Business?
+  createdAt              DateTime  @default(now())
+
+  @@index([email])
+  @@index([emailVerificationToken])
+}
+
+model Business {
+  id                String    @id @default(cuid())
+  userId            String    @unique
+  user              User      @relation(fields: [userId], references: [id])
+  name              String
+  industry          String
+  revenueRange      String
+  productTypes      String[]
+  platform          String
+  siteId            String    @unique
+  peerGroupId       String?
+  createdAt         DateTime  @default(now())
+
+  @@index([siteId])
+}
+
+model Session {
+  id            String    @id @default(cuid())
+  siteId        String
+  sessionId     String    @unique
+  entryPage     String
+  exitPage      String?
+  duration      Int?
+  pageCount     Int
+  bounced       Boolean
+  converted     Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+
+  @@index([siteId, createdAt])
+}
+
+model TrackingEvent {
+  id          String   @id @default(cuid())
+  siteId      String
+  sessionId   String
+  eventType   String
+  timestamp   DateTime
+  data        Json
+  createdAt   DateTime @default(now())
+
+  @@index([siteId, timestamp])
+  @@index([sessionId])
+  @@map("TrackingEvent")
+}

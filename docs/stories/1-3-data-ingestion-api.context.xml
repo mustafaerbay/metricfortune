@@ -1,0 +1,329 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>3</storyId>
+    <title>Data Ingestion API</title>
+    <status>drafted</status>
+    <generatedAt>2025-10-31</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-3-data-ingestion-api.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>backend system</asA>
+    <iWant>an API endpoint that receives tracking events and stores them efficiently</iWant>
+    <soThat>user behavior data is captured and available for analysis</soThat>
+    <tasks>
+- [ ] Create POST /api/track endpoint with schema validation (AC: #1)
+  - [ ] Create `src/app/api/track/route.ts` API route handler
+  - [ ] Define TrackingEvent TypeScript type with event schema
+  - [ ] Implement Zod schema validation for incoming events
+  - [ ] Validate required fields: siteId, sessionId, event.type, event.timestamp, event.data
+  - [ ] Return structured responses: `{ success: true }` or `{ success: false, error: string }`
+  - [ ] Handle malformed requests with 400 Bad Request
+
+- [ ] Set up TimescaleDB for time-series data storage (AC: #2)
+  - [ ] Add TrackingEvent model to Prisma schema
+  - [ ] Create migration to add TrackingEvent table
+  - [ ] Convert TrackingEvent table to TimescaleDB hypertable via SQL
+  - [ ] Add indexes: (siteId, timestamp), (sessionId)
+  - [ ] Test database write performance with sample events
+
+- [ ] Implement event buffering and batch writes (AC: #5)
+  - [ ] Create event buffer service in `src/services/tracking/event-processor.ts`
+  - [ ] Buffer events in memory (max 100 events or 5 seconds)
+  - [ ] Batch write to database using Prisma.createMany()
+  - [ ] Handle buffer overflow gracefully (write immediately if buffer full)
+  - [ ] Add error recovery for failed batch writes
+
+- [ ] Add rate limiting per site (AC: #3)
+  - [ ] Implement rate limiter using Vercel KV or in-memory cache
+  - [ ] Set limits: 1000 events per minute per siteId
+  - [ ] Return 429 Too Many Requests when limit exceeded
+  - [ ] Log rate limit violations for monitoring
+  - [ ] Add rate limit headers to response (X-RateLimit-*)
+
+- [ ] Implement API authentication with site-specific keys (AC: #6)
+  - [ ] Validate siteId exists in Business table
+  - [ ] Extract siteId from request body (no separate API key initially)
+  - [ ] Verify siteId format matches expected pattern
+  - [ ] Return 401 Unauthorized for invalid siteId
+  - [ ] Future enhancement: dedicated API keys separate from siteId
+
+- [ ] Configure data retention policy (AC: #4)
+  - [ ] Document retention policy: 90 days raw data, indefinite aggregated
+  - [ ] Add retention policy documentation to README
+  - [ ] Note: Automated cleanup job deferred to Story 1.6 (part of aggregation workflow)
+  - [ ] Plan TimescaleDB retention policy: `add_retention_policy('TrackingEvent', INTERVAL '90 days')`
+
+- [ ] Add monitoring and error logging (AC: #7)
+  - [ ] Log incoming event count and processing time
+  - [ ] Log database write errors with context (siteId, event count, timestamp)
+  - [ ] Track event processing metrics (events/second, batch size, latency)
+  - [ ] Add health check endpoint: GET /api/track/health
+  - [ ] Test error scenarios: database unavailable, invalid schema, rate limit exceeded
+
+- [ ] Create integration tests for tracking endpoint (Testing)
+  - [ ] Test valid event submission (all event types)
+  - [ ] Test schema validation failures
+  - [ ] Test rate limiting behavior
+  - [ ] Test batch write performance (simulate 100+ events)
+  - [ ] Test authentication (valid vs invalid siteId)
+  - [ ] Test database write failures and error handling
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. POST /api/track endpoint accepts tracking events with schema validation
+2. Events written to time-series analytics database (ClickHouse or TimescaleDB)
+3. Rate limiting implemented (per-site limits to prevent abuse)
+4. Data retention policy configured (90 days raw data, indefinite aggregated data)
+5. Event buffering and batch writes for performance
+6. API authentication using site-specific API keys
+7. Monitoring and error logging for data pipeline health
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc path="docs/PRD.md" title="Product Requirements Document">
+        <section>Functional Requirements FR001</section>
+        <snippet>System shall provide JavaScript tracking snippet that captures user interactions including page views, clicks, form interactions, scroll behavior, and time on page</snippet>
+      </doc>
+      <doc path="docs/PRD.md" title="Product Requirements Document">
+        <section>Functional Requirements FR003</section>
+        <snippet>System shall capture complete user journey sequences from entry through navigation to conversion or exit</snippet>
+      </doc>
+      <doc path="docs/PRD.md" title="Product Requirements Document">
+        <section>Non-Functional Requirements NFR001</section>
+        <snippet>Performance - Tracking script shall add less than 100ms to customer page load times; System shall achieve 99.9% uptime</snippet>
+      </doc>
+      <doc path="docs/PRD.md" title="Product Requirements Document">
+        <section>Non-Functional Requirements NFR002</section>
+        <snippet>Scalability - System shall support 100 customers tracking 1M sessions/month at MVP launch, scaling to 500 customers with 10M sessions/month by Year 1</snippet>
+      </doc>
+      <doc path="docs/PRD.md" title="Product Requirements Document">
+        <section>Non-Functional Requirements NFR003</section>
+        <snippet>Privacy and Security - System shall comply with GDPR and CCPA requirements, anonymize all peer data aggregation, use TLS 1.3 for data in transit and AES-256 for data at rest</snippet>
+      </doc>
+      <doc path="docs/epics.md" title="Epic Breakdown">
+        <section>Story 1.3 Data Ingestion API</section>
+        <snippet>POST /api/track endpoint accepts tracking events with schema validation. Events written to time-series analytics database with rate limiting, data retention policy, event buffering, API authentication, and monitoring.</snippet>
+      </doc>
+      <doc path="docs/architecture.md" title="Decision Architecture">
+        <section>Epic to Architecture Mapping - Story 1.3</section>
+        <snippet>src/app/api/track/route.ts and src/services/tracking/event-processor.ts components handle data ingestion</snippet>
+      </doc>
+      <doc path="docs/architecture.md" title="Decision Architecture">
+        <section>API Contracts - POST /api/track</section>
+        <snippet>Request format: siteId, sessionId, event (type, timestamp, data). Response: success boolean with optional data or error message</snippet>
+      </doc>
+      <doc path="docs/architecture.md" title="Decision Architecture">
+        <section>ADR-002 TimescaleDB for Time-Series Data</section>
+        <snippet>Use TimescaleDB extension for PostgreSQL to handle 1M-10M sessions/month, integrates with existing PostgreSQL, simpler than ClickHouse, allows joining time-series and relational data</snippet>
+      </doc>
+      <doc path="docs/architecture.md" title="Decision Architecture">
+        <section>Security Architecture</section>
+        <snippet>API Security: Rate limiting on tracking endpoint (per-site limits), API authentication via site-specific keys, CORS configured for tracking endpoint, NextAuth.js CSRF protection</snippet>
+      </doc>
+      <doc path="docs/architecture.md" title="Decision Architecture">
+        <section>Performance Considerations</section>
+        <snippet>Backend optimization: Indexes on frequently queried fields (siteId, sessionId, timestamps), TimescaleDB automatic partitioning by time, Batch processing for session aggregation</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact path="public/tracking.js" kind="tracking-script" symbol="MetricFortune tracking script" lines="1-300">
+        <reason>Defines event schema that API must validate against. Contains batch send logic (10 events per batch, 5 second interval) that API should handle efficiently</reason>
+      </artifact>
+      <artifact path="src/lib/prisma.ts" kind="database-client" symbol="prisma" lines="1-10">
+        <reason>Prisma singleton client for database operations. Use this for TrackingEvent writes</reason>
+      </artifact>
+      <artifact path="prisma/schema.prisma" kind="schema" symbol="User, Business, Session models" lines="1-50">
+        <reason>Existing database schema. TrackingEvent model should follow same conventions. Business.siteId used for authentication validation</reason>
+      </artifact>
+      <artifact path="src/app/demo/tracking-test/page.tsx" kind="test-page" symbol="Tracking test page">
+        <reason>Generates real tracking events for manual API testing. Use to validate API accepts events from tracking script</reason>
+      </artifact>
+      <artifact path="tests/unit/tracking.test.ts" kind="unit-test" symbol="Tracking script tests" lines="1-50">
+        <reason>Shows event format examples and testing patterns. Reference for API validation tests</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="@prisma/client" version="6.17.0" />
+        <package name="prisma" version="6.17.0" />
+        <package name="next" version="16.0.1" />
+        <package name="react" version="19.2.0" />
+        <package name="vitest" version="4.0" />
+        <package name="@playwright/test" version="1.56.1" />
+        <package name="typescript" version="5.x" />
+        <package name="zod" note="Available in node_modules, need to add to package.json for schema validation" />
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+- API route must be Edge Function for low-latency global distribution (architecture.md#Performance-Considerations)
+- Use Next.js API Route pattern: src/app/api/track/route.ts with POST export (architecture.md#Project-Structure)
+- Response format must match standard: { success: boolean, data?: T, error?: string } (architecture.md#API-Response-Format)
+- All database operations via Prisma Client singleton from src/lib/prisma.ts (architecture.md#Consistency-Rules)
+- Use TypeScript with strict mode enabled (architecture.md#Decision-Summary)
+- Event schema must exactly match tracking script implementation to avoid drift (Story 1.2 learnings)
+- Implement idempotent writes to handle retry logic from client (Story 1.2 uses 3 retry attempts with exponential backoff)
+- Rate limiting required: 1000 events/minute per siteId (architecture.md#Security-Architecture)
+- CORS must be enabled for tracking endpoint to accept cross-origin requests (architecture.md#Security-Architecture)
+- Structured logging with context objects (architecture.md#Logging-Strategy)
+- Error handling: try-catch blocks, never expose stack traces to client (architecture.md#Error-Handling)
+- Performance target: API response time under 50-100ms (NFR001, Story 1.2 budget)
+- File naming: kebab-case for API routes and services (architecture.md#Naming-Conventions)
+- Type naming: PascalCase (TrackingEvent, EventData) (architecture.md#Naming-Conventions)
+  </constraints>
+
+  <interfaces>
+    <interface name="POST /api/track" kind="REST-endpoint">
+      <signature>
+POST /api/track
+Content-Type: application/json
+
+Request Body:
+{
+  siteId: string;
+  sessionId: string;
+  event: {
+    type: 'pageview' | 'click' | 'form' | 'scroll';
+    timestamp: number;
+    data: {
+      url?: string;              // pageview
+      referrer?: string;          // pageview
+      selector?: string;          // click
+      position?: { x: number, y: number };  // click
+      formId?: string;            // form
+      fieldInteractions?: Record&lt;string, any&gt;;  // form
+      scrollDepth?: number;       // scroll
+      timeAtDepth?: number;       // scroll
+      [key: string]: any;         // extensible
+    };
+  };
+}
+
+Response (Success): { success: true }
+Response (Error): { success: false, error: string }
+Response Codes: 200 OK, 400 Bad Request, 401 Unauthorized, 429 Too Many Requests, 500 Internal Server Error
+      </signature>
+      <path>docs/architecture.md#API-Contracts</path>
+    </interface>
+    <interface name="Prisma Client" kind="database-orm">
+      <signature>
+import { prisma } from '@/lib/prisma';
+
+// Batch create (for event buffering)
+await prisma.trackingEvent.createMany({
+  data: [...events],
+  skipDuplicates: true
+});
+
+// Single create
+await prisma.trackingEvent.create({
+  data: { siteId, sessionId, eventType, timestamp, data }
+});
+
+// Query Business for siteId validation
+await prisma.business.findUnique({
+  where: { siteId }
+});
+      </signature>
+      <path>src/lib/prisma.ts</path>
+    </interface>
+    <interface name="TrackingEvent Prisma Model" kind="schema">
+      <signature>
+model TrackingEvent {
+  id          String   @id @default(cuid())
+  siteId      String
+  sessionId   String
+  eventType   String   // 'pageview' | 'click' | 'form' | 'scroll'
+  timestamp   DateTime
+  data        Json
+
+  @@index([siteId, timestamp])
+  @@index([sessionId])
+}
+// Note: Convert to TimescaleDB hypertable after migration:
+// SELECT create_hypertable('TrackingEvent', 'timestamp');
+      </signature>
+      <path>docs/architecture.md#Data-Architecture</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Testing stack: Vitest 4.0 for unit/integration tests, Playwright 1.56.1 for E2E tests.
+Tests located in tests/ directory with unit/ and integration/ subdirectories.
+Follow existing patterns from tests/unit/tracking.test.ts (Vitest with browser mocks).
+Integration tests should test actual API routes with mock Prisma client.
+Use structured test descriptions: "should [behavior] when [condition]".
+All async operations must be properly awaited.
+Mock external dependencies (fetch, database) for unit tests.
+Use real database with test transactions for integration tests.
+    </standards>
+    <locations>
+tests/unit/ - Unit tests for business logic (event-processor.ts)
+tests/integration/api/ - Integration tests for API routes (track.test.ts)
+tests/e2e/ - End-to-end tests (deferred for this story)
+    </locations>
+    <ideas>
+AC#1 - Schema Validation:
+  - Test valid event submission for all event types (pageview, click, form, scroll)
+  - Test missing required fields (siteId, sessionId, event.type)
+  - Test invalid event types
+  - Test malformed JSON
+  - Test invalid timestamp formats
+  - Test oversized data payloads
+
+AC#2 - Database Writes:
+  - Test TrackingEvent record created correctly
+  - Test timestamps stored as UTC
+  - Test JSON data field stores event data properly
+  - Test indexes exist and are used
+  - Mock Prisma client to test write logic without real DB
+
+AC#3 - Rate Limiting:
+  - Test rate limit not exceeded for normal traffic (under 1000/min)
+  - Test rate limit triggered at 1001 events/min
+  - Test 429 status code returned when limited
+  - Test rate limit headers present (X-RateLimit-Limit, X-RateLimit-Remaining)
+  - Test rate limits are per-siteId (different sites independent)
+
+AC#4 - Data Retention:
+  - Test retention policy documented in README
+  - Test schema allows for TimescaleDB hypertable conversion
+  - Note: Automated cleanup testing deferred to Story 1.6
+
+AC#5 - Event Buffering:
+  - Test buffer accumulates events (max 100)
+  - Test buffer flushes after 5 seconds
+  - Test buffer flushes immediately when full
+  - Test batch write uses createMany
+  - Test error recovery for failed batch writes
+  - Test buffer doesn't lose events on failure
+
+AC#6 - Authentication:
+  - Test valid siteId accepted
+  - Test invalid siteId returns 401
+  - Test siteId must exist in Business table
+  - Test empty siteId returns 401
+  - Mock Business table lookup
+
+AC#7 - Monitoring and Logging:
+  - Test structured logging includes context (siteId, eventCount, timestamp)
+  - Test errors logged with full context
+  - Test health check endpoint returns 200
+  - Test health check validates database connectivity
+  - Test metrics tracked (events/second, batch size, latency)
+
+Integration:
+  - Test tracking script events accepted by API (use test page)
+  - Test batch of 10 events from tracking script processed correctly
+  - Test retry logic (simulate failure, verify retry accepted)
+  - Test CORS headers present for cross-origin requests
+    </ideas>
+  </tests>
+</story-context>

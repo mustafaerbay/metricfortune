@@ -1,0 +1,329 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>4</storyId>
+    <title>User Registration & Business Profile</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-01</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-4-user-registration-business-profile.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>an e-commerce business owner</asA>
+    <iWant>to create an account and provide my business information</iWant>
+    <soThat>the system can match me with similar businesses and start tracking my site</soThat>
+    <tasks>
+      - Extend database schema for business profiles (AC: #2, #3)
+      - Create registration page with email/password/business name (AC: #1)
+      - Implement email verification flow (AC: #6)
+      - Create business profile completion form (AC: #2)
+      - Generate tracking installation instructions with personalized snippet (AC: #4)
+      - Create dashboard skeleton with empty state (AC: #5)
+      - Implement profile editing capability (AC: #7)
+      - Add authentication session management (AC: #1, #6)
+      - Create integration tests for registration and profile flow (Testing)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. Registration flow: email, password, business name
+    2. Business profile form captures: industry, revenue range, product types, platform (Shopify/WooCommerce/Other)
+    3. Unique site ID generated upon profile completion
+    4. Tracking script installation instructions displayed with personalized snippet
+    5. User dashboard skeleton created (empty state with "Install tracking to begin")
+    6. Email verification flow implemented
+    7. Profile data stored and editable
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Functional Requirements - FR004</section>
+        <snippet>System shall collect business metadata through onboarding questionnaire (industry, business size, product types, revenue range)</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Functional Requirements - FR005</section>
+        <snippet>System shall automatically match users with similar businesses based on industry, size, product type, and detected tech stack</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Non-Functional Requirements - NFR003</section>
+        <snippet>System shall comply with GDPR and CCPA, anonymize peer data, use TLS 1.3 for transit and AES-256 at rest, provide cookie-less tracking</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Technical Architecture Document</title>
+        <section>ADR-003: NextAuth.js v5 for Authentication</section>
+        <snippet>Use NextAuth.js 5.0.0-beta.25 for authentication. Required for Next.js 15 compatibility, provides seamless integration and simplified auth() API</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Technical Architecture Document</title>
+        <section>ADR-004: Server Actions over REST API</section>
+        <snippet>Use Next.js Server Actions for internal operations. Provides type-safe API with zero-config, eliminates REST boilerplate</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Technical Architecture Document</title>
+        <section>Security Architecture - Authentication</section>
+        <snippet>NextAuth.js with email/password credentials provider, JWT sessions, bcrypt password hashing, email verification required, CSRF protection</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Technical Architecture Document</title>
+        <section>Core Data Models - User and Business</section>
+        <snippet>User model: email, passwordHash, emailVerified. Business model: industry, revenueRange, productTypes, platform, siteId (unique)</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-1-foundation-core-analytics-engine.md</path>
+        <title>Epic 1: Foundation & Core Analytics Engine</title>
+        <section>Story 1.4: User Registration & Business Profile</section>
+        <snippet>Enable user registration with email verification and business profile collection for peer matching foundation</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>Authentication Pages</section>
+        <snippet>Signup, login, email verification, and profile completion user flows with form designs and validation patterns</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>schema</kind>
+        <symbol>User, Business</symbol>
+        <lines>13-34</lines>
+        <reason>Database schema already defines User and Business models - extend as needed for email verification token</reason>
+      </artifact>
+      <artifact>
+        <path>src/lib/prisma.ts</path>
+        <kind>service</kind>
+        <symbol>prisma</symbol>
+        <lines>1-10</lines>
+        <reason>Prisma client singleton for database access - use for all User/Business operations</reason>
+      </artifact>
+      <artifact>
+        <path>src/lib/auth.ts</path>
+        <kind>config</kind>
+        <symbol>authOptions</symbol>
+        <lines>1-66</lines>
+        <reason>NextAuth configuration already set up with credentials provider and bcrypt - extend JWT callback for emailVerified and businessId</reason>
+      </artifact>
+      <artifact>
+        <path>src/types/tracking.ts</path>
+        <kind>types</kind>
+        <symbol>ApiResponse</symbol>
+        <lines>123-127</lines>
+        <reason>Standard API response format - use for Server Actions { success, data?, error? }</reason>
+      </artifact>
+      <artifact>
+        <path>src/lib/rate-limiter.ts</path>
+        <kind>service</kind>
+        <symbol>checkRateLimit</symbol>
+        <lines>1-160</lines>
+        <reason>Rate limiting pattern established - consider applying to auth endpoints (signup, login) to prevent brute force</reason>
+      </artifact>
+      <artifact>
+        <path>src/services/tracking/event-processor.ts</path>
+        <kind>service</kind>
+        <symbol>processTrackingEvent</symbol>
+        <lines>1-242</lines>
+        <reason>Service layer pattern example - separate business logic from route handlers, apply same pattern to auth services</reason>
+      </artifact>
+      <artifact>
+        <path>public/tracking.js</path>
+        <kind>script</kind>
+        <symbol>tracking script</symbol>
+        <lines>all</lines>
+        <reason>Tracking script to be provided to users with their siteId - reference for installation instructions</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="next-auth" version="^5.0.0-beta.30" />
+        <package name="bcrypt" version="^6.0.0" />
+        <package name="@types/bcrypt" version="^6.0.0" dev="true" />
+        <package name="@prisma/client" version="6.17.0" />
+        <package name="prisma" version="6.17.0" />
+        <package name="zod" version="^4.1.12" />
+        <package name="react" version="19.2.0" />
+        <package name="react-dom" version="19.2.0" />
+        <package name="next" version="16.0.1" />
+        <package name="vitest" version="4.0" dev="true" />
+        <package name="@playwright/test" version="^1.56.1" dev="true" />
+        <note>Missing: resend ^6.2.0 and react-email ^4.2.3 - need to add for email verification</note>
+      </node>
+      <frameworks>
+        <framework>Next.js 16.0.1 (App Router with Server Actions)</framework>
+        <framework>NextAuth.js 5.0 (Auth.js) for authentication</framework>
+        <framework>Prisma 6.17.0 for database ORM</framework>
+        <framework>Tailwind CSS 4 for styling</framework>
+        <framework>Vitest 4.0 for unit testing</framework>
+        <framework>Playwright 1.56.1 for E2E testing</framework>
+        <framework>Zod 4.1 for schema validation</framework>
+      </frameworks>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - NextAuth.js 5.0.0-beta.25 must be used (required for Next.js 15 compatibility)
+    - Password hashing: bcrypt with minimum 10 rounds (already implemented in src/lib/auth.ts)
+    - Email verification is REQUIRED before dashboard access (enforce via middleware)
+    - Server Actions must return ActionResult format: { success: boolean, data?: T, error?: string }
+    - All database operations use Prisma Client from src/lib/prisma.ts (singleton pattern)
+    - Database schema extension: Add emailVerificationToken to User model (nullable String)
+    - SiteId generation: Must be unique and verified before assignment (use cuid or nanoid)
+    - Route organization: (auth) route group for unauthenticated pages, (dashboard) for authenticated
+    - Middleware pattern: Protect /dashboard/* routes, redirect verified users away from auth pages
+    - Testing: Follow Story 1.3 patterns - Vitest for unit tests, Playwright for integration tests
+    - TypeScript strict mode: Zero errors required before completion (npm run build must pass)
+    - Error handling: Try-catch all async operations, return user-friendly error messages
+    - Environment variables: NEXTAUTH_SECRET, NEXTAUTH_URL, RESEND_API_KEY, DATABASE_URL
+    - Email service: Resend 6.2.0 with React Email 4.2.3 for templates
+    - Security: TLS 1.3 enforced by Vercel, CSRF via NextAuth.js, no CORS for auth endpoints
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>User Model (Prisma)</name>
+      <kind>Database Schema</kind>
+      <signature>
+        model User {
+          id                     String    @id @default(cuid())
+          email                  String    @unique
+          passwordHash           String
+          emailVerified          Boolean   @default(false)
+          emailVerificationToken String?   // ADD THIS FIELD
+          business               Business?
+          createdAt              DateTime  @default(now())
+        }
+      </signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+    <interface>
+      <name>Business Model (Prisma)</name>
+      <kind>Database Schema</kind>
+      <signature>
+        model Business {
+          id           String   @id @default(cuid())
+          userId       String   @unique
+          user         User     @relation(fields: [userId], references: [id])
+          name         String
+          industry     String
+          revenueRange String
+          productTypes String[]
+          platform     String
+          siteId       String   @unique
+          peerGroupId  String?
+          createdAt    DateTime @default(now())
+        }
+      </signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+    <interface>
+      <name>signUp</name>
+      <kind>Server Action</kind>
+      <signature>
+        async function signUp(
+          email: string,
+          password: string,
+          businessName: string
+        ): Promise&lt;ActionResult&lt;{ userId: string }&gt;&gt;
+      </signature>
+      <path>src/actions/auth.ts (to be created)</path>
+    </interface>
+    <interface>
+      <name>verifyEmail</name>
+      <kind>Server Action</kind>
+      <signature>
+        async function verifyEmail(
+          token: string
+        ): Promise&lt;ActionResult&lt;{ success: boolean }&gt;&gt;
+      </signature>
+      <path>src/actions/auth.ts (to be created)</path>
+    </interface>
+    <interface>
+      <name>completeProfile</name>
+      <kind>Server Action</kind>
+      <signature>
+        async function completeProfile(data: {
+          industry: string;
+          revenueRange: string;
+          productTypes: string[];
+          platform: string;
+        }): Promise&lt;ActionResult&lt;{ siteId: string }&gt;&gt;
+      </signature>
+      <path>src/actions/business-profile.ts (to be created)</path>
+    </interface>
+    <interface>
+      <name>updateBusinessProfile</name>
+      <kind>Server Action</kind>
+      <signature>
+        async function updateBusinessProfile(data: {
+          name?: string;
+          industry?: string;
+          revenueRange?: string;
+          productTypes?: string[];
+          platform?: string;
+        }): Promise&lt;ActionResult&lt;void&gt;&gt;
+      </signature>
+      <path>src/actions/business-profile.ts (to be created)</path>
+    </interface>
+    <interface>
+      <name>regenerateSiteId</name>
+      <kind>Server Action</kind>
+      <signature>
+        async function regenerateSiteId(): Promise&lt;ActionResult&lt;{ siteId: string }&gt;&gt;
+      </signature>
+      <path>src/actions/business-profile.ts (to be created)</path>
+    </interface>
+    <interface>
+      <name>NextAuth Session</name>
+      <kind>JWT Session Data</kind>
+      <signature>
+        interface Session {
+          user: {
+            id: string;
+            email: string;
+            businessId?: string;
+            emailVerified: boolean;
+          }
+        }
+      </signature>
+      <path>src/lib/auth.ts (extend existing)</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>
+      Testing follows Story 1.3 patterns: Vitest 4.0 for unit/integration tests with vi.mock for dependencies, Playwright 1.56.1 for E2E tests.
+      Unit tests focus on business logic (password hashing, email token generation, validation).
+      Integration tests mock Prisma and external services (Resend).
+      Test structure: Arrange-Act-Assert pattern with descriptive test names.
+      Mock strategy: Mock Prisma client, NextAuth session, email service in tests.
+      Coverage: All Server Actions must have unit tests, critical flows need E2E tests.
+      Environment: Use test database or mock Prisma for integration tests.
+    </standards>
+    <locations>
+      - tests/unit/auth.test.ts (password hashing, validation)
+      - tests/unit/business-profile.test.ts (siteId generation, profile validation)
+      - tests/integration/auth-flow.test.ts (signup, verification, login flows)
+      - tests/integration/profile-flow.test.ts (profile completion, editing)
+      - tests/e2e/ (Playwright tests for full user journeys)
+    </locations>
+    <ideas>
+      <test ac="1" idea="Test user registration: valid signup creates user with emailVerified=false, duplicate email returns error, password validation (min 8 chars, includes number/symbol)" />
+      <test ac="6" idea="Test email verification: valid token sets emailVerified=true, invalid token returns error, expired token rejected, already verified user handled gracefully" />
+      <test ac="2,3" idea="Test business profile completion: all required fields validated, siteId uniqueness enforced, siteId generation produces unique cuid/nanoid" />
+      <test ac="7" idea="Test profile editing: update individual fields, updateBusinessProfile validates changes, regenerateSiteId creates new unique ID and warns about tracking breakage" />
+      <test ac="1,6" idea="Test authentication flow: login with correct password succeeds, wrong password fails, unverified email blocks dashboard access (middleware)" />
+      <test ac="4" idea="Test tracking snippet generation: siteId correctly embedded in snippet, platform-specific instructions shown (Shopify vs WooCommerce vs Manual)" />
+      <test ac="5" idea="Test dashboard access control: unauthenticated users redirected to login, unverified users redirected to verification reminder, verified users access dashboard" />
+      <test ac="all" idea="E2E test: Complete user journey from signup → email verification → profile completion → tracking installation → dashboard access" />
+    </ideas>
+  </tests>
+</story-context>

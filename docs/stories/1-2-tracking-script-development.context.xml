@@ -1,0 +1,279 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>2</storyId>
+    <title>Tracking Script Development</title>
+    <status>drafted</status>
+    <generatedAt>2025-10-31</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-2-tracking-script-development.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a developer</asA>
+    <iWant>a lightweight JavaScript tracking snippet that captures user behavior</iWant>
+    <soThat>e-commerce businesses can install it and start collecting data</soThat>
+    <tasks>
+- Create tracking script structure and build configuration (AC: #1)
+  - Create `public/tracking.js` file with module structure
+  - Implement event capture functions: pageview, click, form interaction, scroll depth, time tracking
+  - Add event buffering mechanism (batch send every 5 seconds or 10 events)
+  - Implement compression and bundle optimization to meet &lt;50KB gzipped target
+  - Add build tooling if needed for minification (or use manual optimization)
+
+- Implement site initialization and configuration (AC: #2)
+  - Create initialization function that accepts siteId parameter
+  - Validate siteId format and reject invalid inputs
+  - Set up async data transmission to tracking endpoint (POST /api/track placeholder)
+  - Implement request queuing for failed requests (retry with exponential backoff)
+  - Add global error boundary to prevent script errors from breaking host site
+
+- Build client-side session management (AC: #3)
+  - Generate unique session IDs using client-side algorithm (UUID v4 or similar)
+  - Store session ID in sessionStorage (tab-scoped sessions)
+  - Implement 30-minute inactivity timeout with last-activity tracking
+  - Handle session expiration and new session creation on timeout
+  - Track entry page and timestamp for session metadata
+
+- Optimize for performance requirements (AC: #4)
+  - Load script asynchronously (async/defer attributes)
+  - Implement non-blocking initialization (requestIdleCallback if available)
+  - Minimize DOM queries and event listener overhead
+  - Measure script impact on page load time (&lt;100ms target)
+  - Profile memory usage and optimize event buffering
+
+- Implement error handling and graceful degradation (AC: #5)
+  - Wrap all tracking code in try-catch blocks
+  - Silently fail on tracking errors (no user-visible errors)
+  - Log errors to console in development mode only
+  - Handle network failures gracefully (queue events for retry)
+  - Test error scenarios: blocked tracking endpoint, CORS errors, invalid responses
+
+- Set up CDN distribution via Vercel Edge Network (AC: #6)
+  - Place tracking.js in `public/` directory for automatic CDN distribution
+  - Verify Vercel Edge Network serves script globally
+  - Document tracking script URL: `https://metricfortune.vercel.app/tracking.js`
+  - Test script loading from CDN across multiple geographic regions
+  - Add cache headers for optimal CDN performance (versioning strategy)
+
+- Create test page with console logging demo (AC: #7)
+  - Create `src/app/demo/tracking-test/page.tsx` test page
+  - Embed tracking script with test siteId
+  - Add interactive elements: buttons, forms, scrollable content
+  - Implement console logging to show captured events in real-time
+  - Document test page in README with access instructions
+  - Verify all event types fire correctly (pageview, click, form, scroll, time)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. JavaScript tracking script (&lt;50KB gzipped) that captures: page views, clicks, form interactions, scroll depth, time on page
+2. Script initializes with unique site ID and sends data asynchronously
+3. Session management implemented (client-side session IDs, timeout after 30 minutes inactivity)
+4. Performance budget met: &lt;100ms impact on page load time
+5. Script handles errors gracefully (no site breakage if tracking fails)
+6. CDN distribution setup for global delivery
+7. Test page demonstrates tracking functionality with console logging
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Functional Requirements - FR001, FR003</section>
+        <snippet>FR001: System shall provide a JavaScript tracking snippet (&lt;50KB) that captures user interactions including page views, clicks, form interactions, scroll behavior, and time on page. FR003: System shall capture complete user journey sequences from entry through navigation to conversion or exit.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Non-Functional Requirements - NFR001</section>
+        <snippet>Performance: Dashboard shall load in &lt;2 seconds for initial load and &lt;500ms for navigation; tracking script shall add &lt;100ms to customer page load times; system shall achieve 99.9% uptime.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics.md</path>
+        <title>Epic Breakdown</title>
+        <section>Epic 1: Story 1.2 - Tracking Script Development</section>
+        <snippet>Lightweight JavaScript tracking snippet that captures user behavior with performance budget met (&lt;100ms impact, &lt;50KB gzipped). Session management with 30-minute timeout, async data transmission, graceful error handling, and CDN distribution via Vercel Edge Network.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture</title>
+        <section>Epic to Architecture Mapping - Story 1.2</section>
+        <snippet>Tracking script located at public/tracking.js for automatic CDN distribution via Vercel Edge Network. Event buffering (batch send every 5 seconds or 10 events), async non-blocking loading, graceful degradation pattern.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture</title>
+        <section>ADR-009: Vercel Edge for CDN</section>
+        <snippet>Use Vercel's built-in edge network for tracking script CDN. Zero additional setup, automatic with Vercel deployment, global distribution, simple versioning. Alternatives considered: Cloudflare CDN, CloudFront.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture</title>
+        <section>Performance Considerations - Tracking Script</section>
+        <snippet>&lt;50KB gzipped bundle size, async loading (non-blocking), event buffering (batch send every 5 seconds or 10 events), graceful degradation if tracking fails. Performance budget: &lt;100ms impact on page load time.</snippet>
+      </doc>
+      <doc>
+        <path>prisma/schema.prisma</path>
+        <title>Database Schema</title>
+        <section>Session Model</section>
+        <snippet>Session model defines: id (cuid), siteId (String), sessionId (String @unique), entryPage, exitPage, duration, pageCount, bounced, converted. Index on [siteId, createdAt]. Client-side tracking must generate sessionId compatible with database schema.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/lib/prisma.ts</path>
+        <kind>service</kind>
+        <symbol>prisma</symbol>
+        <lines>all</lines>
+        <reason>Prisma client singleton for database operations - tracking data will eventually be stored via this client in Story 1.3</reason>
+      </artifact>
+      <artifact>
+        <path>src/app/layout.tsx</path>
+        <kind>component</kind>
+        <symbol>RootLayout</symbol>
+        <lines>all</lines>
+        <reason>Root layout structure - test page will follow similar Next.js App Router patterns</reason>
+      </artifact>
+      <artifact>
+        <path>public/</path>
+        <kind>directory</kind>
+        <symbol>N/A</symbol>
+        <lines>N/A</lines>
+        <reason>Public directory for static assets - tracking.js will be placed here for automatic Vercel Edge CDN distribution</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <framework>Next.js</framework>
+        <version>16.0.1</version>
+        <note>App Router framework with automatic public/ CDN distribution</note>
+      </node>
+      <node>
+        <package>react</package>
+        <version>19.2.0</version>
+        <note>For test page component (src/app/demo/tracking-test/page.tsx)</note>
+      </node>
+      <node>
+        <package>typescript</package>
+        <version>^5</version>
+        <note>TypeScript for test page only - tracking.js will be vanilla JavaScript</note>
+      </node>
+      <node>
+        <package>vitest</package>
+        <version>4.0</version>
+        <note>Unit testing framework - use for tracking script unit tests</note>
+      </node>
+      <node>
+        <package>@playwright/test</package>
+        <version>^1.56.1</version>
+        <note>E2E testing framework - use for testing tracking script in browser context</note>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Pure vanilla JavaScript implementation for tracking.js - NO external dependencies to meet &lt;50KB gzipped bundle size target</constraint>
+    <constraint>Script must use async/defer loading pattern to ensure &lt;100ms impact on page load time (NFR001)</constraint>
+    <constraint>Event buffering required: batch send every 5 seconds OR 10 events (whichever comes first)</constraint>
+    <constraint>Session ID format must be compatible with Prisma Session model: String @unique (recommend UUID v4 or cuid-like)</constraint>
+    <constraint>SessionStorage for tab-scoped sessions with 30-minute inactivity timeout</constraint>
+    <constraint>Try-catch wrappers around all tracking code - graceful degradation, no user-visible errors</constraint>
+    <constraint>POST to /api/track endpoint (will be created in Story 1.3) - queue failed requests with exponential backoff retry</constraint>
+    <constraint>Place tracking.js in public/ directory for automatic Vercel Edge Network CDN distribution</constraint>
+    <constraint>Test page must be Next.js App Router compatible: src/app/demo/tracking-test/page.tsx</constraint>
+    <constraint>Follow existing test patterns from Story 1.1: Vitest for unit tests, Playwright for E2E tests</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>Tracking Event Schema (for future Story 1.3)</name>
+      <kind>JSON POST body</kind>
+      <signature>
+POST /api/track
+{
+  siteId: string,
+  sessionId: string,
+  event: {
+    type: 'pageview' | 'click' | 'form' | 'scroll' | 'time',
+    timestamp: number,
+    data: {
+      url?: string,
+      referrer?: string,
+      selector?: string,
+      formId?: string,
+      scrollDepth?: number,
+      duration?: number,
+      ...
+    }
+  }
+}
+      </signature>
+      <path>Story 1.3 will define this API endpoint</path>
+    </interface>
+    <interface>
+      <name>Tracking Script Initialization</name>
+      <kind>JavaScript function signature</kind>
+      <signature>
+// Expected usage on client websites:
+&lt;script src="https://metricfortune.vercel.app/tracking.js" async&gt;&lt;/script&gt;
+&lt;script&gt;
+  window.MetricFortune.init({
+    siteId: 'unique-site-id'
+  });
+&lt;/script&gt;
+      </signature>
+      <path>public/tracking.js</path>
+    </interface>
+    <interface>
+      <name>Session Model Database Schema</name>
+      <kind>Prisma model</kind>
+      <signature>
+model Session {
+  id: String @id @default(cuid())
+  siteId: String
+  sessionId: String @unique
+  entryPage: String
+  exitPage: String?
+  duration: Int?
+  pageCount: Int
+  bounced: Boolean
+  converted: Boolean @default(false)
+  createdAt: DateTime @default(now())
+  @@index([siteId, createdAt])
+}
+      </signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>
+Use Vitest 4.0 for unit/integration tests (fast, TypeScript support, modern API). Use Playwright 1.56.1 for E2E browser tests. Test scripts already configured in package.json: npm test (Vitest), npm run test:e2e (Playwright). Follow test patterns from Story 1.1: unit tests in tests/unit/, E2E tests in tests/e2e/.
+    </standards>
+    <locations>
+tests/unit/ - Unit tests for tracking script functions
+tests/e2e/ - Playwright E2E tests for tracking script in browser context
+src/app/demo/tracking-test/ - Manual test page for tracking script demonstration
+    </locations>
+    <ideas>
+      <test ac="1">Unit test: Verify tracking.js bundle size is &lt;50KB gzipped</test>
+      <test ac="1">Unit test: Verify all 5 event types are captured (pageview, click, form, scroll, time)</test>
+      <test ac="1">Unit test: Verify event buffering queues events and sends batch after 5 seconds or 10 events</test>
+      <test ac="2">Unit test: Verify siteId validation rejects invalid formats</test>
+      <test ac="2">Unit test: Verify async data transmission queues events when offline</test>
+      <test ac="3">Unit test: Verify session ID generation produces unique values (UUID v4 format)</test>
+      <test ac="3">Unit test: Verify sessionStorage persistence across page navigations (same tab)</test>
+      <test ac="3">Unit test: Verify 30-minute inactivity timeout creates new session</test>
+      <test ac="4">E2E test: Measure page load impact with tracking script (&lt;100ms target)</test>
+      <test ac="5">Unit test: Verify error handling wraps all tracking code in try-catch</test>
+      <test ac="5">E2E test: Verify script does not break host site when /api/track is blocked</test>
+      <test ac="6">E2E test: Verify tracking.js is served from Vercel Edge CDN (check response headers)</test>
+      <test ac="7">E2E test: Navigate to test page, verify console shows captured events</test>
+      <test ac="7">E2E test: Click button on test page, verify click event captured with selector</test>
+      <test ac="7">E2E test: Fill form on test page, verify form interaction events captured</test>
+      <test ac="7">E2E test: Scroll on test page, verify scroll depth event captured</test>
+    </ideas>
+  </tests>
+</story-context>
