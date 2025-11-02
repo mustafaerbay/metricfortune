@@ -97,6 +97,13 @@ export default function CompleteProfilePage() {
     setLoading(true);
 
     try {
+      console.log("[CompleteProfile] Submitting profile data:", {
+        industry,
+        revenueRange,
+        productTypes,
+        platform,
+      });
+
       const result = await completeProfile({
         industry,
         revenueRange,
@@ -104,18 +111,27 @@ export default function CompleteProfilePage() {
         platform,
       });
 
+      console.log("[CompleteProfile] Result:", result);
+
       if (!result.success) {
+        console.error("[CompleteProfile] Error:", result.error);
         setError(result.error || "Failed to complete profile");
         setLoading(false);
         return;
       }
 
+      console.log("[CompleteProfile] Profile completed successfully, updating session...");
+
       // Update session to include new businessId
       await update();
 
+      console.log("[CompleteProfile] Session updated, redirecting to install-tracking...");
+
       // Redirect to tracking installation page
-      router.push("/install-tracking");
+      // Use window.location for reliable redirect
+      window.location.href = "/install-tracking";
     } catch (err) {
+      console.error("[CompleteProfile] Exception:", err);
       setError("An unexpected error occurred. Please try again.");
       setLoading(false);
     }

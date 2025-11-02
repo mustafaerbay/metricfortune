@@ -44,8 +44,12 @@ export async function completeProfile(data: {
   platform: string;
 }): Promise<ActionResult<{ siteId: string }>> {
   try {
+    console.log("[CompleteProfile Action] Starting with data:", data);
+
     // Get authenticated user
     const session = await auth();
+    console.log("[CompleteProfile Action] Session:", session?.user?.id ? `User ${session.user.id}` : "No session");
+
     if (!session?.user?.id) {
       return {
         success: false,
@@ -56,52 +60,88 @@ export async function completeProfile(data: {
     // Validate input
     const validation = completeProfileSchema.safeParse(data);
     if (!validation.success) {
+      console.log("[CompleteProfile Action] Validation failed:", validation.error.issues[0].message);
       return {
         success: false,
         error: validation.error.issues[0].message,
       };
     }
 
-    // Check if user already has a business profile with siteId
+    console.log("[CompleteProfile Action] Validation passed");
+
+    // Check if user already has a business profile
     const existingBusiness = await prisma.business.findUnique({
       where: { userId: session.user.id },
     });
 
-    if (existingBusiness && existingBusiness.siteId) {
+    console.log("[CompleteProfile Action] Existing business:", existingBusiness ? {
+      id: existingBusiness.id,
+      name: existingBusiness.name,
+      siteId: existingBusiness.siteId,
+      industry: existingBusiness.industry,
+      hasFields: !!(existingBusiness.industry && existingBusiness.revenueRange)
+    } : "Not found");
+
+    if (!existingBusiness) {
+      return {
+        success: false,
+        error: "Business profile not found",
+      };
+    }
+
+    // Check if profile is already completed (fields are filled)
+    if (existingBusiness.industry && existingBusiness.revenueRange &&
+        existingBusiness.productTypes.length > 0 && existingBusiness.platform) {
+      console.log("[CompleteProfile Action] Profile already completed");
       return {
         success: false,
         error: "Profile already completed",
       };
     }
 
-    // Generate unique siteId
-    let siteId = generateSiteId();
-    let attempts = 0;
-    const maxAttempts = 10;
+    console.log("[CompleteProfile Action] Profile not yet completed, proceeding...");
 
-    // Ensure siteId is unique (retry up to maxAttempts times)
-    while (attempts < maxAttempts) {
-      const existing = await prisma.business.findUnique({
-        where: { siteId },
-      });
+    // Use existing siteId or generate a new one if it doesn't exist
+    let siteId = existingBusiness.siteId;
 
-      if (!existing) {
-        break;
+    if (!siteId) {
+      // Generate unique siteId only if not already set
+      siteId = generateSiteId();
+      let attempts = 0;
+      const maxAttempts = 10;
+
+      // Ensure siteId is unique (retry up to maxAttempts times)
+      while (attempts < maxAttempts) {
+        const existing = await prisma.business.findUnique({
+          where: { siteId },
+        });
+
+        if (!existing) {
+          break;
+        }
+
+        siteId = generateSiteId();
+        attempts++;
       }
 
-      siteId = generateSiteId();
-      attempts++;
-    }
-
-    if (attempts === maxAttempts) {
-      return {
-        success: false,
-        error: "Failed to generate unique site ID. Please try again.",
-      };
+      if (attempts === maxAttempts) {
+        return {
+          success: false,
+          error: "Failed to generate unique site ID. Please try again.",
+        };
+      }
     }
 
     // Update business profile
-    await prisma.business.update({
+    console.log("[CompleteProfile Action] Updating business with data:", {
+      industry: data.industry,
+      revenueRange: data.revenueRange,
+      productTypes: data.productTypes,
+      platform: data.platform,
+      siteId,
+    });
+
+    const updatedBusiness = await prisma.business.update({
       where: { userId: session.user.id },
       data: {
         industry: data.industry,
@@ -112,12 +152,18 @@ export async function completeProfile(data: {
       },
     });
 
+    console.log("[CompleteProfile Action] Business updated successfully:", {
+      id: updatedBusiness.id,
+      industry: updatedBusiness.industry,
+      siteId: updatedBusiness.siteId,
+    });
+
     return {
       success: true,
       data: { siteId },
     };
   } catch (error) {
-    console.error("Complete profile error:", error);
+    console.error("[CompleteProfile Action] Error:", error);
     return {
       success: false,
       error: "An error occurred while completing your profile. Please try again.",
