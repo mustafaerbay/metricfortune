@@ -7,7 +7,7 @@ declare module "next-auth" {
       email: string;
       emailVerified: boolean;
       businessId?: string;
-    };
+    } & DefaultSession["user"];
   }
 
   interface User {

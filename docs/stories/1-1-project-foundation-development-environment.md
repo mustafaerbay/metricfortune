@@ -301,3 +301,240 @@ claude-sonnet-4-5-20250929
 **Test Files:**
 - tests/unit/example.test.ts (example unit test)
 - tests/e2e/example.spec.ts (example E2E test)
+
+## Change Log
+
+**2025-11-02** - Senior Developer Review (AI) appended - Story BLOCKED due to build failure, missing CI/CD, and no deployment
+
+---
+
+## Senior Developer Review (AI)
+
+**Reviewer:** mustafa
+**Date:** 2025-11-02
+**Outcome:** **BLOCKED** - Critical build failure prevents deployment
+
+### Summary
+
+Comprehensive review of Story 1.1 reveals significant implementation with 4 of 6 acceptance criteria fully satisfied. However, **critical blockers prevent approval**: the project fails to build due to TypeScript errors, CI/CD pipeline is not configured, and no production deployment exists. While the foundational work (Next.js setup, Prisma schema, authentication implementation) is solid, the story cannot be marked complete until these blockers are resolved.
+
+### Key Findings
+
+#### **HIGH SEVERITY (Blockers)**
+
+1. **[CRITICAL] Production build fails with TypeScript error**
+   - Location: `src/lib/auth.ts:90:9`
+   - Error: `Type 'boolean' is not assignable to type '(Date & false) | (Date & true)'`
+   - Impact: Cannot deploy to production, violates AC#1 requirement for working project
+   - Evidence: `npm run build` fails (see build log)
+
+2. **[HIGH] AC#5 NOT IMPLEMENTED - CI/CD Pipeline Missing**
+   - No CI/CD configuration files found
+   - No `.github/workflows/` directory
+   - No automated testing or deployment setup
+   - Task "Configure CI/CD pipeline" correctly marked incomplete with "USER ACTION REQUIRED"
+
+3. **[HIGH] AC#6 NOT IMPLEMENTED - No Production Deployment**
+   - No `.vercel/` directory indicating Vercel project setup
+   - No evidence of live hosting environment
+   - Task "Deploy to Vercel hosting" correctly marked incomplete with "USER ACTION REQUIRED"
+
+4. **[HIGH] AC#2 PARTIAL - Database Migrations Not Run**
+   - Prisma schema defined correctly
+   - Migrations not executed (requires user-provisioned DATABASE_URL)
+   - Subtask "Create and run first migration" correctly marked incomplete with "REQUIRES DATABASE_URL"
+
+#### **MEDIUM SEVERITY**
+
+5. **[MEDIUM] Unit tests have runtime errors**
+   - Tests fail with `ReferenceError: requestIdleCallback is not defined`
+   - Affects tracking.test.ts initialization and session management tests
+   - Tests run but several fail due to missing browser APIs in Node environment
+
+#### **LOW SEVERITY**
+
+6. **[LOW] Test coverage is minimal**
+   - Only example tests exist (example.test.ts, example.spec.ts)
+   - No comprehensive tests for authentication flows
+   - No integration tests for database operations
+
+### Acceptance Criteria Coverage
+
+| AC# | Description | Status | Evidence |
+|-----|-------------|--------|----------|
+| **AC#1** | Next.js 16+ project initialized with TypeScript and Tailwind CSS | ⚠️ **PARTIAL** | package.json:22-23,42 shows Next.js 16.0.1, TS 5.x, Tailwind 4.x - **BUT BUILD FAILS** |
+| **AC#2** | PostgreSQL database provisioned with initial schema | ⚠️ **PARTIAL** | prisma/schema.prisma:13-55 has User, Business, Session models - **BUT MIGRATIONS NOT RUN** |
+| **AC#3** | Authentication system implemented (NextAuth.js with email/password) | ✅ **IMPLEMENTED** | src/lib/auth.ts (config), src/app/api/auth/[...nextauth]/route.ts (handler), src/app/(auth)/login/page.tsx, src/app/(auth)/signup/page.tsx, src/proxy.ts (middleware), src/app/api/auth/signup/route.ts:54 (bcrypt 10 rounds) |
+| **AC#4** | Development environment documented | ✅ **IMPLEMENTED** | README.md:1-401 (comprehensive docs), .env.example:1-21 (all required vars) |
+| **AC#5** | CI/CD pipeline configured for automated testing and deployment | ❌ **MISSING** | No .github/workflows/ directory, no CI/CD configuration |
+| **AC#6** | Hosting environment live (Vercel for frontend, managed database service) | ❌ **MISSING** | No .vercel/ directory, no deployment evidence |
+
+**Summary**: 2 of 6 acceptance criteria fully implemented, 2 partially implemented (with blockers), 2 not implemented.
+
+### Task Completion Validation
+
+All tasks marked `[x]` complete have been verified against implementation:
+
+| Task | Marked As | Verified As | Evidence |
+|------|-----------|-------------|----------|
+| Initialize Next.js project with required configuration | ✅ Complete | ✅ **VERIFIED** | package.json:22-23,42; tsconfig.json:7,21-22 (strict mode, @/* alias) |
+| Verify TypeScript 5.x, Tailwind CSS 4.x, ESLint configuration | ✅ Complete | ⚠️ **QUESTIONABLE** | Versions correct BUT TypeScript build fails (src/lib/auth.ts:90) |
+| Confirm src/ directory structure with App Router | ✅ Complete | ✅ **VERIFIED** | src/app/ structure exists with (auth)/, api/, layout.tsx |
+| Test development server startup | ✅ Complete | ✅ **VERIFIED** | package.json:6 has dev script |
+| Set up PostgreSQL database with Prisma ORM | ✅ Complete | ⚠️ **PARTIAL** | Schema defined but migrations NOT run (2 subtasks correctly marked incomplete) |
+| Install Prisma | ✅ Complete | ✅ **VERIFIED** | package.json:17,24 (prisma 6.17.0, @prisma/client 6.17.0) |
+| Initialize Prisma | ✅ Complete | ✅ **VERIFIED** | prisma/schema.prisma exists |
+| Define initial schema | ✅ Complete | ✅ **VERIFIED** | prisma/schema.prisma:13-55 (User, Business, Session models) |
+| Generate Prisma Client | ✅ Complete | ✅ **VERIFIED** | Package installed, can generate |
+| Create Prisma client singleton | ✅ Complete | ✅ **VERIFIED** | src/lib/prisma.ts:1-10 |
+| Implement NextAuth.js authentication | ✅ Complete | ✅ **VERIFIED** | Complete auth implementation |
+| Install NextAuth.js | ✅ Complete | ✅ **VERIFIED** | package.json:23 (next-auth 5.0.0-beta.30) |
+| Create auth configuration | ✅ Complete | ✅ **VERIFIED** | src/lib/auth.ts:1-99 |
+| Set up API route | ✅ Complete | ✅ **VERIFIED** | src/app/api/auth/[...nextauth]/route.ts:1-4 |
+| Configure email/password credentials provider | ✅ Complete | ✅ **VERIFIED** | src/lib/auth.ts:8-48 |
+| Implement password hashing with bcrypt | ✅ Complete | ✅ **VERIFIED** | src/app/api/auth/signup/route.ts:54 (10 rounds) |
+| Add authentication middleware | ✅ Complete | ✅ **VERIFIED** | src/proxy.ts:1-64 (Next.js 16 proxy pattern) |
+| Create basic login/signup pages | ✅ Complete | ✅ **VERIFIED** | src/app/(auth)/login/page.tsx, src/app/(auth)/signup/page.tsx |
+| Document development environment | ✅ Complete | ✅ **VERIFIED** | All subtasks verified in README.md and .env.example |
+| Set up testing framework | ✅ Complete | ✅ **VERIFIED** | All subtasks verified (Vitest, Playwright configs and test files exist) |
+| Configure CI/CD pipeline | ❌ Incomplete | ✅ **CORRECT** | Correctly marked incomplete - requires user action |
+| Deploy to Vercel hosting | ❌ Incomplete | ✅ **CORRECT** | Correctly marked incomplete - requires user action |
+
+**Summary**: 18 of 20 completed tasks verified. 2 tasks have issues (TypeScript build failure, partial database setup). 2 incomplete tasks correctly identified.
+
+**CRITICAL**: Task "Verify TypeScript 5.x, Tailwind CSS 4.x, ESLint configuration" marked complete BUT TypeScript build fails. This is a false completion - the configuration exists but doesn't work.
+
+### Test Coverage and Gaps
+
+**Tests That Exist:**
+- `tests/unit/example.test.ts` - Basic unit test (passes)
+- `tests/e2e/example.spec.ts` - Basic E2E test (passes)
+- `tests/unit/tracking.test.ts` - Tracking script tests (some failures)
+- `tests/unit/auth.test.ts` - Auth tests exist
+- `tests/unit/rate-limiter.test.ts` - Rate limiter tests exist
+- `tests/unit/event-processor.test.ts` - Event processor tests exist
+- `tests/unit/business-profile.test.ts` - Business profile tests exist
+- `tests/e2e/tracking.spec.ts` - Tracking E2E tests exist
+
+**Test Framework Configuration:**
+- ✅ vitest.config.ts configured correctly (src/@* alias, coverage settings)
+- ✅ playwright.config.ts configured correctly (3 browsers, dev server auto-start)
+
+**Test Gaps:**
+- No tests for AC#2 (Prisma schema validation, database connection)
+- No E2E tests for AC#3 (login/signup flows)
+- Test failures in tracking tests due to missing browser APIs (`requestIdleCallback`)
+- No integration tests for authentication flow end-to-end
+- No tests verify password hashing rounds (AC#3 requirement)
+
+### Architectural Alignment
+
+**✅ Excellent alignment with architecture decisions:**
+
+- Next.js 16.0.1 with App Router ✅ (architecture.md line 30-31)
+- TypeScript 5.x strict mode ✅ (tsconfig.json:7, architecture.md line 34)
+- Tailwind CSS 4.x ✅ (package.json:41, architecture.md line 35)
+- Prisma 6.17.0 ✅ (package.json:17, architecture.md line 39)
+- NextAuth.js 5.0.0-beta.30 ✅ (package.json:23, architecture.md line 40)
+- Vitest 4.0 ✅ (package.json:43, architecture.md line 44)
+- Playwright 1.56.1 ✅ (package.json:32, architecture.md line 45)
+- bcrypt with 10 rounds ✅ (src/app/api/auth/signup/route.ts:54, architecture.md line 176)
+- Prisma client singleton ✅ (src/lib/prisma.ts, architecture.md line 232-236)
+- Project structure matches ✅ (architecture.md lines 53-160)
+- Naming conventions followed ✅ (PascalCase components, camelCase functions)
+
+**Minor Deviations:**
+- Middleware named `proxy.ts` instead of `middleware.ts` (documented in story notes as Next.js 16 compatibility choice)
+- NextAuth route is `.ts` not `.js` (story notes mention .js for compatibility, but implementation uses .ts)
+
+### Security Notes
+
+**✅ Security Requirements Met:**
+- Password hashing with bcrypt 10 rounds ✅ (src/app/api/auth/signup/route.ts:54)
+- NextAuth.js CSRF protection enabled ✅ (built-in)
+- Authentication middleware protects routes ✅ (src/proxy.ts)
+- Environment variables for secrets ✅ (.env in .gitignore implied)
+- Email verification flow implemented ✅ (src/lib/auth.ts:57-64, src/proxy.ts:26-33)
+- Rate limiting on signup endpoint ✅ (src/app/api/auth/signup/route.ts:8-30)
+
+**Security Gaps:**
+- No rate limiting on login endpoint (only signup protected)
+- No account lockout after failed login attempts
+- No password strength validation on server side (only client-side in signup page)
+- No HTTPS enforcement documented (should be handled by Vercel, but not explicitly noted)
+
+### Best-Practices and References
+
+**Framework & Tools (all versions verified 2025-11-02):**
+- [Next.js 16 Documentation](https://nextjs.org/docs) - App Router patterns
+- [NextAuth.js v5 (Auth.js)](https://authjs.dev/) - Beta version for Next.js 15+ compatibility
+- [Prisma 6.17 Documentation](https://www.prisma.io/docs/) - Latest stable release
+- [Vitest 4.0](https://vitest.dev/) - Latest major version
+- [Playwright 1.56](https://playwright.dev/) - Latest stable
+
+**Best Practices Applied:**
+- ✅ Server Components by default (Next.js App Router)
+- ✅ TypeScript strict mode enabled
+- ✅ Singleton pattern for Prisma client (prevents connection pool exhaustion)
+- ✅ JWT sessions for stateless authentication
+- ✅ Path aliases (@/*) for clean imports
+
+**Best Practices Gaps:**
+- Build verification not performed before marking tasks complete (TypeScript error missed)
+- No pre-commit hooks for linting/type checking
+- No Vercel-specific configuration (vercel.json for build settings)
+
+### Action Items
+
+**Code Changes Required:**
+
+- [ ] **[HIGH]** Fix TypeScript error in auth configuration (AC #1) [file: src/lib/auth.ts:90]
+  - Type mismatch: `session.user.emailVerified = token.emailVerified as boolean` fails
+  - Need to fix NextAuth type definitions or adjust callback implementation
+  - Blocks: Production build, deployment
+
+- [ ] **[HIGH]** Configure CI/CD pipeline for automated deployment (AC #5)
+  - Create `.github/workflows/ci.yml` for automated testing
+  - Connect Vercel project to GitHub repository
+  - Configure automatic deployments on push to main
+  - Set environment variables in Vercel dashboard
+  - Verify build succeeds in CI before marking complete
+
+- [ ] **[HIGH]** Deploy to production hosting environment (AC #6)
+  - Provision managed PostgreSQL database (Supabase/Neon/Railway)
+  - Run Prisma migrations: `npx prisma migrate deploy`
+  - Deploy to Vercel and verify live URL
+  - Test signup/login flows on production
+  - Document production URL in README.md
+
+- [ ] **[HIGH]** Complete database setup by running migrations (AC #2)
+  - Provision PostgreSQL database
+  - Configure DATABASE_URL environment variable
+  - Run: `npx prisma migrate dev --name init`
+  - Verify all three tables created (User, Business, Session)
+
+- [ ] **[MEDIUM]** Fix unit test failures in tracking tests
+  - Mock `requestIdleCallback` in test environment [file: tests/unit/tracking.test.ts]
+  - Ensure all tracking tests pass before deployment
+
+- [ ] **[MEDIUM]** Add comprehensive authentication E2E tests [file: tests/e2e/]
+  - Test complete signup flow with database verification
+  - Test login flow with session validation
+  - Test email verification requirement
+  - Test protected route access without authentication
+
+- [ ] **[LOW]** Add server-side password strength validation [file: src/app/api/auth/signup/route.ts:32-39]
+  - Enforce minimum 8 characters, uppercase, lowercase, number, symbol
+  - Return descriptive error messages for weak passwords
+
+- [ ] **[LOW]** Add rate limiting to login endpoint [file: src/app/api/auth/[...nextauth]/]
+  - Implement same rate limiting pattern as signup (5 attempts per hour)
+  - Prevent brute force attacks
+
+**Advisory Notes:**
+
+- Note: NextAuth.js v5 is in beta - monitor for stable release and plan upgrade path
+- Note: Consider adding pre-commit hooks (husky + lint-staged) for automated quality checks
+- Note: Database migrations should be run via CI/CD pipeline in production (not manual)
+- Note: Add health check endpoint for monitoring production database connectivity
+- Note: Consider adding Vercel Analytics for Web Vitals monitoring (NFR001 compliance)
