@@ -57,8 +57,9 @@ export const authOptions = {
     async signIn({ user }) {
       // Block sign-in if email is not verified
       if (!user.emailVerified) {
-        // Redirect to verify-email page will happen on client side
-        return false;
+        // Use a redirect URL to send user to verify-email page
+        // This prevents the AccessDenied error in logs
+        return "/verify-email";
       }
       return true;
     },

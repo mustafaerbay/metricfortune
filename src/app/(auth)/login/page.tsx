@@ -35,42 +35,23 @@ export default function LoginPage() {
         redirect: false,
       });
 
+      // Check if we got redirected (happens when signIn callback returns a URL)
+      if (result?.url && result.url.includes("/verify-email")) {
+        // User has unverified email, redirect to verify-email page
+        router.push("/verify-email");
+        return;
+      }
+
       if (result?.error) {
-        // Check if error is due to unverified email
-        // NextAuth returns error when signIn callback returns false
-        // We need to check if the user exists but is unverified
-        const checkResponse = await fetch("/api/auth/check-verification", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ email, password }),
-        });
-
-        if (checkResponse.ok) {
-          const { isUnverified } = await checkResponse.json();
-          if (isUnverified) {
-            // User exists but email is not verified
-            router.push("/verify-email");
-            return;
-          }
-        }
-
         setError("Invalid email or password");
         setLoading(false);
         return;
       }
 
-      // Check if user needs to complete their profile
-      const profileCheck = await isProfileComplete();
-
-      if (profileCheck.success && !profileCheck.data?.isComplete) {
-        // Profile not complete - redirect to complete-profile
-        router.push("/complete-profile");
-      } else {
-        // Profile complete - redirect to dashboard
-        router.push("/dashboard");
-      }
-
-      router.refresh();
+      // Sign in successful - redirect to auth-redirect page
+      // This page will check profile completion and route accordingly
+      // Use window.location to ensure full page reload and session sync
+      window.location.href = "/auth-redirect";
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");
       setLoading(false);
