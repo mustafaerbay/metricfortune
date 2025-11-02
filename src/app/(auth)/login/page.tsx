@@ -36,6 +36,24 @@ export default function LoginPage() {
       });
 
       if (result?.error) {
+        // Check if error is due to unverified email
+        // NextAuth returns error when signIn callback returns false
+        // We need to check if the user exists but is unverified
+        const checkResponse = await fetch("/api/auth/check-verification", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ email, password }),
+        });
+
+        if (checkResponse.ok) {
+          const { isUnverified } = await checkResponse.json();
+          if (isUnverified) {
+            // User exists but email is not verified
+            router.push("/verify-email");
+            return;
+          }
+        }
+
         setError("Invalid email or password");
         setLoading(false);
         return;

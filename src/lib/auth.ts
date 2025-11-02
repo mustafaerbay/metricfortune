@@ -54,6 +54,14 @@ export const authOptions = {
     signIn: "/login",
   },
   callbacks: {
+    async signIn({ user }) {
+      // Block sign-in if email is not verified
+      if (!user.emailVerified) {
+        // Redirect to verify-email page will happen on client side
+        return false;
+      }
+      return true;
+    },
     async jwt({ token, user, trigger }) {
       if (user) {
         token.id = user.id;
