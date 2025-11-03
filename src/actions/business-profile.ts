@@ -4,7 +4,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { customAlphabet } from "nanoid";
-import { calculatePeerGroup } from "@/services/matching/business-matcher";
+import { calculatePeerGroup, recalculatePeerGroupsForIndustry } from "@/services/matching/business-matcher";
 
 // Create custom nanoid generator for siteId (alphanumeric, 12 characters)
 const generateSiteId = customAlphabet(
@@ -167,6 +167,14 @@ export async function completeProfile(data: {
         peerGroupId: peerGroupResult.peerGroupId,
         matchCount: peerGroupResult.matchCount,
         tier: peerGroupResult.matchCriteria.tier,
+      });
+
+      // Recalculate peer groups for existing businesses in the same industry
+      // This ensures existing peer groups are updated to include the new business
+      console.log("[CompleteProfile Action] Triggering peer group recalculation for industry:", updatedBusiness.industry);
+      recalculatePeerGroupsForIndustry(updatedBusiness.industry, updatedBusiness.id).catch((recalcError) => {
+        // Log error but don't fail - recalculation is a background optimization
+        console.error("[CompleteProfile Action] Peer group recalculation failed (non-critical):", recalcError);
       });
     } catch (peerGroupError) {
       // Log error but don't fail the profile completion

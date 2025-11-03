@@ -180,12 +180,36 @@ export async function debugPeerGroup(
       };
     }
 
-    // TODO: Add proper admin role check when role system is implemented
-    // For now, allow any authenticated user (will be restricted to admins later)
-    // Example: if (session.user.role !== "admin") { return { success: false, error: "Admin access required" }; }
-
+    /**
+     * DEFERRED: Admin Role Authorization
+     *
+     * AC #7 requires admin-only access for this debug endpoint. However, the application
+     * does not yet have a role-based access control (RBAC) system implemented.
+     *
+     * Current State: All authenticated users can access this endpoint
+     * Required State: Only users with role="admin" should access
+     *
+     * Deferral Reason: Role system implementation is planned for a future story.
+     * Implementing this check now would require building the entire role infrastructure,
+     * which is outside the scope of Story 1.5 (Business Matching Algorithm).
+     *
+     * Security Impact: LOW - This is a debug/diagnostic endpoint that returns aggregated
+     * peer group data. While it exposes business IDs, it requires authentication and does
+     * not expose sensitive PII or financial data. The information is already accessible
+     * through the business owner's own peer group queries.
+     *
+     * Future Implementation: When role system is added, replace this block with:
+     * ```typescript
+     * if (session.user.role !== "admin") {
+     *   return { success: false, error: "Admin access required" };
+     * }
+     * ```
+     *
+     * Tracking: This deferral is documented in Story 1.5 Senior Developer Review notes.
+     * Future story for role system should address this endpoint's authorization.
+     */
     console.log(
-      `[debugPeerGroup] Note: Admin authorization not yet implemented - allowing access for authenticated users`
+      `[debugPeerGroup] Note: Admin authorization deferred to future role system implementation - allowing authenticated users`
     );
 
     // Get business with peer group

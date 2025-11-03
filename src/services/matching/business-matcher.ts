@@ -347,37 +347,20 @@ export async function calculatePeerGroup(
     ...sortedMatches.map((m) => m.match.id),
   ];
 
-  // 5. Check if peer group already exists with same business IDs
-  const existingPeerGroup = await prisma.peerGroup.findFirst({
-    where: {
-      businessIds: {
-        hasEvery: businessIds,
-        equals: businessIds,
-      },
+  // 5. Create new peer group
+  // Note: We create a new peer group each time rather than reusing existing ones
+  // This ensures each business has its own peer group record with current matching criteria
+  const peerGroup = await prisma.peerGroup.create({
+    data: {
+      criteria: criteria as any, // Json type
+      businessIds,
     },
   });
 
-  let peerGroupId: string;
+  const peerGroupId = peerGroup.id;
+  console.log(`[BusinessMatcher] Created new peer group ${peerGroupId} with ${businessIds.length} businesses`);
 
-  if (existingPeerGroup) {
-    console.log(
-      `[BusinessMatcher] Reusing existing peer group ${existingPeerGroup.id}`
-    );
-    peerGroupId = existingPeerGroup.id;
-  } else {
-    // 6. Create new peer group
-    const peerGroup = await prisma.peerGroup.create({
-      data: {
-        criteria: criteria as any, // Json type
-        businessIds,
-      },
-    });
-
-    console.log(`[BusinessMatcher] Created new peer group ${peerGroup.id} with ${businessIds.length} businesses`);
-    peerGroupId = peerGroup.id;
-  }
-
-  // 7. Update business with peer group ID
+  // 6. Update business with peer group ID
   await prisma.business.update({
     where: { id: businessId },
     data: { peerGroupId },
