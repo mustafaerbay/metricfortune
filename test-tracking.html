@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MetricFortune Tracking Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      max-width: 800px;
+      margin: 50px auto;
+      padding: 20px;
+    }
+    .status {
+      padding: 15px;
+      border-radius: 5px;
+      margin: 10px 0;
+    }
+    .success { background: #d4edda; border: 1px solid #c3e6cb; }
+    .error { background: #f8d7da; border: 1px solid #f5c6cb; }
+    .info { background: #d1ecf1; border: 1px solid #bee5eb; }
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      cursor: pointer;
+    }
+    #events {
+      background: #f5f5f5;
+      padding: 10px;
+      border-radius: 5px;
+      margin-top: 20px;
+      max-height: 400px;
+      overflow-y: auto;
+    }
+    .event {
+      background: white;
+      padding: 8px;
+      margin: 5px 0;
+      border-left: 3px solid #007bff;
+      font-size: 12px;
+      font-family: monospace;
+    }
+  </style>
+</head>
+<body>
+  <h1>🔍 MetricFortune Tracking Test</h1>
+
+  <div id="status" class="status info">
+    Initializing tracking...
+  </div>
+
+  <div>
+    <h3>Test Actions:</h3>
+    <button onclick="testClick()">Test Click Event</button>
+    <button onclick="testScroll()">Scroll to Bottom</button>
+    <button onclick="testForm()">Test Form</button>
+    <button onclick="checkQueue()">Check Event Queue</button>
+    <button onclick="manualSend()">Manual Send Batch</button>
+  </div>
+
+  <form id="testForm" style="margin-top: 20px;">
+    <input type="text" name="testField" placeholder="Test input field">
+    <input type="submit" value="Submit Form">
+  </form>
+
+  <div id="events">
+    <h4>Event Log:</h4>
+  </div>
+
+  <!-- Load tracking script from Vercel with AUTO-INITIALIZATION -->
+  <script src="https://metricfortune.vercel.app/tracking.js" data-site-id="site_SfCOKXGWQj0vGgYW"></script>
+
+  <script>
+    const status = document.getElementById('status');
+    const eventsDiv = document.getElementById('events');
+
+    function log(message, type = 'info') {
+      const event = document.createElement('div');
+      event.className = 'event';
+      event.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+      eventsDiv.appendChild(event);
+      eventsDiv.scrollTop = eventsDiv.scrollHeight;
+    }
+
+    // Check if MetricFortune loaded and auto-initialized
+    if (typeof MetricFortune !== 'undefined') {
+      status.className = 'status success';
+      status.textContent = '✅ MetricFortune loaded and auto-initialized via data-site-id attribute';
+      log('MetricFortune auto-initialized successfully');
+      log('Check browser console for initialization message');
+    } else {
+      status.className = 'status error';
+      status.textContent = '❌ MetricFortune script not loaded';
+      log('Error: MetricFortune script not loaded');
+    }
+
+    // Test functions
+    function testClick() {
+      log('Click event triggered');
+    }
+
+    function testScroll() {
+      window.scrollTo(0, document.body.scrollHeight);
+      log('Scroll event triggered');
+    }
+
+    function testForm() {
+      log('Form interaction triggered');
+    }
+
+    function checkQueue() {
+      // Access internal state (for debugging)
+      log('Checking event queue... (check browser console for details)');
+      console.log('MetricFortune state:', window.MetricFortune);
+    }
+
+    function manualSend() {
+      log('Attempting manual batch send... (events should be sent automatically)');
+      // Note: The tracking script sends batches automatically
+    }
+
+    // Form submit handler
+    document.getElementById('testForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      log('Form submitted');
+    });
+
+    // Monitor network requests
+    log('Monitoring network requests to /api/track...');
+    log('Open your browser DevTools Network tab to see the requests');
+
+    // Auto-scroll test content
+    for (let i = 0; i < 20; i++) {
+      const p = document.createElement('p');
+      p.textContent = `Test paragraph ${i + 1} for scroll testing...`;
+      document.body.appendChild(p);
+    }
+  </script>
+</body>
+</html>

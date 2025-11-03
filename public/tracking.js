@@ -408,4 +408,33 @@
     init: init,
     version: '1.0.0',
   };
+
+  // Auto-initialization: Check for data-site-id attribute on script tag
+  (function autoInit() {
+    try {
+      // Find the current script tag
+      const scripts = document.getElementsByTagName('script');
+      let currentScript = null;
+
+      // Try to find our script by looking for tracking.js
+      for (let i = 0; i < scripts.length; i++) {
+        if (scripts[i].src && scripts[i].src.indexOf('tracking.js') > -1) {
+          currentScript = scripts[i];
+          break;
+        }
+      }
+
+      // If script tag has data-site-id, auto-initialize
+      if (currentScript && currentScript.hasAttribute('data-site-id')) {
+        const siteId = currentScript.getAttribute('data-site-id');
+        if (siteId) {
+          console.log('[MetricFortune] Auto-initializing with siteId:', siteId);
+          init({ siteId: siteId });
+        }
+      }
+    } catch (e) {
+      // Silent fail - users can still manually initialize
+      console.warn('[MetricFortune] Auto-initialization failed, use MetricFortune.init() manually');
+    }
+  })();
 })();

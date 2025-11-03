@@ -23,14 +23,13 @@ export default function InstallTrackingPage() {
     setLoading(false);
   };
 
-  const trackingSnippet = `<script>
-  (function() {
-    var script = document.createElement('script');
-    script.src = 'https://metricfortune.com/tracking.js';
-    script.setAttribute('data-site-id', '${siteId}');
-    script.async = true;
-    document.head.appendChild(script);
-  })();
+  const trackingSnippet = `<!-- MetricFortune Tracking Script -->
+<script src="https://metricfortune.vercel.app/tracking.js" data-site-id="${siteId}"></script>`;
+
+  const manualSnippet = `<!-- MetricFortune Tracking Script (Manual) -->
+<script src="https://metricfortune.vercel.app/tracking.js"></script>
+<script>
+  MetricFortune.init({ siteId: '${siteId}' });
 </script>`;
 
   if (loading) {
@@ -52,11 +51,49 @@ export default function InstallTrackingPage() {
             <p className="text-sm font-medium text-blue-900">Your Site ID</p>
             <p className="mt-1 font-mono text-lg font-bold text-blue-600">{siteId}</p>
           </div>
+
           <div className="space-y-2">
-            <label className="text-sm font-medium">Tracking Script</label>
+            <label className="text-sm font-medium">Installation Instructions</label>
+            <ol className="list-decimal list-inside space-y-2 text-sm text-gray-600">
+              <li>Copy the tracking script below</li>
+              <li>Paste it in your website's HTML before the closing <code>&lt;/head&gt;</code> tag</li>
+              <li>Deploy your website</li>
+              <li>Visit your website to start tracking events</li>
+            </ol>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Tracking Script (Recommended)</label>
+            <p className="text-xs text-gray-500">Simple one-line installation with auto-initialization</p>
             <pre className="overflow-x-auto rounded-md bg-gray-900 p-4 text-sm text-white">
               <code>{trackingSnippet}</code>
             </pre>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                navigator.clipboard.writeText(trackingSnippet);
+              }}
+            >
+              Copy to Clipboard
+            </Button>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-sm font-medium">Alternative: Manual Initialization</label>
+            <p className="text-xs text-gray-500">Use this method if you need more control over initialization timing</p>
+            <pre className="overflow-x-auto rounded-md bg-gray-900 p-4 text-sm text-white">
+              <code>{manualSnippet}</code>
+            </pre>
+            <Button
+              variant="outline"
+              className="w-full"
+              onClick={() => {
+                navigator.clipboard.writeText(manualSnippet);
+              }}
+            >
+              Copy Manual Version
+            </Button>
           </div>
         </CardContent>
         <CardFooter>

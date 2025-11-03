@@ -201,6 +201,9 @@ export async function processTrackingEvent(
 /**
  * Process multiple tracking events
  *
+ * SERVERLESS-OPTIMIZED: Writes directly to database instead of buffering
+ * for Vercel/serverless environments where in-memory state is not preserved.
+ *
  * @param events - Array of tracking events
  * @returns Processing result
  */
@@ -208,22 +211,26 @@ export async function processTrackingEvents(
   events: TrackingEvent[]
 ): Promise<ProcessEventResult> {
   try {
-    // Add all events to buffer
-    for (const event of events) {
-      const bufferedEvent: BufferedEvent = {
-        siteId: event.siteId,
-        sessionId: event.sessionId,
-        eventType: event.event.type,
-        timestamp: new Date(event.event.timestamp),
-        data: event.event.data as Prisma.InputJsonValue,
-      };
+    // Convert events to database format
+    const dbEvents: BufferedEvent[] = events.map(event => ({
+      siteId: event.siteId,
+      sessionId: event.sessionId,
+      eventType: event.event.type,
+      timestamp: new Date(event.event.timestamp),
+      data: event.event.data as Prisma.InputJsonValue,
+    }));
 
-      eventBuffer.add(bufferedEvent);
-    }
+    // Write directly to database (serverless-compatible)
+    await prisma.trackingEvent.createMany({
+      data: dbEvents,
+      skipDuplicates: true,
+    });
+
+    console.log(`[EventProcessor] Wrote ${dbEvents.length} events to database`);
 
     return {
       success: true,
-      buffered: true,
+      buffered: false, // Changed to false since we write immediately
     };
   } catch (error) {
     console.error('[EventProcessor] Failed to process events:', error);
