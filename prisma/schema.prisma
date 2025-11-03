@@ -24,19 +24,34 @@ model User {
 }
 
 model Business {
-  id                String    @id @default(cuid())
-  userId            String    @unique
-  user              User      @relation(fields: [userId], references: [id])
+  id                String     @id @default(cuid())
+  userId            String     @unique
+  user              User       @relation(fields: [userId], references: [id])
   name              String
   industry          String
   revenueRange      String
   productTypes      String[]
   platform          String
-  siteId            String    @unique
+  siteId            String     @unique
   peerGroupId       String?
-  createdAt         DateTime  @default(now())
+  peerGroup         PeerGroup? @relation(fields: [peerGroupId], references: [id])
+  createdAt         DateTime   @default(now())
 
   @@index([siteId])
+  @@index([industry])
+  @@index([revenueRange])
+  @@index([industry, revenueRange])
+}
+
+model PeerGroup {
+  id          String     @id @default(cuid())
+  criteria    Json       // Stores MatchCriteria object
+  businessIds String[]   // Array of business IDs in this peer group
+  businesses  Business[]
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  @@index([createdAt])
 }
 
 model Session {

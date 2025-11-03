@@ -1,0 +1,242 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>5</storyId>
+    <title>Business Matching Algorithm</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-5-business-matching-algorithm.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>the system</asA>
+    <iWant>to match businesses with similar peer groups based on their profile metadata</iWant>
+    <soThat>recommendations can leverage collective intelligence from comparable businesses</soThat>
+    <tasks>
+      - Design peer group matching algorithm (AC: #1, #3)
+        - Define matching criteria weights: industry (exact), revenue range (±1 tier), product types (Jaccard similarity), platform (exact)
+        - Implement tiered matching strategy: start with strict criteria, relax if &lt;10 businesses found
+        - Create scoring function to rank peer group matches by similarity
+        - Document algorithm logic with examples in code comments
+
+      - Create business matching service (AC: #1, #2, #5)
+        - Create src/services/matching/business-matcher.ts service module
+        - Implement calculatePeerGroup(businessId: string): Promise&lt;PeerGroup&gt; function
+        - Implement findSimilarBusinesses(business: Business): Promise&lt;Business[]&gt; query
+        - Use Prisma queries optimized with indexes (siteId, industry fields)
+        - Ensure performance: &lt;500ms execution time with database query optimization
+        - Handle edge cases: no matches found, single business in database, identical profiles
+
+      - Implement peer group creation and storage (AC: #2, #4)
+        - Create PeerGroup model in Prisma schema with fields: id, criteria, businessIds[], createdAt
+        - Create migration: npx prisma migrate dev
+        - Implement createPeerGroup(businessIds: string[], criteria: object): Promise&lt;PeerGroup&gt;
+        - Implement updateBusinessPeerGroup(businessId: string, peerGroupId: string): Promise&lt;Business&gt;
+        - Store peer group composition (business IDs, matching criteria used, creation timestamp)
+
+      - Integrate peer matching into business profile workflow (AC: #2)
+        - Update completeProfile Server Action (src/actions/business-profile.ts) to trigger peer matching
+        - Call calculatePeerGroup() after Business record created
+        - Update Business.peerGroupId field with matched peer group
+        - Handle async calculation (consider Inngest job for non-blocking execution)
+        - Ensure existing businesses (from Story 1.4) get peer groups via migration script
+
+      - Build peer group query API (AC: #4, #7)
+        - Create Server Action: getPeerGroupComposition(businessId: string): Promise&lt;ActionResult&lt;PeerGroupData&gt;&gt;
+        - Return peer group data: { peerCount: number, industries: string[], revenueRanges: string[], platforms: string[], matchCriteria: object }
+        - Create admin Server Action: debugPeerGroup(businessId: string): Promise&lt;ActionResult&lt;DetailedPeerGroup&gt;&gt;
+        - Admin endpoint returns: full business IDs list, similarity scores, matching criteria details
+        - Ensure proper authorization (admin-only for debug endpoint)
+
+      - Implement peer group recalculation on new business join (AC: #2)
+        - Create background job (Inngest) or Server Action: recalculatePeerGroups()
+        - Triggered when new business created (hook into completeProfile action)
+        - Re-evaluate existing peer groups - add new business if matches criteria
+        - Update affected Business.peerGroupId fields
+        - Optimize: only recalculate for businesses matching new business industry (performance)
+
+      - Create comprehensive test suite (AC: #6)
+        - Unit test: matching algorithm with sample profiles (exact matches, partial matches, no matches)
+        - Unit test: tiered matching relaxation strategy (strict → relaxed → very broad)
+        - Unit test: scoring function validation (higher scores for better matches)
+        - Integration test: peer group creation flow from business profile completion
+        - Integration test: peer group recalculation when new business joins
+        - Performance test: validate &lt;500ms execution time with realistic dataset (100+ businesses)
+        - Edge case tests: single business, no matches, all businesses identical
+
+      - Build migration script for existing businesses (AC: #2)
+        - Create script: scripts/backfill-peer-groups.ts
+        - Load all Business records without peerGroupId
+        - Calculate peer groups for each business sequentially
+        - Update Business.peerGroupId fields via Prisma
+        - Log results: businesses processed, peer groups created, unmatched businesses
+        - Ensure idempotency (safe to run multiple times)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. Matching algorithm considers: industry (exact match), revenue range (±1 tier), product types (overlap), platform
+    2. Peer groups calculated on profile creation and updated when new businesses join
+    3. Minimum peer group size: 10 businesses (use broader criteria if needed)
+    4. Peer group composition stored and queryable via API
+    5. Algorithm performance: &lt;500ms to calculate matches for new business
+    6. Test suite validates matching logic with sample business profiles
+    7. Admin endpoint to view peer group composition for debugging
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document - Functional Requirements</title>
+        <section>Business Matching &amp; Segmentation (FR004-FR006)</section>
+        <snippet>FR005: System shall automatically match users with similar businesses based on industry, size, product type, and detected tech stack. FR006: System shall display peer group composition to users (e.g., "matched with 47 similar e-commerce businesses").</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document - Epic to Architecture Mapping</title>
+        <section>Story 1.5: Business Matching</section>
+        <snippet>Architecture components: src/services/matching/business-matcher.ts (business logic service), Prisma queries for database operations. Service layer pattern with pure business logic, no Next.js dependencies.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document - Technology Stack</title>
+        <section>Background Processing</section>
+        <snippet>Inngest 3.44.3 for scheduled jobs and async workflows. Jobs execute on Inngest infrastructure with automatic retries (up to 3 with exponential backoff).</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-1-foundation-core-analytics-engine.md</path>
+        <title>Epic 1 - Story 1.8: Recommendation Generation Engine</title>
+        <section>Peer data integration prerequisite</section>
+        <snippet>Recommendation engine requires Story 1.5 peer data for peer-validated recommendations. If similar businesses solved detected problems, include success rate in recommendations.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/1-4-user-registration-business-profile.md</path>
+        <title>Story 1.4: User Registration &amp; Business Profile (Completed)</title>
+        <section>Integration point</section>
+        <snippet>Business model fully implemented with all required fields (industry, revenueRange, productTypes, platform, peerGroupId). Existing Business records need peer groups populated. Server Actions pattern established with ActionResult&lt;T&gt; response format.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/actions/business-profile.ts</path>
+        <kind>server-action</kind>
+        <symbol>completeProfile</symbol>
+        <lines>40-172</lines>
+        <reason>Server Action that creates Business records - must be modified to trigger peer matching after profile creation</reason>
+      </artifact>
+      <artifact>
+        <path>src/actions/business-profile.ts</path>
+        <kind>server-action</kind>
+        <symbol>getBusinessProfile</symbol>
+        <lines>358-410</lines>
+        <reason>Provides access to business data for peer matching queries. Returns Business fields including peerGroupId</reason>
+      </artifact>
+      <artifact>
+        <path>src/actions/business-profile.ts</path>
+        <kind>type</kind>
+        <symbol>ActionResult&lt;T&gt;</symbol>
+        <lines>15-19</lines>
+        <reason>Standard response format for Server Actions - must be used for new peer group actions (getPeerGroupComposition, debugPeerGroup)</reason>
+      </artifact>
+      <artifact>
+        <path>src/services/tracking/event-processor.ts</path>
+        <kind>service</kind>
+        <symbol>EventBuffer class</symbol>
+        <lines>1-50</lines>
+        <reason>Example of service layer pattern with pure business logic - business-matcher.ts should follow same structure</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>schema</kind>
+        <symbol>Business model</symbol>
+        <lines>26-40</lines>
+        <reason>Existing Business model with peerGroupId field (nullable) - needs PeerGroup model added and indexes created for matching queries</reason>
+      </artifact>
+      <artifact>
+        <path>tests/unit/business-profile.test.ts</path>
+        <kind>test</kind>
+        <symbol>business-profile tests</symbol>
+        <lines>N/A</lines>
+        <reason>Existing test patterns to follow for business-matcher unit tests using Vitest</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <prisma>@prisma/client@6.17.0, prisma@6.17.0</prisma>
+        <next>next@16.0.1</next>
+        <auth>next-auth@5.0.0-beta.30</auth>
+        <validation>zod@4.1.12</validation>
+        <utilities>nanoid@5.1.6 (ID generation), bcrypt@6.0.0</utilities>
+        <testing>vitest@4.0, @playwright/test@1.56.1</testing>
+        <typescript>typescript@5</typescript>
+        <note>Inngest not yet installed - will be added for background job processing (peer group recalculation)</note>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Service layer (src/services/matching/business-matcher.ts) must be pure business logic with no Next.js dependencies
+    - All Server Actions must use ActionResult&lt;T&gt; response format: { success: boolean, data?: T, error?: string }
+    - Performance requirement: matching algorithm execution must complete in &lt;500ms
+    - Use Prisma Client for all database operations with proper error handling (try-catch)
+    - Follow TypeScript strict mode - all code must pass strict type checking
+    - Use Zod schemas for validating Server Action inputs (e.g., businessId parameter)
+    - Database queries must use indexes on Business.industry and Business.revenueRange for performance
+    - Background jobs use Inngest with automatic retries (up to 3 with exponential backoff)
+    - Naming conventions: PascalCase for types/models, camelCase for functions/variables, kebab-case for files
+    - All new code must have corresponding unit tests (Vitest) with realistic test data
+    - Structured logging with context: { businessId, peerGroupId, peerCount, matchCriteria }
+    - Admin endpoints require proper authorization checks
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>ActionResult&lt;T&gt;</name>
+      <kind>TypeScript type</kind>
+      <signature>type ActionResult&lt;T = void&gt; = { success: boolean; data?: T; error?: string; }</signature>
+      <path>src/actions/business-profile.ts:15-19</path>
+    </interface>
+    <interface>
+      <name>completeProfile</name>
+      <kind>Server Action</kind>
+      <signature>async function completeProfile(data: { industry: string; revenueRange: string; productTypes: string[]; platform: string; }): Promise&lt;ActionResult&lt;{ siteId: string }&gt;&gt;</signature>
+      <path>src/actions/business-profile.ts:40</path>
+    </interface>
+    <interface>
+      <name>getBusinessProfile</name>
+      <kind>Server Action</kind>
+      <signature>async function getBusinessProfile(): Promise&lt;ActionResult&lt;{ id: string; name: string; industry: string; revenueRange: string; productTypes: string[]; platform: string; siteId: string; }&gt;&gt;</signature>
+      <path>src/actions/business-profile.ts:358</path>
+    </interface>
+    <interface>
+      <name>Business.findUnique / Business.findMany</name>
+      <kind>Prisma query</kind>
+      <signature>prisma.business.findUnique({ where: { userId: string } }) / prisma.business.findMany({ where: { industry: string } })</signature>
+      <path>prisma/schema.prisma:26-40</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>Vitest 4.0 for unit and integration tests with describe/it/expect pattern. Test files use .test.ts extension. Unit tests should focus on isolated business logic (matching algorithm, scoring functions) with sample data. Integration tests should cover end-to-end flows with Prisma queries. Performance tests should validate execution time requirements. Follow existing test patterns from tests/unit/business-profile.test.ts - use realistic sample business profiles with various industries, revenue ranges, and product types.</standards>
+    <locations>
+      - tests/unit/ - Unit tests for business-matcher.ts service
+      - tests/integration/ - Integration tests for peer group flows
+      - tests/unit/business-matcher.test.ts - New file for matching algorithm tests
+      - tests/integration/peer-groups.test.ts - New file for peer group creation and API tests
+    </locations>
+    <ideas>
+      - AC#1: Unit test matching algorithm with exact industry match, revenue range ±1 tier, product type overlap (Jaccard), and platform matching
+      - AC#1: Unit test tiered matching strategy - strict criteria first, then relaxed if &lt;10 businesses found
+      - AC#1: Test scoring function ranks businesses by similarity (higher scores for better matches)
+      - AC#2: Integration test peer group calculation triggered on profile completion (completeProfile action)
+      - AC#2: Integration test peer group recalculation when new business joins (updates existing peer groups)
+      - AC#3: Unit test minimum peer group size enforcement (10 businesses) - relaxes criteria if needed
+      - AC#3: Test fallback behavior when &lt;10 matches found with relaxed criteria
+      - AC#4: Integration test getPeerGroupComposition Server Action returns correct peer group data
+      - AC#5: Performance test validates &lt;500ms execution time with 100+ sample businesses in database
+      - AC#6: Unit tests with edge cases: no matches found, single business in database, all identical profiles
+      - AC#7: Integration test debugPeerGroup admin endpoint returns detailed peer group composition
+      - Integration test backfill script populates peerGroupId for existing businesses without peer groups
+    </ideas>
+  </tests>
+</story-context>

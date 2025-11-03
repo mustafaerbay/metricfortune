@@ -4,6 +4,7 @@ import { z } from "zod";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { customAlphabet } from "nanoid";
+import { calculatePeerGroup } from "@/services/matching/business-matcher";
 
 // Create custom nanoid generator for siteId (alphanumeric, 12 characters)
 const generateSiteId = customAlphabet(
@@ -157,6 +158,21 @@ export async function completeProfile(data: {
       industry: updatedBusiness.industry,
       siteId: updatedBusiness.siteId,
     });
+
+    // Calculate peer group for the business (Story 1.5 - AC #2)
+    console.log("[CompleteProfile Action] Calculating peer group for business:", updatedBusiness.id);
+    try {
+      const peerGroupResult = await calculatePeerGroup(updatedBusiness.id);
+      console.log("[CompleteProfile Action] Peer group calculated:", {
+        peerGroupId: peerGroupResult.peerGroupId,
+        matchCount: peerGroupResult.matchCount,
+        tier: peerGroupResult.matchCriteria.tier,
+      });
+    } catch (peerGroupError) {
+      // Log error but don't fail the profile completion
+      // Peer group can be calculated later via backfill script if needed
+      console.error("[CompleteProfile Action] Peer group calculation failed (non-critical):", peerGroupError);
+    }
 
     return {
       success: true,
