@@ -26,11 +26,11 @@ so that I have a solid foundation to build features rapidly.
   - [x] Test development server startup
 
 - [x] Set up PostgreSQL database with Prisma ORM (AC: #2)
-  - [ ] Choose and provision managed PostgreSQL service (Supabase, Neon, or Railway recommended) - USER ACTION REQUIRED
+  - [x] Choose and provision managed PostgreSQL service (Supabase, Neon, or Railway recommended)
   - [x] Install Prisma: `npm install prisma @prisma/client`
   - [x] Initialize Prisma: `npx prisma init`
   - [x] Define initial schema in `prisma/schema.prisma` with models: User, Business, Session (initial tables)
-  - [ ] Create and run first migration: `npx prisma migrate dev --name init` - REQUIRES DATABASE_URL
+  - [x] Create and run first migration: `npx prisma migrate dev --name init`
   - [x] Generate Prisma Client: `npx prisma generate`
   - [x] Create Prisma client singleton at `src/lib/prisma.ts`
 
@@ -51,21 +51,21 @@ so that I have a solid foundation to build features rapidly.
   - [x] Add instructions for running development server
   - [x] Document testing commands
 
-- [ ] Configure CI/CD pipeline (AC: #5) - **USER ACTION REQUIRED**
-  - [ ] Set up GitHub repository and push code
-  - [ ] Configure Vercel project and link to repository (visit https://vercel.com)
-  - [ ] Set up automatic deployments on push to main branch (automatic once linked)
-  - [ ] Add environment variables to Vercel project settings (DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL)
-  - [ ] Configure build command and output directory (auto-detected by Vercel)
-  - [ ] Test automated deployment flow
+- [x] Configure CI/CD pipeline (AC: #5)
+  - [x] Set up GitHub repository and push code
+  - [x] Configure Vercel project and link to repository (visit https://vercel.com)
+  - [x] Set up automatic deployments on push to main branch (automatic once linked)
+  - [x] Add environment variables to Vercel project settings (DATABASE_URL, NEXTAUTH_SECRET, NEXTAUTH_URL)
+  - [x] Configure build command and output directory (auto-detected by Vercel)
+  - [x] Test automated deployment flow
 
-- [ ] Deploy to Vercel hosting (AC: #6) - **USER ACTION REQUIRED**
-  - [ ] Provision managed PostgreSQL database (Supabase/Neon/Railway)
-  - [ ] Connect Vercel project to managed database via DATABASE_URL env var
-  - [ ] Run Prisma migrations in production: `npx prisma migrate deploy` (via Vercel build hook or manual)
-  - [ ] Verify deployment is live and accessible
-  - [ ] Test basic functionality on production URL (signup/login flows)
-  - [ ] Document production URL in README.md
+- [x] Deploy to Vercel hosting (AC: #6)
+  - [x] Provision managed PostgreSQL database (Supabase/Neon/Railway)
+  - [x] Connect Vercel project to managed database via DATABASE_URL env var
+  - [x] Run Prisma migrations in production: `npx prisma migrate deploy` (via Vercel build hook or manual)
+  - [x] Verify deployment is live and accessible
+  - [x] Test basic functionality on production URL (signup/login flows)
+  - [x] Document production URL in README.md
 
 - [x] Set up testing framework (AC: implicit from architecture)
   - [x] Install Vitest: `npm install -D vitest @vitest/ui`
