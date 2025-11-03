@@ -26,7 +26,7 @@ import { prisma } from '@/lib/prisma';
  * For local development with direct database connection:
  * Use Node.js runtime (default)
  */
-export const runtime = 'edge'; // Uncomment for production with Prisma Accelerate
+export const runtime = 'nodejs'; // Uncomment for production with Prisma Accelerate
 
 /**
  * Enable CORS for tracking endpoint (cross-origin requests)
