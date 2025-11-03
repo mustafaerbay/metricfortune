@@ -64,6 +64,7 @@ model Session {
   pageCount     Int
   bounced       Boolean
   converted     Boolean   @default(false)
+  journeyPath   String[]  // Array of page URLs in visit order
   createdAt     DateTime  @default(now())
 
   @@index([siteId, createdAt])

@@ -1,0 +1,276 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>6</storyId>
+    <title>Session Aggregation &amp; Journey Mapping</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-03</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>/Users/mustafaerbay/code/00000-Projects/metricfortune/docs/stories/1-6-session-aggregation-journey-mapping.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>the analytics engine</asA>
+    <iWant>to aggregate raw tracking events into user sessions and journey sequences</iWant>
+    <soThat>behavior patterns can be analyzed at the journey level</soThat>
+    <tasks>
+- Design session aggregation algorithm (AC: #1, #2, #3)
+- Create session aggregator service (AC: #1, #2, #3, #7)
+- Update Prisma schema for Session model (AC: #5)
+- Implement session storage logic (AC: #5)
+- Create Inngest background job for scheduled aggregation (AC: #4)
+- Prepare journey visualization data structures (AC: #6)
+- Create Server Actions for accessing session data (AC: #5, #6)
+- Implement comprehensive testing (AC: #1-7)
+- Create TypeScript types and interfaces (AC: #1-6)
+- Manual testing and validation (AC: #4, #7)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+AC-1: Background job processes raw events into sessions (grouped by session ID)
+AC-2: Journey sequences extracted: entry page → navigation path → exit/conversion
+AC-3: Session metadata calculated: duration, page count, bounce status, conversion status
+AC-4: Aggregation runs every 4-6 hours on new data
+AC-5: Session data stored in operational database (PostgreSQL)
+AC-6: Journey visualization data prepared (funnel stages with drop-off rates)
+AC-7: Performance: processes 10K sessions in &lt;5 minutes
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <artifact type="doc">
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Functional Requirements - Data Collection &amp; Analysis</section>
+        <snippet>FR003: System shall capture complete user journey sequences from entry through navigation to conversion or exit. FR007: System shall automatically analyze customer behavior patterns across sessions and identify statistically significant friction points. FR008: System shall generate human-readable journey summaries.</snippet>
+      </artifact>
+      <artifact type="doc">
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Non-Functional Requirements</section>
+        <snippet>NFR001: Dashboard shall load in &lt;2 seconds; tracking script shall add &lt;100ms to page load times; system shall achieve 99.9% uptime. NFR002: System shall support 100 customers tracking 1M sessions/month at MVP launch, scaling to 500 customers with 10M sessions/month by Year 1.</snippet>
+      </artifact>
+      <artifact type="doc">
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture</title>
+        <section>ADR-002: TimescaleDB for Time-Series Data</section>
+        <snippet>Use TimescaleDB extension for PostgreSQL for time-series tracking data. Handles 1M-10M sessions/month comfortably, integrates seamlessly with existing PostgreSQL, allows joining time-series and relational data easily. TrackingEvent table configured as TimescaleDB hypertable with automatic time-based partitioning.</snippet>
+      </artifact>
+      <artifact type="doc">
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture</title>
+        <section>ADR-005: Inngest for Background Jobs</section>
+        <snippet>Use Inngest 3.44.3 for scheduled jobs and async workflows. Built for Next.js/Vercel, handles scheduling + retries + monitoring, excellent local dev experience, visual dashboard. Inngest handles retries automatically (up to 3 retries with exponential backoff).</snippet>
+      </artifact>
+      <artifact type="doc">
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture</title>
+        <section>Background Processing Data Flow</section>
+        <snippet>Data Flow: 1) Tracking script → POST /api/track → TimescaleDB (raw events) 2) Inngest scheduled job → Session Aggregator → PostgreSQL (sessions) 3) Inngest daily job → Pattern Detector → PostgreSQL (patterns). Background job optimization: Batch processing for session aggregation (process 1000 sessions at a time), Incremental processing (only new data since last run).</snippet>
+      </artifact>
+      <artifact type="doc">
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture</title>
+        <section>Epic to Architecture Mapping - Story 1.6</section>
+        <snippet>Story 1.6 Session Aggregation: src/services/analytics/session-aggregator.ts (pure business logic), src/inngest/session-aggregation.ts (scheduled every 4-6 hours), TimescaleDB queries for TrackingEvent data. Performance target: processes 10K sessions in &lt;5 minutes.</snippet>
+      </artifact>
+      <artifact type="doc">
+        <path>docs/epics/epic-1-foundation-core-analytics-engine.md</path>
+        <title>Epic 1: Foundation &amp; Core Analytics Engine</title>
+        <section>Story 1.6: Session Aggregation &amp; Journey Mapping</section>
+        <snippet>Background job processes raw events into sessions (grouped by session ID), journey sequences extracted (entry → navigation → exit/conversion), session metadata calculated (duration, page count, bounce status, conversion status). Aggregation runs every 4-6 hours on new data, session data stored in PostgreSQL, journey visualization data prepared (funnel stages with drop-off rates).</snippet>
+      </artifact>
+    </docs>
+    <code>
+      <artifact type="code">
+        <path>prisma/schema.prisma</path>
+        <kind>schema</kind>
+        <symbol>Session</symbol>
+        <lines>57-70</lines>
+        <reason>Existing Session model - verify fields (id, siteId, sessionId, entryPage, exitPage, duration, pageCount, bounced, converted, createdAt). Story requires adding journeyPath field for navigation sequences.</reason>
+      </artifact>
+      <artifact type="code">
+        <path>prisma/schema.prisma</path>
+        <kind>schema</kind>
+        <symbol>TrackingEvent</symbol>
+        <lines>72-84</lines>
+        <reason>Source data model for session aggregation. TimescaleDB hypertable containing raw events (siteId, sessionId, eventType, timestamp, data). Query by sessionId to group events into sessions.</reason>
+      </artifact>
+      <artifact type="code">
+        <path>src/lib/prisma.ts</path>
+        <kind>lib</kind>
+        <symbol>prisma</symbol>
+        <lines>1-10</lines>
+        <reason>Prisma client singleton pattern - import and use for all database operations. Prevents connection pool exhaustion in development.</reason>
+      </artifact>
+      <artifact type="code">
+        <path>src/services/matching/business-matcher.ts</path>
+        <kind>service</kind>
+        <symbol>calculateJaccardSimilarity, calculatePeerGroup</symbol>
+        <lines>1-80</lines>
+        <reason>Reference pattern for service layer architecture. Pure TypeScript module with no Next.js dependencies, exports business logic functions, comprehensive JSDoc comments, well-structured with helper functions.</reason>
+      </artifact>
+      <artifact type="code">
+        <path>src/actions/peer-groups.ts</path>
+        <kind>action</kind>
+        <symbol>getPeerGroupComposition</symbol>
+        <lines>1-80</lines>
+        <reason>Reference pattern for Server Actions. Uses ActionResult&lt;T&gt; response format, Zod validation, authentication checks, error handling with try-catch, structured logging.</reason>
+      </artifact>
+      <artifact type="code">
+        <path>src/types/tracking.ts</path>
+        <kind>types</kind>
+        <symbol>TrackingEvent, EventData, trackingEventSchema</symbol>
+        <lines>1-137</lines>
+        <reason>Existing tracking types and Zod schemas. Session aggregator will consume TrackingEvent data. EventType enum includes 'pageview' for journey extraction.</reason>
+      </artifact>
+      <artifact type="code">
+        <path>tests/unit/business-matcher.test.ts</path>
+        <kind>test</kind>
+        <symbol>N/A</symbol>
+        <lines>N/A</lines>
+        <reason>Reference pattern for unit tests. Use Vitest framework, test service logic functions, include edge cases and performance validation patterns.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <nodejs>
+        <package name="@prisma/client" version="6.17.0">ORM client for database operations</package>
+        <package name="prisma" version="6.17.0">Database schema and migration tooling</package>
+        <package name="zod" version="4.1.12">Schema validation for inputs and data structures</package>
+        <package name="next" version="16.0.1">Framework - App Router, Server Actions, API routes</package>
+        <package name="next-auth" version="5.0.0-beta.30">Authentication - session management</package>
+      </nodejs>
+      <inngest>
+        <note>Inngest 3.44.3 NOT YET INSTALLED - must be added as dependency for scheduled background jobs (AC #4). Required packages: inngest</note>
+      </inngest>
+      <testing>
+        <package name="vitest" version="4.0">Unit and integration testing framework</package>
+        <package name="@vitest/ui" version="4.0">Test UI for development</package>
+      </testing>
+      <frameworks>
+        <framework name="Next.js" version="16.0.1">React framework with App Router and Server Components</framework>
+        <framework name="TypeScript" version="5.x">Type-safe development with strict mode enabled</framework>
+        <framework name="PostgreSQL" version="15+">Primary database with TimescaleDB extension for time-series data</framework>
+      </frameworks>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint type="architecture">Service Layer: Create src/services/analytics/session-aggregator.ts as pure business logic module with no Next.js dependencies. Export functions for use in both Inngest jobs and Server Actions.</constraint>
+    <constraint type="architecture">Background Jobs: Inngest directory (src/inngest/) does not exist yet - must be created. Jobs run on Inngest infrastructure with automatic retries (up to 3 with exponential backoff).</constraint>
+    <constraint type="database">Prisma Migrations: Run 'npx prisma migrate dev' after modifying schema.prisma. Use Prisma's createMany for bulk inserts (better performance than individual creates).</constraint>
+    <constraint type="database">TimescaleDB Queries: Leverage time-range filters in WHERE clauses to optimize hypertable partition scanning. TrackingEvent indexed on (siteId, timestamp) and (sessionId).</constraint>
+    <constraint type="performance">Batch Processing: Process sessions in chunks of 1000 at a time to avoid memory issues with large datasets. AC #7 requires processing 10K sessions in &lt;5 minutes.</constraint>
+    <constraint type="performance">Incremental Processing: Track last aggregation timestamp to avoid reprocessing old events. Only query TrackingEvent records with timestamp &gt; lastAggregationTime.</constraint>
+    <constraint type="testing">Testing Framework: Use Vitest 4.0 for unit and integration tests. Tests located in tests/unit/ directory. Follow patterns from business-matcher.test.ts.</constraint>
+    <constraint type="code-quality">TypeScript Strict Mode: All code must pass strict TypeScript checks. Define proper types in src/types/session.ts (SessionData, JourneySequence, SessionMetadata, JourneyFunnel).</constraint>
+    <constraint type="patterns">Server Actions Pattern: Use "use server" directive, ActionResult&lt;T&gt; response format, Zod validation for inputs, authentication checks via auth(), structured logging.</constraint>
+    <constraint type="patterns">Error Handling: Wrap all Prisma queries in try-catch blocks. Return ActionResult with clear error messages. Inngest handles retries automatically.</constraint>
+    <constraint type="scheduling">Inngest Cron: Schedule session aggregation every 4 hours using cron syntax '0 */4 * * *'. Register function in src/lib/inngest.ts (needs to be created).</constraint>
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>Session (Prisma Model)</name>
+      <kind>Database Model</kind>
+      <signature>model Session { id: String (cuid), siteId: String, sessionId: String (unique), entryPage: String, exitPage: String?, duration: Int?, pageCount: Int, bounced: Boolean, converted: Boolean, createdAt: DateTime, journeyPath: String[] (MISSING - needs to be added) }</signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+    <interface>
+      <name>TrackingEvent (Prisma Model)</name>
+      <kind>Database Model - TimescaleDB Hypertable</kind>
+      <signature>model TrackingEvent { id: String, siteId: String, sessionId: String, eventType: String, timestamp: DateTime, data: Json, createdAt: DateTime }</signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+    <interface>
+      <name>ActionResult&lt;T&gt;</name>
+      <kind>Server Action Response Pattern</kind>
+      <signature>interface ActionResult&lt;T&gt; { success: boolean, data?: T, error?: string }</signature>
+      <path>src/actions/business-profile.ts</path>
+    </interface>
+    <interface>
+      <name>aggregateSessions</name>
+      <kind>Service Function Signature (to be created)</kind>
+      <signature>async function aggregateSessions(startTime: Date, endTime: Date): Promise&lt;Session[]&gt;</signature>
+      <path>src/services/analytics/session-aggregator.ts (new file)</path>
+    </interface>
+    <interface>
+      <name>getSessions</name>
+      <kind>Server Action Signature (to be created)</kind>
+      <signature>async function getSessions(businessId: string, dateRange?: DateRange): Promise&lt;ActionResult&lt;Session[]&gt;&gt;</signature>
+      <path>src/actions/sessions.ts (new file)</path>
+    </interface>
+    <interface>
+      <name>getJourneyFunnels</name>
+      <kind>Server Action Signature (to be created)</kind>
+      <signature>async function getJourneyFunnels(businessId: string): Promise&lt;ActionResult&lt;JourneyFunnel[]&gt;&gt;</signature>
+      <path>src/actions/sessions.ts (new file)</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>Vitest 4.0 framework configured with global test utilities (describe, it, expect). Tests include unit tests (tests/unit/) and integration tests (tests/integration/). Pattern: Group tests by module using describe blocks, test individual functions with clear "should..." assertions. Include edge cases, error conditions, and performance validation. Use console.time()/console.timeEnd() for performance measurement (AC #7 requires &lt;5 minutes for 10K sessions).</standards>
+    <locations>
+      <location>tests/unit/session-aggregator.test.ts - Unit tests for aggregation logic</location>
+      <location>tests/integration/session-aggregation.test.ts - Integration tests for Inngest job (optional)</location>
+      <location>tests/unit/ - General unit test directory</location>
+      <location>tests/integration/ - General integration test directory</location>
+    </locations>
+    <ideas>
+      <test-group ac="AC-1" description="Background job processes raw events into sessions (grouped by session ID)">
+        <idea>Test grouping TrackingEvent records by sessionId</idea>
+        <idea>Test with multiple sessions having different sessionIds</idea>
+        <idea>Test with single session containing multiple events</idea>
+        <idea>Test with empty event dataset (should return empty array)</idea>
+        <idea>Test with events from multiple sites (should process all)</idea>
+      </test-group>
+      <test-group ac="AC-2" description="Journey sequences extracted: entry page → navigation path → exit/conversion">
+        <idea>Test extraction of pageview events in chronological order</idea>
+        <idea>Test journeyPath array contains correct page URLs in sequence</idea>
+        <idea>Test entryPage is first pageview URL</idea>
+        <idea>Test exitPage is last pageview URL</idea>
+        <idea>Test journey with single pageview (entry = exit)</idea>
+        <idea>Test journey with non-pageview events (should filter to pageviews only)</idea>
+      </test-group>
+      <test-group ac="AC-3" description="Session metadata calculated: duration, page count, bounce status, conversion status">
+        <idea>Test duration calculation: timestamp difference between first and last event</idea>
+        <idea>Test pageCount equals number of pageview events</idea>
+        <idea>Test bounced = true when pageCount = 1</idea>
+        <idea>Test bounced = false when pageCount &gt; 1</idea>
+        <idea>Test converted = true when conversion event present</idea>
+        <idea>Test converted = false when no conversion event</idea>
+        <idea>Test session with null duration (single timestamp event)</idea>
+      </test-group>
+      <test-group ac="AC-4" description="Aggregation runs every 4-6 hours on new data">
+        <idea>Mock Inngest cron trigger to verify job executes</idea>
+        <idea>Test incremental processing: only events since lastAggregationTime</idea>
+        <idea>Test job logs execution details (sessions processed, time taken)</idea>
+        <idea>Test retry logic on failure (Inngest handles automatically)</idea>
+      </test-group>
+      <test-group ac="AC-5" description="Session data stored in operational database (PostgreSQL)">
+        <idea>Test createSessions function uses Prisma createMany</idea>
+        <idea>Test upsert behavior for duplicate sessionIds</idea>
+        <idea>Test bulk insert performance with 1000 sessions</idea>
+        <idea>Test error handling with partial failures</idea>
+      </test-group>
+      <test-group ac="AC-6" description="Journey visualization data prepared (funnel stages with drop-off rates)">
+        <idea>Test calculateJourneyFunnels aggregates sessions by site</idea>
+        <idea>Test funnel stage identification (entry → product → cart → checkout → confirmation)</idea>
+        <idea>Test drop-off rate calculation: (stage N - stage N+1) / stage N</idea>
+        <idea>Test with insufficient data (should handle gracefully)</idea>
+      </test-group>
+      <test-group ac="AC-7" description="Performance: processes 10K sessions in &lt;5 minutes">
+        <idea>Performance test with 10K sample sessions</idea>
+        <idea>Measure execution time using console.time/console.timeEnd</idea>
+        <idea>Verify &lt;300 seconds (5 minutes) total time</idea>
+        <idea>Test batch processing (1000 at a time) prevents memory issues</idea>
+      </test-group>
+      <test-group type="edge-cases">
+        <idea>Empty session (no events)</idea>
+        <idea>Session with events but no pageviews</idea>
+        <idea>Session spanning multiple days</idea>
+        <idea>Malformed event data (missing fields)</idea>
+        <idea>Very large session (1000+ events)</idea>
+      </test-group>
+    </ideas>
+  </tests>
+</story-context>
