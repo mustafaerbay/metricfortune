@@ -4,8 +4,26 @@
  * Target: <50KB gzipped, <100ms page load impact
  */
 
-(function() {
+(function () {
   'use strict';
+
+  // ---- Idle callback shim (works in Safari/old/SSR/headless) ----
+  const _hasWindow = typeof window !== 'undefined' && window;
+  const _ric = _hasWindow && typeof window.requestIdleCallback === 'function'
+    ? window.requestIdleCallback.bind(window)
+    : (cb) => setTimeout(() => cb({
+      didTimeout: false,
+      timeRemaining: () => 0
+    }), 1);
+
+  // const _cic = _hasWindow && typeof window.cancelIdleCallback === 'function'
+  //   ? window.cancelIdleCallback.bind(window)
+  //   : (id) => clearTimeout(id);
+
+  // Small helper so code reads nicely
+  function scheduleIdle(fn) { return _ric(fn); }
+
+  // function cancelIdleCallback(fn) { return _cic(fn);}
 
   // Configuration
   const CONFIG = {
@@ -32,7 +50,7 @@
 
   // Utility: Generate UUID v4
   function generateUUID() {
-    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function (c) {
       const r = Math.random() * 16 | 0;
       const v = c === 'x' ? r : (r & 0x3 | 0x8);
       return v.toString(16);
@@ -156,24 +174,24 @@
         body: JSON.stringify({ events: batch }),
         keepalive: true,
       })
-      .then(response => {
-        if (!response.ok && retryCount < CONFIG.retryAttempts) {
-          // Re-queue events and retry with exponential backoff
-          state.eventQueue.unshift(...batch);
-          setTimeout(() => {
-            sendBatch(retryCount + 1);
-          }, CONFIG.retryBackoff * Math.pow(2, retryCount));
-        }
-      })
-      .catch(error => {
-        // Network error - re-queue and retry
-        if (retryCount < CONFIG.retryAttempts) {
-          state.eventQueue.unshift(...batch);
-          setTimeout(() => {
-            sendBatch(retryCount + 1);
-          }, CONFIG.retryBackoff * Math.pow(2, retryCount));
-        }
-      });
+        .then(response => {
+          if (!response.ok && retryCount < CONFIG.retryAttempts) {
+            // Re-queue events and retry with exponential backoff
+            state.eventQueue.unshift(...batch);
+            setTimeout(() => {
+              sendBatch(retryCount + 1);
+            }, CONFIG.retryBackoff * Math.pow(2, retryCount));
+          }
+        })
+        .catch(error => {
+          // Network error - re-queue and retry
+          if (retryCount < CONFIG.retryAttempts) {
+            state.eventQueue.unshift(...batch);
+            setTimeout(() => {
+              sendBatch(retryCount + 1);
+            }, CONFIG.retryBackoff * Math.pow(2, retryCount));
+          }
+        });
     } catch (e) {
       // Silent fail
     }
@@ -215,8 +233,8 @@
     try {
       const target = event.target;
       const selector = target.id ? `#${target.id}` :
-                      target.className ? `.${target.className.split(' ')[0]}` :
-                      target.tagName.toLowerCase();
+        target.className ? `.${target.className.split(' ')[0]}` :
+          target.tagName.toLowerCase();
 
       queueEvent('click', {
         selector: selector,
@@ -295,19 +313,19 @@
       document.addEventListener('click', captureClick, true);
 
       // Form interaction tracking
-      document.addEventListener('focus', function(e) {
+      document.addEventListener('focus', function (e) {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
           captureFormInteraction(e);
         }
       }, true);
 
-      document.addEventListener('change', function(e) {
+      document.addEventListener('change', function (e) {
         if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
           captureFormInteraction(e);
         }
       }, true);
 
-      document.addEventListener('submit', function(e) {
+      document.addEventListener('submit', function (e) {
         if (e.target.tagName === 'FORM') {
           captureFormInteraction(e);
         }
@@ -317,13 +335,13 @@
       window.addEventListener('scroll', captureScrollDepth, { passive: true });
 
       // Time tracking on page exit
-      window.addEventListener('beforeunload', function() {
+      window.addEventListener('beforeunload', function () {
         captureTimeOnPage();
         sendBatch(); // Send any remaining events
       });
 
       // Visibility change (tab switch)
-      document.addEventListener('visibilitychange', function() {
+      document.addEventListener('visibilitychange', function () {
         if (document.hidden) {
           captureTimeOnPage();
           sendBatch();
@@ -366,18 +384,20 @@
       startBatchTimer();
 
       // Attach event listeners using requestIdleCallback for non-blocking
-      if (window.requestIdleCallback) {
-        requestIdleCallback(attachListeners);
-      } else {
-        setTimeout(attachListeners, 1);
-      }
+      // if (window.requestIdleCallback) {
+      //   requestIdleCallback(attachListeners);
+      // } else {
+      //   setTimeout(attachListeners, 1);
+      // }
+      scheduleIdle(attachListeners);
 
       // Capture initial pageview
-      if (window.requestIdleCallback) {
-        requestIdleCallback(capturePageview);
-      } else {
-        setTimeout(capturePageview, 1);
-      }
+      // if (window.requestIdleCallback) {
+      //   requestIdleCallback(capturePageview);
+      // } else {
+      //   setTimeout(capturePageview, 1);
+      // }
+      scheduleIdle(capturePageview);
     } catch (e) {
       console.error('MetricFortune: Initialization failed', e);
     }
