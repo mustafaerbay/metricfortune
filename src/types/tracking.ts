@@ -18,25 +18,37 @@ export interface Position {
  */
 export interface EventData {
   // Pageview fields
-  url?: string;
-  referrer?: string;
-  title?: string;
-  path?: string;
+  url?: string | null;
+  referrer?: string | null;
+  title?: string | null;
+  path?: string | null;
 
   // Click fields
-  selector?: string;
-  position?: Position;
+  selector?: string | null;
+  tagName?: string | null;
+  text?: string | null;
+  href?: string | null;
+  x?: number | null;
+  y?: number | null;
+  position?: Position | null;
 
   // Form fields
-  formId?: string;
-  fieldInteractions?: Record<string, unknown>;
+  formId?: string | null;
+  fieldName?: string | null;
+  fieldType?: string | null;
+  eventType?: string | null;
+  fieldInteractions?: Record<string, unknown> | null;
 
   // Scroll fields
-  scrollDepth?: number;
-  timeAtDepth?: number;
+  depth?: number | null;
+  scrollTop?: number | null;
+  scrollHeight?: number | null;
+  scrollDepth?: number | null;
+  timeAtDepth?: number | null;
 
   // Time on page fields
-  timeOnPage?: number;
+  duration?: number | null;
+  timeOnPage?: number | null;
 
   // Extensible - allow additional fields
   [key: string]: unknown;
