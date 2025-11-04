@@ -30,7 +30,7 @@
     batchSize: 10,
     batchInterval: 5000, // 5 seconds
     sessionTimeout: 30 * 60 * 1000, // 30 minutes
-    apiEndpoint: '/api/track',
+    apiEndpoint: 'https://metricfortune.vercel.app/api/track', // Absolute URL for cross-origin tracking
     retryAttempts: 3,
     retryBackoff: 1000, // Start with 1 second
   };
