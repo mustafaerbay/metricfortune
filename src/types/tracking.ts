@@ -72,29 +72,41 @@ const positionSchema = z.object({
 
 /**
  * Zod schema for event data validation
- * Allows all fields to be optional and extensible
+ * Allows all fields to be optional, nullable, and extensible
  */
 const eventDataSchema = z.object({
   // Pageview
-  url: z.string().optional(),
-  referrer: z.string().optional(),
-  title: z.string().optional(),
-  path: z.string().optional(),
+  url: z.string().nullish(),
+  referrer: z.string().nullish(),
+  title: z.string().nullish(),
+  path: z.string().nullish(),
 
   // Click
-  selector: z.string().optional(),
-  position: positionSchema.optional(),
+  selector: z.string().nullish(),
+  tagName: z.string().nullish(),
+  text: z.string().nullish(),
+  href: z.string().nullish(),
+  x: z.number().nullish(),
+  y: z.number().nullish(),
+  position: positionSchema.nullish(),
 
   // Form
-  formId: z.string().optional(),
-  fieldInteractions: z.record(z.string(), z.unknown()).optional(),
+  formId: z.string().nullish(),
+  fieldName: z.string().nullish(),
+  fieldType: z.string().nullish(),
+  eventType: z.string().nullish(),
+  fieldInteractions: z.record(z.string(), z.unknown()).nullish(),
 
   // Scroll
-  scrollDepth: z.number().optional(),
-  timeAtDepth: z.number().optional(),
+  depth: z.number().nullish(),
+  scrollTop: z.number().nullish(),
+  scrollHeight: z.number().nullish(),
+  scrollDepth: z.number().nullish(),
+  timeAtDepth: z.number().nullish(),
 
   // Time
-  timeOnPage: z.number().optional(),
+  duration: z.number().nullish(),
+  timeOnPage: z.number().nullish(),
 }).passthrough(); // Allow additional fields
 
 /**
