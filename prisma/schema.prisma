@@ -83,3 +83,18 @@ model TrackingEvent {
   @@index([sessionId])
   @@map("TrackingEvent")
 }
+
+model Pattern {
+  id              String   @id @default(cuid())
+  siteId          String
+  patternType     String   // 'ABANDONMENT' | 'HESITATION' | 'LOW_ENGAGEMENT'
+  description     String   // Human-readable summary
+  severity        Float    // 0.0 - 1.0, used for ranking
+  sessionCount    Int      // Number of sessions analyzed
+  confidenceScore Float    // Statistical confidence (0.0 - 1.0)
+  metadata        Json?    // Pattern-specific data (stage, field, page, etc.)
+  detectedAt      DateTime @default(now())
+
+  @@index([siteId, detectedAt])
+  @@index([siteId, severity])
+}

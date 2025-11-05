@@ -1,0 +1,315 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>7</storyId>
+    <title>Pattern Detection Engine</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-05</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-7-pattern-detection-engine.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>the analytics engine</asA>
+    <iWant>to identify statistically significant behavior patterns and friction points</iWant>
+    <soThat>I can generate data-driven recommendations</soThat>
+    <tasks>
+      <task id="1" ac="#1,#2,#3">
+        <name>Design pattern detection algorithm</name>
+        <subtasks>
+          <subtask>Define abandonment pattern detection logic: identify journey stages with >30% drop-off rate</subtask>
+          <subtask>Define hesitation pattern detection logic: identify form fields with multiple re-entry events</subtask>
+          <subtask>Define low engagement pattern detection logic: identify pages with time-on-page below site average</subtask>
+          <subtask>Define statistical significance thresholds: minimum 100 sessions required for pattern confidence</subtask>
+          <subtask>Design severity ranking algorithm: (drop-off rate × affected session count) for prioritization</subtask>
+          <subtask>Document algorithm with examples and edge cases</subtask>
+        </subtasks>
+      </task>
+      <task id="2" ac="#1,#2,#3,#7">
+        <name>Create pattern detector service</name>
+        <subtasks>
+          <subtask>Create src/services/analytics/pattern-detector.ts service module</subtask>
+          <subtask>Implement detectPatterns(siteId: string, analysisWindow: DateRange): Promise&lt;Pattern[]&gt; function</subtask>
+          <subtask>Query Session data from PostgreSQL using Prisma for the analysis window</subtask>
+          <subtask>Implement abandonment detection: analyze journey paths for high drop-off stages</subtask>
+          <subtask>Implement hesitation detection: query TrackingEvent for form re-entry patterns</subtask>
+          <subtask>Implement low engagement detection: calculate time-on-page metrics, compare to averages</subtask>
+          <subtask>Apply statistical significance filters: exclude patterns with &lt;100 sessions</subtask>
+          <subtask>Calculate severity scores for pattern ranking</subtask>
+          <subtask>Handle edge cases: insufficient data, no patterns detected, all patterns below threshold</subtask>
+        </subtasks>
+      </task>
+      <task id="3" ac="#6">
+        <name>Update Prisma schema for Pattern model</name>
+        <subtasks>
+          <subtask>Verify Pattern model exists in prisma/schema.prisma with required fields</subtask>
+          <subtask>Add fields if needed: patternType, description, severity, sessionCount, confidenceScore, metadata (Json)</subtask>
+          <subtask>Create indexes: (siteId, detectedAt), (siteId, severity) for efficient querying</subtask>
+          <subtask>Run migration: npx prisma migrate dev</subtask>
+        </subtasks>
+      </task>
+      <task id="4" ac="#6">
+        <name>Implement pattern storage logic</name>
+        <subtasks>
+          <subtask>Create storePatterns(patterns: PatternData[]): Promise&lt;Pattern[]&gt; in pattern-detector</subtask>
+          <subtask>Use Prisma createMany for bulk insert (better performance than individual inserts)</subtask>
+          <subtask>Handle duplicate patterns: upsert based on unique combination (siteId + patternType + description hash)</subtask>
+          <subtask>Implement error handling with partial success tracking (log failed patterns, continue processing)</subtask>
+        </subtasks>
+      </task>
+      <task id="5" ac="#5">
+        <name>Create Inngest background job for scheduled pattern detection</name>
+        <subtasks>
+          <subtask>Create src/inngest/pattern-detection.ts Inngest function</subtask>
+          <subtask>Schedule job to run daily using Inngest cron syntax (0 2 * * * - runs at 2 AM UTC)</subtask>
+          <subtask>Implement analysis window logic: analyze sessions from last 7 days (configurable)</subtask>
+          <subtask>Fetch all active sites from Business table</subtask>
+          <subtask>Call pattern-detector service for each site with appropriate analysis window</subtask>
+          <subtask>Log job execution: sites analyzed, patterns detected, execution time, errors</subtask>
+          <subtask>Implement Inngest retry logic for transient failures (automatic up to 3 retries)</subtask>
+        </subtasks>
+      </task>
+      <task id="6" ac="#4">
+        <name>Generate human-readable pattern summaries</name>
+        <subtasks>
+          <subtask>Create generatePatternSummary(pattern: PatternData): string function in pattern-detector</subtask>
+          <subtask>Implement summary templates for each pattern type</subtask>
+          <subtask>Include session counts and confidence levels in summaries</subtask>
+          <subtask>Store summaries in Pattern.description field</subtask>
+        </subtasks>
+      </task>
+      <task id="7" ac="#6">
+        <name>Create Server Actions for accessing pattern data</name>
+        <subtasks>
+          <subtask>Create src/actions/patterns.ts with Server Actions</subtask>
+          <subtask>Implement getPatterns(businessId: string, options?: PatternQueryOptions): Promise&lt;ActionResult&lt;Pattern[]&gt;&gt;</subtask>
+          <subtask>Implement getPatternById(patternId: string): Promise&lt;ActionResult&lt;Pattern&gt;&gt;</subtask>
+          <subtask>Add user authentication check (verify businessId ownership)</subtask>
+          <subtask>Use ActionResult&lt;T&gt; response format</subtask>
+          <subtask>Add input validation with Zod schemas</subtask>
+        </subtasks>
+      </task>
+      <task id="8" ac="#1-7">
+        <name>Implement comprehensive testing</name>
+        <subtasks>
+          <subtask>Unit tests for pattern-detector service (tests/unit/pattern-detector.test.ts)</subtask>
+          <subtask>Test abandonment detection logic with sample Session data</subtask>
+          <subtask>Test hesitation detection with sample TrackingEvent data</subtask>
+          <subtask>Test low engagement detection with time-on-page calculations</subtask>
+          <subtask>Test statistical significance filtering</subtask>
+          <subtask>Test severity ranking algorithm</subtask>
+          <subtask>Test edge cases: no sessions, insufficient data, no significant patterns detected</subtask>
+          <subtask>Integration test for Inngest job execution</subtask>
+          <subtask>Test pattern summary generation for all pattern types</subtask>
+        </subtasks>
+      </task>
+      <task id="9" ac="#1-6">
+        <name>Create TypeScript types and interfaces</name>
+        <subtasks>
+          <subtask>Create src/types/pattern.ts with types</subtask>
+          <subtask>Define PatternData interface (input to detector)</subtask>
+          <subtask>Define PatternType enum ('ABANDONMENT' | 'HESITATION' | 'LOW_ENGAGEMENT')</subtask>
+          <subtask>Define PatternMetadata interface (pattern-specific data)</subtask>
+          <subtask>Define DateRange type for analysis window</subtask>
+          <subtask>Define PatternQueryOptions interface</subtask>
+          <subtask>Export all types for use across the application</subtask>
+        </subtasks>
+      </task>
+      <task id="10" ac="#5,#7">
+        <name>Manual testing and validation</name>
+        <subtasks>
+          <subtask>Test Inngest job locally using Inngest Dev Server</subtask>
+          <subtask>Verify job runs on daily schedule</subtask>
+          <subtask>Test with session data from Story 1.6</subtask>
+          <subtask>Verify patterns are created correctly in PostgreSQL</subtask>
+          <subtask>Check pattern summaries are human-readable and accurate</subtask>
+          <subtask>Validate severity ranking produces correct priority order</subtask>
+          <subtask>Test with various session volumes (below and above 100 session threshold)</subtask>
+          <subtask>Test error handling and retry logic</subtask>
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="1">Pattern detection algorithm analyzes sessions to identify:
+   - High abandonment steps in user journeys (&gt;30% drop-off)
+   - Form fields with high re-entry rates (hesitation indicators)
+   - Pages with below-average time-on-page (engagement issues)</criterion>
+    <criterion id="2">Statistical significance thresholds applied (minimum 100 sessions for pattern confidence)</criterion>
+    <criterion id="3">Patterns ranked by severity (abandonment rate × session volume)</criterion>
+    <criterion id="4">Human-readable pattern summaries generated ("40% abandon at shipping form")</criterion>
+    <criterion id="5">Pattern detection runs daily on aggregated session data</criterion>
+    <criterion id="6">Detected patterns stored with confidence scores</criterion>
+    <criterion id="7">Unit tests validate pattern detection logic with sample datasets</criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Functional Requirements - Pattern Detection</section>
+        <snippet>FR007: System shall automatically analyze customer behavior patterns across sessions and identify statistically significant friction points. FR008: System shall generate human-readable journey summaries (e.g., "3 out of 5 customers abandon at checkout step 2"). FR009: System shall detect user hesitation, data re-entry, and abandonment patterns with minimum session thresholds for statistical confidence.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Documentation</title>
+        <section>Background Processing - Inngest Integration</section>
+        <snippet>Inngest 3.44.3 used for scheduled jobs and async workflows. Data Flow: Inngest daily job → Pattern Detector → PostgreSQL (patterns). Inngest webhook at /api/inngest receives job triggers, jobs execute on Inngest infrastructure.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Documentation</title>
+        <section>API Response Format - Server Actions</section>
+        <snippet>Server Actions use ActionResult&lt;T&gt; type: { success: true; data: T } | { success: false; error: string }. Pattern ensures consistent error handling across the application.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-1-foundation-core-analytics-engine.md</path>
+        <title>Epic 1: Foundation &amp; Core Analytics Engine</title>
+        <section>Epic Overview</section>
+        <snippet>Epic delivers working system that can track user behavior, process data to detect behavioral patterns and friction points, match businesses with peers, and generate actionable optimization recommendations. Core "brain" of MetricFortune operational by end of epic.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/1-6-session-aggregation-journey-mapping.md</path>
+        <title>Story 1.6: Session Aggregation &amp; Journey Mapping</title>
+        <section>Integration Point</section>
+        <snippet>Creates Session model with journeyPath field (String[] of URLs in visit order). Session data consumed by pattern detection for abandonment analysis. Service layer at src/services/analytics/session-aggregator.ts provides architecture pattern to follow.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/services/analytics/session-aggregator.ts</path>
+        <kind>service</kind>
+        <symbol>aggregateSessions</symbol>
+        <lines>47-50</lines>
+        <reason>Reference architecture for analytics service pattern - pure business logic module with Prisma integration</reason>
+      </artifact>
+      <artifact>
+        <path>src/inngest/session-aggregation.ts</path>
+        <kind>background-job</kind>
+        <symbol>sessionAggregationJob</symbol>
+        <lines>35-46</lines>
+        <reason>Reference pattern for Inngest scheduled job with cron, retries, and structured logging</reason>
+      </artifact>
+      <artifact>
+        <path>src/actions/sessions.ts</path>
+        <kind>server-actions</kind>
+        <symbol>getSessions, getJourneyFunnels, getSessionStats</symbol>
+        <lines>51-166</lines>
+        <reason>Reference pattern for Server Actions with ActionResult type, authentication checks, and Zod validation</reason>
+      </artifact>
+      <artifact>
+        <path>src/types/session.ts</path>
+        <kind>types</kind>
+        <symbol>SessionData, JourneySequence, DateRange</symbol>
+        <lines>12-79</lines>
+        <reason>Existing type definitions to import and reuse for pattern detection - DateRange type already defined</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>schema</kind>
+        <symbol>Session</symbol>
+        <lines>57-71</lines>
+        <reason>Session model with journeyPath field - primary data source for pattern detection</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>schema</kind>
+        <symbol>TrackingEvent</symbol>
+        <lines>73-85</lines>
+        <reason>TrackingEvent model for hesitation pattern detection - query for form re-entry events</reason>
+      </artifact>
+      <artifact>
+        <path>src/lib/inngest.ts</path>
+        <kind>configuration</kind>
+        <symbol>inngest</symbol>
+        <lines>1-20</lines>
+        <reason>Inngest client instance - must register new pattern-detection function here</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="@prisma/client" version="6.17.0">Type-safe database client for PostgreSQL operations</package>
+        <package name="prisma" version="6.17.0">Database toolkit for schema management and migrations</package>
+        <package name="inngest" version="^3.44.4">Background job scheduling and async workflows</package>
+        <package name="zod" version="^4.1.12">Schema validation for input validation</package>
+        <package name="next" version="16.0.1">React framework for Server Actions and API routes</package>
+        <package name="vitest" version="4.0">Unit and integration testing framework</package>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Service must be pure business logic module with no Next.js dependencies (follows src/services/analytics/session-aggregator.ts pattern)</constraint>
+    <constraint>Use Prisma for all database operations with proper error handling and type safety</constraint>
+    <constraint>Pattern model must be added to prisma/schema.prisma with indexes on (siteId, detectedAt) and (siteId, severity)</constraint>
+    <constraint>Inngest job must use cron syntax for daily scheduling: '0 2 * * *' (2 AM UTC)</constraint>
+    <constraint>Server Actions must use ActionResult&lt;T&gt; response format: { success: boolean, data?: T, error?: string }</constraint>
+    <constraint>All Server Actions require authentication via auth() and business ownership verification</constraint>
+    <constraint>Input validation must use Zod schemas for all public functions</constraint>
+    <constraint>Minimum 100 sessions required for statistical confidence before storing patterns</constraint>
+    <constraint>All TypeScript code must pass strict mode checks (no any types, proper null handling)</constraint>
+    <constraint>Use structured console logging with context for monitoring: console.log('[PatternDetector] message', { context })</constraint>
+    <constraint>All database paths in context must be project-relative (no absolute paths)</constraint>
+    <constraint>Testing required: unit tests for detection logic, integration tests for Inngest job</constraint>
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>detectPatterns</name>
+      <kind>service-function</kind>
+      <signature>detectPatterns(siteId: string, analysisWindow: DateRange): Promise&lt;Pattern[]&gt;</signature>
+      <path>src/services/analytics/pattern-detector.ts</path>
+    </interface>
+    <interface>
+      <name>getPatterns</name>
+      <kind>server-action</kind>
+      <signature>getPatterns(businessId: string, options?: PatternQueryOptions): Promise&lt;ActionResult&lt;Pattern[]&gt;&gt;</signature>
+      <path>src/actions/patterns.ts</path>
+    </interface>
+    <interface>
+      <name>ActionResult</name>
+      <kind>type</kind>
+      <signature>type ActionResult&lt;T&gt; = { success: true; data: T } | { success: false; error: string }</signature>
+      <path>src/actions/business-profile.ts</path>
+    </interface>
+    <interface>
+      <name>DateRange</name>
+      <kind>type</kind>
+      <signature>interface DateRange { startDate: Date; endDate: Date }</signature>
+      <path>src/types/session.ts</path>
+    </interface>
+    <interface>
+      <name>Session</name>
+      <kind>prisma-model</kind>
+      <signature>model Session { id, siteId, sessionId, journeyPath: String[], duration, pageCount, bounced, converted, createdAt }</signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+    <interface>
+      <name>TrackingEvent</name>
+      <kind>prisma-model</kind>
+      <signature>model TrackingEvent { id, siteId, sessionId, eventType, timestamp, data: Json, createdAt }</signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>Vitest 4.0 is the testing framework with @vitest/ui for visual testing. Tests follow AAA pattern (Arrange, Act, Assert) with descriptive test names mapping to acceptance criteria. Mock Prisma using vi.mock() for unit tests. Use beforeEach() for test isolation. Integration tests use real Prisma client with test database. Test files include JSDoc headers explaining coverage. All tests must pass strict TypeScript checks.</standards>
+    <locations>
+      <location>tests/unit/pattern-detector.test.ts</location>
+      <location>tests/integration/pattern-detection.test.ts</location>
+    </locations>
+    <ideas>
+      <test ac="1">Test abandonment pattern detection with sample Session data showing &gt;30% drop-off at specific journey stages</test>
+      <test ac="1">Test hesitation pattern detection with TrackingEvent data containing form re-entry patterns</test>
+      <test ac="1">Test low engagement pattern detection with below-average time-on-page calculations</test>
+      <test ac="2">Test statistical significance filtering: reject patterns with &lt;100 sessions, accept patterns with &gt;=100 sessions</test>
+      <test ac="3">Test severity ranking algorithm: verify patterns sorted by (drop-off rate × session count)</test>
+      <test ac="4">Test human-readable pattern summary generation for all three pattern types (abandonment, hesitation, low engagement)</test>
+      <test ac="5">Integration test for Inngest job: mock Inngest trigger, verify pattern-detector service called for each site</test>
+      <test ac="6">Test pattern storage with Prisma createMany: verify patterns saved with confidence scores and metadata</test>
+      <test ac="6">Test pattern deduplication: verify upsert behavior prevents duplicate patterns</test>
+      <test ac="7">Unit test edge cases: no sessions, insufficient data (&lt;100 sessions), no significant patterns detected</test>
+      <test ac="7">Performance test: verify pattern detection completes within acceptable time for 1000+ sessions</test>
+    </ideas>
+  </tests>
+</story-context>

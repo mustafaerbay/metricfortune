@@ -12,6 +12,7 @@ import { inngest } from '@/lib/inngest';
 
 // Import all Inngest functions
 import { sessionAggregationJob } from '@/inngest/session-aggregation';
+import { patternDetectionJob } from '@/inngest/pattern-detection';
 
 /**
  * Register all Inngest functions
@@ -20,6 +21,7 @@ export const { GET, POST, PUT } = serve({
   client: inngest,
   functions: [
     sessionAggregationJob,
+    patternDetectionJob,
     // Add more functions here as they are created
   ],
 });

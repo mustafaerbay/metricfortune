@@ -43,7 +43,7 @@ development_status:
   1-4-user-registration-business-profile: done
   1-5-business-matching-algorithm: done
   1-6-session-aggregation-journey-mapping: done
-  1-7-pattern-detection-engine: backlog
+  1-7-pattern-detection-engine: done
   1-8-recommendation-generation-engine: backlog
   1-9-shopify-integration: backlog
   1-10-system-testing-validation: backlog
