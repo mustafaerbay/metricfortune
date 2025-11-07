@@ -1,0 +1,286 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>8</storyId>
+    <title>Recommendation Generation Engine</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-05</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-8-recommendation-generation-engine.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>the system</asA>
+    <iWant>to generate specific, actionable recommendations from detected patterns</iWant>
+    <soThat>business owners receive clear guidance on what to optimize</soThat>
+    <tasks>
+- [ ] Design recommendation rule engine (AC: #1, #2, #4)
+- [ ] Create recommendation engine service (AC: #1, #2, #3, #4, #5, #7)
+- [ ] Verify Prisma schema for Recommendation model (AC: #6)
+- [ ] Implement recommendation storage logic (AC: #6)
+- [ ] Create Inngest background job for recommendation generation (AC: #5)
+- [ ] Create Server Actions for accessing recommendation data (AC: #7)
+- [ ] Implement comprehensive testing (AC: #1-7)
+- [ ] Create TypeScript types and interfaces (AC: #1-6)
+- [ ] Manual testing and validation (AC: #5, #7)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. Rule-based recommendation engine maps patterns to specific actions (abandonment → field optimization, shipping → cost visibility, product → content improvement)
+2. Each recommendation includes: problem statement, specific action, expected impact range, confidence level
+3. Peer data integration: if similar businesses solved this problem, include success rate
+4. Recommendations prioritized by potential impact (abandonment rate × conversion value)
+5. Generate 3-5 recommendations per business per week
+6. Recommendations stored with generation timestamp and status (new/viewed/dismissed/implemented)
+7. API endpoint to retrieve recommendations for a business
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Functional Requirements - Recommendation Engine</section>
+        <snippet>FR010: System shall generate 3-5 specific, actionable recommendations per week prioritized by potential impact. FR011: Format recommendations with Problem → Specific Action → Expected Impact → Confidence Level. FR012: Incorporate peer success data when available.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Data Architecture - Recommendation Model</section>
+        <snippet>Recommendation model includes businessId, title, problemStatement, actionSteps, expectedImpact, confidenceLevel, status, impactLevel, peerSuccessData with indexed query on (businessId, status).</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>ADR-004: Server Actions over REST API</section>
+        <snippet>Use Next.js Server Actions for internal data mutations instead of building REST API. Built-in type safety, simplest pattern, no separate API layer needed.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>ADR-005: Inngest for Background Jobs</section>
+        <snippet>Use Inngest for scheduled jobs and async workflows. Built for Next.js/Vercel, handles scheduling + retries + monitoring, excellent local dev experience.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Project Structure - Services</section>
+        <snippet>Recommendation engine service location: src/services/analytics/recommendation-engine.ts (Story 1.8). Pure business logic module.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-1-foundation-core-analytics-engine.md</path>
+        <title>Epic 1: Foundation & Core Analytics Engine</title>
+        <section>Story 1.8: Recommendation Generation Engine</section>
+        <snippet>Generate specific, actionable recommendations from detected patterns so business owners receive clear guidance on what to optimize.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/1-7-pattern-detection-engine.md</path>
+        <title>Story 1.7: Pattern Detection Engine</title>
+        <section>Dev Notes - Learnings from Previous Story</section>
+        <snippet>Pattern model created with severity, confidence, sessionCount, description, metadata fields. Query using Prisma for recommendation input. Pattern detection triggers recommendation generation via Inngest.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/1-5-business-matching-algorithm.md</path>
+        <title>Story 1.5: Business Matching Algorithm</title>
+        <section>Peer Group Integration</section>
+        <snippet>Business.peerGroupId provides peer group data for peer success statistics in recommendations.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/services/analytics/pattern-detector.ts</path>
+        <kind>service</kind>
+        <symbol>detectPatterns, storePatterns, generatePatternSummary</symbol>
+        <lines>1-610</lines>
+        <reason>Pattern detection service provides Pattern data as input for recommendation generation. Use PatternData interface and query Pattern model.</reason>
+      </artifact>
+      <artifact>
+        <path>src/inngest/pattern-detection.ts</path>
+        <kind>inngest-job</kind>
+        <symbol>patternDetectionJob, triggerPatternDetection</symbol>
+        <lines>1-247</lines>
+        <reason>Reference implementation for Inngest background job pattern. Shows job structure, step.run usage, error handling, and logging patterns to follow.</reason>
+      </artifact>
+      <artifact>
+        <path>src/actions/patterns.ts</path>
+        <kind>server-action</kind>
+        <symbol>getPatterns, getPatternById, getPatternStats</symbol>
+        <lines>1-458</lines>
+        <reason>Reference implementation for Server Actions pattern. Shows ActionResult format, auth checks, business ownership verification, and Zod validation.</reason>
+      </artifact>
+      <artifact>
+        <path>src/types/pattern.ts</path>
+        <kind>types</kind>
+        <symbol>PatternType, PatternData, PatternMetadata, PatternQueryOptions</symbol>
+        <lines>1-112</lines>
+        <reason>Pattern type definitions to import and use in recommendation engine. PatternData structure is input for recommendation generation.</reason>
+      </artifact>
+      <artifact>
+        <path>src/lib/inngest.ts</path>
+        <kind>library</kind>
+        <symbol>inngest</symbol>
+        <lines>1-22</lines>
+        <reason>Inngest client instance for creating background job functions. Import this to define recommendation-generation job.</reason>
+      </artifact>
+      <artifact>
+        <path>src/app/api/inngest/route.ts</path>
+        <kind>api-route</kind>
+        <symbol>serve</symbol>
+        <lines>1-28</lines>
+        <reason>Inngest function registration. Must add new recommendation-generation job to functions array.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>schema</kind>
+        <symbol>Pattern, Business, PeerGroup</symbol>
+        <lines>87-100, 26-44, 46-55</lines>
+        <reason>Database schema. Pattern model (lines 87-100) is data source. Business model (lines 26-44) has peerGroupId for peer data. CRITICAL: Recommendation model does NOT exist yet - must be added.</reason>
+      </artifact>
+      <artifact>
+        <path>src/lib/prisma.ts</path>
+        <kind>library</kind>
+        <symbol>prisma</symbol>
+        <lines></lines>
+        <reason>Prisma client singleton for all database operations. Import for querying Pattern, Business, and creating Recommendation records.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="@prisma/client" version="6.17.0">ORM for type-safe database operations</package>
+        <package name="inngest" version="^3.44.4">Background job scheduling and async workflows</package>
+        <package name="next" version="16.0.1">Next.js framework with Server Actions support</package>
+        <package name="next-auth" version="^5.0.0-beta.30">Authentication for Server Actions</package>
+        <package name="zod" version="^4.1.12">Input validation schemas</package>
+        <package name="vitest" version="4.0">Unit testing framework</package>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>CRITICAL: Recommendation model does NOT exist in prisma/schema.prisma yet. Must be added per story Dev Notes schema (lines 123-160) before implementing storage logic.</constraint>
+    <constraint>Service layer must be pure business logic (no Next.js dependencies). Create src/services/analytics/recommendation-engine.ts following pattern from pattern-detector.ts.</constraint>
+    <constraint>Inngest job must be triggered job (not cron). Trigger from pattern-detection job after successful pattern storage via inngest.send().</constraint>
+    <constraint>Server Actions must return ActionResult format: { success: boolean, data?: T, error?: string }. See patterns.ts for reference implementation.</constraint>
+    <constraint>All Server Actions require authentication via auth() and business ownership verification before data access.</constraint>
+    <constraint>Use Prisma createMany with skipDuplicates for bulk inserts (better performance than individual creates). See pattern-detector.ts storePatterns function.</constraint>
+    <constraint>Database indexes required: (businessId, status) on Recommendation model for efficient querying.</constraint>
+    <constraint>TypeScript strict mode enabled. All code must pass strict type checks. Define types in src/types/recommendation.ts.</constraint>
+    <constraint>Testing with Vitest 4.0. Create tests/unit/recommendation-engine.test.ts following patterns from pattern-detector.test.ts.</constraint>
+    <constraint>Inngest handles automatic retries (up to 3 with exponential backoff). Log failures but let Inngest manage retry logic.</constraint>
+    <constraint>Structured logging required: Use console.log/error with context objects { businessId, recommendationsGenerated, executionTime }.</constraint>
+    <constraint>Error handling: wrap Prisma queries in try-catch, return structured errors, continue processing on partial failures.</constraint>
+    <constraint>Run npm run build before story completion to verify zero TypeScript errors and successful build.</constraint>
+    <constraint>Recommendation generation runs AFTER pattern detection completes. Modify pattern-detection.ts to trigger recommendation job.</constraint>
+    <constraint>Priority calculation: Impact Score = Pattern.severity × Estimated Conversion Value (HIGH=3, MEDIUM=2, LOW=1). Sort descending, return top 3-5.</constraint>
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>detectPatterns</name>
+      <kind>Service function</kind>
+      <signature>detectPatterns(siteId: string, analysisWindow: DateRange): Promise&lt;PatternData[]&gt;</signature>
+      <path>src/services/analytics/pattern-detector.ts</path>
+    </interface>
+    <interface>
+      <name>storePatterns</name>
+      <kind>Service function</kind>
+      <signature>storePatterns(patterns: PatternData[]): Promise&lt;{ created: number; errors: string[] }&gt;</signature>
+      <path>src/services/analytics/pattern-detector.ts</path>
+    </interface>
+    <interface>
+      <name>prisma.pattern.findMany</name>
+      <kind>Database query</kind>
+      <signature>findMany({ where: { siteId, detectedAt: { gte } }, orderBy: { severity: 'desc' } })</signature>
+      <path>@prisma/client</path>
+    </interface>
+    <interface>
+      <name>prisma.business.findUnique</name>
+      <kind>Database query</kind>
+      <signature>findUnique({ where: { siteId }, include: { peerGroup: true } })</signature>
+      <path>@prisma/client</path>
+    </interface>
+    <interface>
+      <name>ActionResult&lt;T&gt;</name>
+      <kind>Type interface</kind>
+      <signature>{ success: boolean; data?: T; error?: string }</signature>
+      <path>src/actions/business-profile.ts</path>
+    </interface>
+    <interface>
+      <name>inngest.createFunction</name>
+      <kind>Inngest job creator</kind>
+      <signature>createFunction({ id, name, retries }, [{ event }], async ({ event, step }) =&gt; {})</signature>
+      <path>src/lib/inngest.ts</path>
+    </interface>
+    <interface>
+      <name>inngest.send</name>
+      <kind>Inngest event trigger</kind>
+      <signature>inngest.send({ name: 'recommendation/generate', data: { siteId, businessId } })</signature>
+      <path>src/lib/inngest.ts</path>
+    </interface>
+    <interface>
+      <name>auth</name>
+      <kind>Authentication function</kind>
+      <signature>auth(): Promise&lt;Session | null&gt;</signature>
+      <path>src/lib/auth.ts</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>
+Vitest 4.0 is the unit testing framework. Tests use vi.mock() for Prisma client mocking. Follow patterns from tests/unit/pattern-detector.test.ts: arrange-act-assert structure, descriptive test names with AC references, beforeEach for mock cleanup. Mock Prisma queries with vi.mocked(prisma.model.method).mockResolvedValue(). Test with realistic sample data (Pattern records with various patternTypes, severities, confidence scores). Use describe blocks for logical grouping. Run tests with npm test.
+    </standards>
+    <locations>
+      <location>tests/unit/ - Unit tests for services and business logic</location>
+      <location>tests/integration/ - Integration tests for API routes and workflows</location>
+      <location>tests/unit/recommendation-engine.test.ts - New file to create for this story</location>
+    </locations>
+    <ideas>
+      <test ac="1,2" desc="Test rule-based recommendation mapping from pattern types to action templates">
+        - Test ABANDONMENT pattern → shipping/payment/product recommendations
+        - Test HESITATION pattern → form field optimization recommendations
+        - Test LOW_ENGAGEMENT pattern → content improvement recommendations
+        - Verify each recommendation includes: problemStatement, actionSteps, expectedImpact, confidenceLevel
+      </test>
+      <test ac="3" desc="Test peer success data integration">
+        - Mock Business.peerGroupId and peer group data
+        - Verify peer success rate calculation when similar patterns exist
+        - Test formatting: "12 similar stores implemented this and saw 18% average improvement"
+        - Test case when no peer data available (peerSuccessData should be null)
+      </test>
+      <test ac="4" desc="Test recommendation prioritization by impact score">
+        - Create patterns with different severity levels (0.3, 0.6, 0.9)
+        - Apply conversion value weights (HIGH=3, MEDIUM=2, LOW=1)
+        - Verify recommendations sorted by impact score descending
+        - Test top 3-5 limiting logic
+      </test>
+      <test ac="5" desc="Test recommendation generation limits to 3-5 per business">
+        - Create 10+ patterns with varying severities
+        - Verify output contains max 5 recommendations
+        - Verify highest priority recommendations are selected
+      </test>
+      <test ac="6" desc="Test recommendation storage with Prisma">
+        - Test bulk insert with createMany and skipDuplicates
+        - Verify all required fields populated (title, problemStatement, actionSteps, etc.)
+        - Test deduplication logic (businessId + title hash)
+        - Test default status = NEW
+      </test>
+      <test ac="7" desc="Test Server Actions with authentication and authorization">
+        - Test getRecommendations with valid businessId and filters
+        - Test auth failure (no session)
+        - Test authorization failure (wrong businessId)
+        - Test various filter options (status, impactLevel)
+      </test>
+      <test desc="Test edge cases">
+        - No patterns detected for business
+        - Insufficient peer data for peer success calculation
+        - All patterns below severity threshold
+        - Pattern with missing metadata
+      </test>
+      <test desc="Test Inngest job integration">
+        - Mock Inngest event trigger from pattern-detection
+        - Verify job processes all businesses with recent patterns
+        - Test structured logging output
+        - Test error handling with partial failures
+      </test>
+    </ideas>
+  </tests>
+</story-context>

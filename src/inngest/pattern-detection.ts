@@ -211,6 +211,25 @@ export const patternDetectionJob = inngest.createFunction(
 
       console.log('[PatternDetection] Job completed successfully', summary);
 
+      // Step 4: Trigger recommendation generation
+      // Only trigger if patterns were detected and stored
+      if (summary.patternsStored > 0) {
+        await step.run('trigger-recommendation-generation', async () => {
+          console.log(
+            '[PatternDetection] Triggering recommendation generation job'
+          );
+
+          await inngest.send({
+            name: 'recommendation/generate',
+            data: {},
+          });
+
+          console.log(
+            '[PatternDetection] Recommendation generation job triggered successfully'
+          );
+        });
+      }
+
       return summary;
     } catch (error) {
       const executionTimeMs = Date.now() - jobStartTime;

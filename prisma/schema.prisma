@@ -24,18 +24,19 @@ model User {
 }
 
 model Business {
-  id                String     @id @default(cuid())
-  userId            String     @unique
-  user              User       @relation(fields: [userId], references: [id])
+  id                String           @id @default(cuid())
+  userId            String           @unique
+  user              User             @relation(fields: [userId], references: [id])
   name              String
   industry          String
   revenueRange      String
   productTypes      String[]
   platform          String
-  siteId            String     @unique
+  siteId            String           @unique
   peerGroupId       String?
-  peerGroup         PeerGroup? @relation(fields: [peerGroupId], references: [id])
-  createdAt         DateTime   @default(now())
+  peerGroup         PeerGroup?       @relation(fields: [peerGroupId], references: [id])
+  recommendations   Recommendation[]
+  createdAt         DateTime         @default(now())
 
   @@index([siteId])
   @@index([industry])
@@ -97,4 +98,42 @@ model Pattern {
 
   @@index([siteId, detectedAt])
   @@index([siteId, severity])
+}
+
+model Recommendation {
+  id                  String                 @id @default(cuid())
+  businessId          String
+  business            Business               @relation(fields: [businessId], references: [id])
+  title               String
+  problemStatement    String
+  actionSteps         String[]
+  expectedImpact      String
+  confidenceLevel     ConfidenceLevel
+  status              RecommendationStatus   @default(NEW)
+  impactLevel         ImpactLevel
+  peerSuccessData     String?
+  implementedAt       DateTime?
+  dismissedAt         DateTime?
+  createdAt           DateTime               @default(now())
+
+  @@index([businessId, status])
+}
+
+enum RecommendationStatus {
+  NEW
+  PLANNED
+  IMPLEMENTED
+  DISMISSED
+}
+
+enum ImpactLevel {
+  HIGH
+  MEDIUM
+  LOW
+}
+
+enum ConfidenceLevel {
+  HIGH
+  MEDIUM
+  LOW
 }
