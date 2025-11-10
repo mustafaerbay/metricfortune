@@ -437,4 +437,146 @@
       console.warn('[MetricFortune] Auto-initialization failed, use MetricFortune.init() manually');
     }
   })();
+
+  // ========== Shopify-Specific Tracking Enhancement ==========
+  // Detect Shopify environment and track e-commerce conversion events
+  (function shopifyTracking() {
+    try {
+      // Check if running on Shopify (window.Shopify object exists)
+      if (typeof window !== 'undefined' && window.Shopify) {
+        console.log('[MetricFortune] Shopify environment detected - enabling e-commerce tracking');
+
+        // Track add-to-cart events
+        // Modern Shopify themes use theme-specific events or Ajax cart API
+        document.addEventListener('click', function(event) {
+          try {
+            const target = event.target;
+
+            // Check if clicked element is add-to-cart button
+            const addToCartButton = target.closest('[data-add-to-cart]') ||
+                                   target.closest('form[action*="/cart/add"]') ||
+                                   target.closest('button[name="add"]');
+
+            if (addToCartButton) {
+              // Find the associated form to extract product data
+              const form = addToCartButton.closest('form[action*="/cart/add"]');
+
+              if (form) {
+                const formData = new FormData(form);
+                const variantId = formData.get('id');
+                const quantity = formData.get('quantity') || '1';
+
+                queueEvent('conversion', {
+                  type: 'add_to_cart',
+                  platform: 'shopify',
+                  product_variant_id: variantId,
+                  quantity: parseInt(quantity, 10),
+                  timestamp: Date.now(),
+                });
+
+                console.log('[MetricFortune] Shopify add-to-cart tracked:', { variantId, quantity });
+              }
+            }
+          } catch (e) {
+            // Silent fail - don't break add-to-cart functionality
+          }
+        }, true);
+
+        // Track checkout started (navigation to /checkout)
+        // Use Navigation Timing API to detect navigation events
+        if (window.PerformanceObserver) {
+          try {
+            const observer = new PerformanceObserver(function(list) {
+              for (const entry of list.getEntries()) {
+                if (entry.name && entry.name.includes('/checkout')) {
+                  queueEvent('conversion', {
+                    type: 'checkout_started',
+                    platform: 'shopify',
+                    timestamp: Date.now(),
+                  });
+
+                  console.log('[MetricFortune] Shopify checkout started tracked');
+                }
+              }
+            });
+
+            observer.observe({ entryTypes: ['navigation'] });
+          } catch (e) {
+            // Fallback: detect checkout on page load
+            if (window.location.pathname.includes('/checkout')) {
+              queueEvent('conversion', {
+                type: 'checkout_started',
+                platform: 'shopify',
+                timestamp: Date.now(),
+              });
+            }
+          }
+        } else {
+          // Fallback for browsers without PerformanceObserver
+          if (window.location.pathname.includes('/checkout')) {
+            queueEvent('conversion', {
+              type: 'checkout_started',
+              platform: 'shopify',
+              timestamp: Date.now(),
+            });
+          }
+        }
+
+        // Track purchase completion (order confirmation page)
+        // Shopify thank-you/order confirmation pages have /thank_you or /orders/ in URL
+        if (window.location.pathname.includes('/thank_you') ||
+            window.location.pathname.includes('/orders/')) {
+
+          try {
+            // Extract order data from Shopify.checkout object if available
+            const orderData = window.Shopify && window.Shopify.checkout ? window.Shopify.checkout : {};
+
+            queueEvent('conversion', {
+              type: 'purchase_completed',
+              platform: 'shopify',
+              order_id: orderData.order_id || null,
+              total: orderData.total_price || null,
+              currency: orderData.currency || null,
+              timestamp: Date.now(),
+            });
+
+            console.log('[MetricFortune] Shopify purchase completion tracked:', {
+              order_id: orderData.order_id,
+              total: orderData.total_price,
+            });
+          } catch (e) {
+            // Track purchase event even if order data extraction fails
+            queueEvent('conversion', {
+              type: 'purchase_completed',
+              platform: 'shopify',
+              timestamp: Date.now(),
+            });
+          }
+        }
+
+        // Listen for Shopify Ajax cart events (for dynamic add-to-cart without page reload)
+        // Some themes trigger custom events on cart updates
+        if (document.addEventListener) {
+          ['cart:updated', 'cart.requestComplete', 'ajaxCart.afterCartLoad'].forEach(function(eventName) {
+            document.addEventListener(eventName, function(event) {
+              try {
+                queueEvent('conversion', {
+                  type: 'cart_updated',
+                  platform: 'shopify',
+                  timestamp: Date.now(),
+                });
+
+                console.log('[MetricFortune] Shopify cart updated event tracked:', eventName);
+              } catch (e) {
+                // Silent fail
+              }
+            });
+          });
+        }
+      }
+    } catch (e) {
+      // Silent fail - don't break the page if Shopify tracking setup fails
+      console.warn('[MetricFortune] Shopify tracking initialization failed:', e);
+    }
+  })();
 })();

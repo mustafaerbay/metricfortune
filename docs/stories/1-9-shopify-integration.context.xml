@@ -1,0 +1,240 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>9</storyId>
+    <title>Shopify Integration</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-08</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/1-9-shopify-integration.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>an e-commerce business owner using Shopify</asA>
+    <iWant>to install MetricFortune with one click through the Shopify App Store</iWant>
+    <soThat>tracking is automatically configured without manual script installation</soThat>
+    <tasks>
+- Create Shopify app configuration and register app (AC: #1, #7)
+- Implement Shopify OAuth flow (AC: #2)
+- Create Prisma schema for Shopify integration (AC: #2, #3, #4, #5)
+- Implement tracking script injection (AC: #3)
+- Configure tracking script for Shopify-specific events (AC: #4)
+- Implement order and product metadata capture (AC: #5)
+- Implement uninstall flow (AC: #6)
+- Create Server Actions for Shopify integration management (AC: #2, #3)
+- Implement comprehensive testing (AC: #1-7)
+- Create TypeScript types and interfaces (AC: #2, #4, #5)
+- Manual testing and app submission preparation (AC: #7)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. Shopify app configuration created with required scopes (read orders, read products)
+2. OAuth flow implemented for Shopify app installation
+3. Tracking script automatically injected into Shopify store theme
+4. Conversion events automatically tracked (add to cart, checkout started, purchase completed)
+5. Product and order metadata captured for richer analysis
+6. Uninstall flow removes tracking script cleanly
+7. App listed in Shopify development store for testing
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Functional Requirements - FR002</section>
+        <snippet>System shall integrate with Shopify and WooCommerce platforms to automatically track conversion events and e-commerce specific actions</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>User Journey - Onboarding &amp; Setup</section>
+        <snippet>Installs MetricFortune via one-click Shopify integration; Tracking begins automatically; sees confirmation: "Tracking active - first insights in 24 hours"</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Integration Points</section>
+        <snippet>Shopify OAuth for app installation (Story 1.9); Application ↔ External Services integration pattern</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Epic to Architecture Mapping</section>
+        <snippet>Story 1.9: Shopify Integration - src/app/api/shopify/, OAuth flow, tracking auto-injection</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>API Response Format - Server Actions</section>
+        <snippet>type ActionResult&lt;T&gt; = { success: true; data: T } | { success: false; error: string }; Standard pattern for all Server Actions</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-1-foundation-core-analytics-engine.md</path>
+        <title>Epic 1 - Foundation &amp; Core Analytics Engine</title>
+        <section>Story 1.9: Shopify Integration</section>
+        <snippet>7 acceptance criteria covering OAuth flow, script injection, conversion tracking, metadata capture, and uninstall flow. Prerequisites: Story 1.2 (tracking script), 1.3 (data ingestion API), 1.4 (user accounts)</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>public/tracking.js</path>
+        <kind>tracking-script</kind>
+        <symbol>queueEvent, sendBatch</symbol>
+        <lines>127-198</lines>
+        <reason>Existing tracking script to enhance with Shopify-specific event detection (add-to-cart, checkout, purchase). Event structure and batching logic already established.</reason>
+      </artifact>
+      <artifact>
+        <path>src/app/api/track/route.ts</path>
+        <kind>api-route</kind>
+        <symbol>POST handler</symbol>
+        <lines>55-216</lines>
+        <reason>Data ingestion endpoint that Shopify conversion events will feed into. Implements validation, rate limiting, and authentication patterns to follow.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database-schema</kind>
+        <symbol>Business model</symbol>
+        <lines>26-45</lines>
+        <reason>Business model that ShopifyStore will relate to via businessId. Shows existing fields (siteId, userId, industry) and relation patterns.</reason>
+      </artifact>
+      <artifact>
+        <path>src/actions/recommendations.ts</path>
+        <kind>server-action</kind>
+        <symbol>getRecommendations, ActionResult type</symbol>
+        <lines>1-50</lines>
+        <reason>Server Actions pattern with ActionResult&lt;T&gt; response format, authentication checks via auth(), and input validation with Zod. Template for shopify.ts actions.</reason>
+      </artifact>
+      <artifact>
+        <path>src/inngest/recommendation-generation.ts</path>
+        <kind>background-job</kind>
+        <symbol>recommendationGenerationJob</symbol>
+        <lines>1-50</lines>
+        <reason>Inngest scheduled job pattern with structured logging, error handling, and execution tracking. Template for shopify-data-sync.ts job.</reason>
+      </artifact>
+      <artifact>
+        <path>src/lib/inngest.ts</path>
+        <kind>library</kind>
+        <symbol>inngest client</symbol>
+        <lines>all</lines>
+        <reason>Inngest client singleton used by all background jobs. Import pattern for data sync job.</reason>
+      </artifact>
+      <artifact>
+        <path>src/app/api/inngest/route.ts</path>
+        <kind>api-route</kind>
+        <symbol>Inngest webhook handler</symbol>
+        <lines>all</lines>
+        <reason>Inngest job registration endpoint. Must register shopify-data-sync job here alongside existing jobs.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="next" version="16.0.1">Next.js framework for API routes and Server Actions</package>
+        <package name="@prisma/client" version="6.17.0">Database client for ShopifyStore and ShopifyOrder models</package>
+        <package name="prisma" version="6.17.0">Schema management and migrations</package>
+        <package name="inngest" version="^3.44.4">Background job framework for order sync</package>
+        <package name="zod" version="^4.1.12">Input validation for Server Actions and API routes</package>
+        <package name="next-auth" version="^5.0.0-beta.30">Authentication for Server Actions</package>
+        <package name="@shopify/shopify-api" version="REQUIRED - NOT INSTALLED">Shopify Admin API client (must be added)</package>
+      </node>
+      <testing>
+        <package name="vitest" version="4.0">Unit testing framework</package>
+        <package name="@playwright/test" version="^1.56.1">E2E testing framework</package>
+      </testing>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Server Actions must use ActionResult&lt;T&gt; = { success: true; data: T } | { success: false; error: string } response format</constraint>
+    <constraint>All Server Actions must include authentication checks via auth() and business ownership verification</constraint>
+    <constraint>Prisma schema conventions: PascalCase singular model names (ShopifyStore, ShopifyOrder), camelCase field names</constraint>
+    <constraint>Inngest jobs must be registered in src/app/api/inngest/route.ts</constraint>
+    <constraint>OAuth callbacks must validate HMAC signatures using crypto module to verify Shopify request authenticity</constraint>
+    <constraint>Access tokens must be encrypted at rest (AES-256) and never logged or exposed in client-side code</constraint>
+    <constraint>Shopify Admin API rate limits: 2 requests/second sustained, 40 requests/second burst - implement exponential backoff on 429 responses</constraint>
+    <constraint>All file paths in context and documentation must be project-relative (strip /Users/.../metricfortune prefix)</constraint>
+    <constraint>TypeScript strict mode: all code must pass strict type checks with no any types</constraint>
+    <constraint>Testing required: Create unit tests with Vitest following patterns from tests/unit/recommendation-engine.test.ts</constraint>
+    <constraint>Service layer pattern: Business logic in src/services/shopify/ with no Next.js dependencies, API routes only handle HTTP concerns</constraint>
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>ActionResult&lt;T&gt; Server Action Response</name>
+      <kind>TypeScript type</kind>
+      <signature>type ActionResult&lt;T&gt; = { success: true; data: T } | { success: false; error: string }</signature>
+      <path>src/actions/business-profile.ts</path>
+    </interface>
+    <interface>
+      <name>POST /api/track - Tracking Event Ingestion</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/track { events: TrackingEvent[] } → { success: boolean }</signature>
+      <path>src/app/api/track/route.ts</path>
+    </interface>
+    <interface>
+      <name>Shopify Admin API - ScriptTag Resource</name>
+      <kind>REST API</kind>
+      <signature>POST /admin/api/2024-10/script_tags.json { script_tag: { event, src, display_scope } } → { script_tag: { id, ... } }</signature>
+      <path>External - Shopify Admin API</path>
+    </interface>
+    <interface>
+      <name>Shopify Admin API - Orders Resource</name>
+      <kind>REST API</kind>
+      <signature>GET /admin/api/2024-10/orders.json?status=any&amp;created_at_min=... → { orders: Order[] }</signature>
+      <path>External - Shopify Admin API</path>
+    </interface>
+    <interface>
+      <name>Shopify OAuth Flow</name>
+      <kind>OAuth 2.0</kind>
+      <signature>1. GET /admin/oauth/authorize → 2. Callback with code → 3. POST /admin/oauth/access_token → { access_token, scope }</signature>
+      <path>External - Shopify OAuth</path>
+    </interface>
+    <interface>
+      <name>Inngest Job Registration</name>
+      <kind>Background job</kind>
+      <signature>inngest.createFunction({ id, name }, { cron }, async ({ step }) =&gt; { ... })</signature>
+      <path>src/app/api/inngest/route.ts</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>
+Testing framework: Vitest 4.0 for unit and integration tests, Playwright 1.56.1 for E2E tests. Test structure follows describe/it/expect pattern with beforeEach for setup. Mock external dependencies (Prisma, Shopify API) using vi.mock(). Test coverage includes acceptance criteria mapping in file headers. Service layer tests are isolated from Next.js dependencies. API route tests use NextRequest/NextResponse mocking. All tests must pass TypeScript strict mode. Use descriptive test names following pattern: "should [expected behavior] when [condition]". Reference existing tests for patterns: tests/unit/recommendation-engine.test.ts (service layer), tests/integration/api/track.test.ts (API routes).
+    </standards>
+    <locations>
+      <location>tests/unit/script-injector.test.ts - Script injection service tests</location>
+      <location>tests/unit/shopify-oauth.test.ts - OAuth flow tests</location>
+      <location>tests/unit/data-sync.test.ts - Order sync service tests</location>
+      <location>tests/integration/api/shopify.test.ts - API route integration tests</location>
+      <location>tests/e2e/shopify-integration.spec.ts - E2E installation flow (optional)</location>
+    </locations>
+    <ideas>
+      <test ac="1" id="test-1.1">Verify Shopify app configuration has correct scopes (read_orders, read_products, write_script_tags)</test>
+      <test ac="1" id="test-1.2">Validate API key and secret are loaded from environment variables</test>
+      <test ac="2" id="test-2.1">Test OAuth initiation redirects to Shopify with correct parameters (scopes, redirect_uri, state)</test>
+      <test ac="2" id="test-2.2">Test OAuth callback validates HMAC signature correctly</test>
+      <test ac="2" id="test-2.3">Test OAuth callback exchanges authorization code for access token via mock Shopify API</test>
+      <test ac="2" id="test-2.4">Test OAuth callback stores shop domain and access token in database (ShopifyStore model)</test>
+      <test ac="2" id="test-2.5">Test OAuth callback associates ShopifyStore with existing Business or creates new one</test>
+      <test ac="2" id="test-2.6">Test OAuth callback handles invalid HMAC signature (returns 401)</test>
+      <test ac="3" id="test-3.1">Test script injection service creates ScriptTag via Shopify Admin API with correct parameters (event, src, display_scope)</test>
+      <test ac="3" id="test-3.2">Test script injection stores script tag ID in ShopifyStore model for later removal</test>
+      <test ac="3" id="test-3.3">Test script injection handles duplicate script tag errors gracefully</test>
+      <test ac="3" id="test-3.4">Test script injection handles API errors and invalid tokens</test>
+      <test ac="4" id="test-4.1">Test tracking script detects Shopify environment (window.Shopify exists)</test>
+      <test ac="4" id="test-4.2">Test add-to-cart event tracking captures product variant ID and sends to /api/track</test>
+      <test ac="4" id="test-4.3">Test checkout started tracking detects /checkout URL navigation</test>
+      <test ac="4" id="test-4.4">Test purchase completion tracking detects /thank_you page and captures order data</test>
+      <test ac="5" id="test-5.1">Test order data sync service queries Shopify Orders API with correct parameters (status, created_at_min)</test>
+      <test ac="5" id="test-5.2">Test order sync stores order metadata in ShopifyOrder model (order ID, total, currency, line items)</test>
+      <test ac="5" id="test-5.3">Test order sync handles API rate limits with exponential backoff on 429 responses</test>
+      <test ac="5" id="test-5.4">Test order sync skips duplicate orders (skipDuplicates: true)</test>
+      <test ac="5" id="test-5.5">Test Inngest scheduled job executes daily and processes all active ShopifyStores</test>
+      <test ac="6" id="test-6.1">Test uninstall webhook validates HMAC signature before processing</test>
+      <test ac="6" id="test-6.2">Test uninstall webhook marks ShopifyStore.uninstalledAt timestamp</test>
+      <test ac="6" id="test-6.3">Test uninstall webhook removes script tag via Shopify Admin API (DELETE ScriptTag by ID)</test>
+      <test ac="6" id="test-6.4">Test uninstall webhook returns 200 OK within 5 seconds to prevent retries</test>
+      <test ac="7" id="test-7.1">Integration test: Complete OAuth flow from install → callback → script injection → database storage</test>
+      <test ac="7" id="test-7.2">Integration test: Tracking script loads on Shopify storefront and captures sample events</test>
+    </ideas>
+  </tests>
+</story-context>

@@ -1,0 +1,612 @@
+# Story 1.9: Shopify Integration
+
+Status: review
+
+## Story
+
+As an e-commerce business owner using Shopify,
+I want to install MetricFortune with one click through the Shopify App Store,
+So that tracking is automatically configured without manual script installation.
+
+## Acceptance Criteria
+
+1. Shopify app configuration created with required scopes (read orders, read products)
+2. OAuth flow implemented for Shopify app installation
+3. Tracking script automatically injected into Shopify store theme
+4. Conversion events automatically tracked (add to cart, checkout started, purchase completed)
+5. Product and order metadata captured for richer analysis
+6. Uninstall flow removes tracking script cleanly
+7. App listed in Shopify development store for testing
+
+## Tasks / Subtasks
+
+- [ ] Create Shopify app configuration and register app (AC: #1, #7)
+  - [ ] Create Shopify Partner account if not already created
+  - [ ] Register new app in Shopify Partner Dashboard with app name "MetricFortune"
+  - [ ] Configure app scopes: `read_orders`, `read_products`, `write_script_tags` for tracking injection
+  - [ ] Set OAuth redirect URL: `{NEXTAUTH_URL}/api/shopify/callback`
+  - [ ] Obtain Shopify API Key and API Secret Key
+  - [ ] Store credentials in environment variables: `SHOPIFY_API_KEY`, `SHOPIFY_API_SECRET`
+  - [ ] Create development store for testing: Install app URL pattern
+
+- [ ] Implement Shopify OAuth flow (AC: #2)
+  - [ ] Create `src/app/api/shopify/install/route.ts` API endpoint
+  - [ ] Implement OAuth initiation: redirect to Shopify authorization page with required scopes
+  - [ ] Create `src/app/api/shopify/callback/route.ts` OAuth callback handler
+  - [ ] Exchange authorization code for access token via Shopify Admin API
+  - [ ] Store shop domain and access token in database (create ShopifyStore model in Prisma schema)
+  - [ ] Associate ShopifyStore with Business using shop domain or create new Business if first-time install
+  - [ ] Implement HMAC validation for OAuth callback security (verify Shopify request authenticity)
+  - [ ] Handle OAuth errors gracefully with user-friendly error messages
+
+- [ ] Create Prisma schema for Shopify integration (AC: #2, #3, #4, #5)
+  - [ ] Add ShopifyStore model to `prisma/schema.prisma` with fields:
+    - id, businessId (relation to Business), shopDomain, accessToken (encrypted), installedAt, uninstalledAt
+  - [ ] Add ShopifyOrder model for order metadata tracking:
+    - id, shopifyStoreId, shopifyOrderId, orderData (JSON), total, currency, createdAt
+  - [ ] Add indexes: (businessId), (shopDomain), (shopifyOrderId)
+  - [ ] Run Prisma migration: `npx prisma migrate dev --name add_shopify_models`
+  - [ ] Verify schema includes proper relations between ShopifyStore, Business, and ShopifyOrder
+
+- [ ] Implement tracking script injection (AC: #3)
+  - [ ] Create `src/services/shopify/script-injector.ts` service
+  - [ ] Implement `injectTrackingScript(shopDomain: string, accessToken: string, siteId: string)` function
+  - [ ] Use Shopify Admin API `ScriptTag` resource to create script tag pointing to tracking script URL
+  - [ ] Set script tag properties: src = `https://{DOMAIN}/tracking.js?siteId={siteId}`, event = "onload", display_scope = "all"
+  - [ ] Handle script tag creation errors (duplicate script tag, API errors)
+  - [ ] Store script tag ID in ShopifyStore model for later removal on uninstall
+  - [ ] Test script injection creates functional tracking on Shopify storefront
+
+- [ ] Configure tracking script for Shopify-specific events (AC: #4)
+  - [ ] Modify `public/tracking.js` to detect Shopify environment
+  - [ ] Add event listeners for Shopify theme events:
+    - Add to cart: Listen for `cart/add` theme event or Ajax cart API calls
+    - Checkout started: Detect navigation to `/checkout` URL
+    - Purchase completed: Detect Shopify order confirmation page (`/thank_you` or `/orders/{id}`)
+  - [ ] Capture Shopify-specific data in event payload:
+    - Product IDs, variant IDs, SKUs, prices for add-to-cart events
+    - Cart total and item count for checkout events
+    - Order ID and total for purchase completion
+  - [ ] Ensure compatibility with Shopify Online Store 2.0 themes
+  - [ ] Test tracking on sample Shopify development store
+
+- [ ] Implement order and product metadata capture (AC: #5)
+  - [ ] Create `src/services/shopify/data-sync.ts` service
+  - [ ] Implement `syncOrderData(shopDomain: string, accessToken: string)` function
+  - [ ] Query Shopify Admin API Orders endpoint for recent orders (last 7 days)
+  - [ ] Store order metadata in ShopifyOrder model: order ID, total, currency, line items, created_at
+  - [ ] Extract product metadata from orders: product IDs, titles, variants, prices
+  - [ ] Create Inngest scheduled job `src/inngest/shopify-data-sync.ts` to sync orders daily
+  - [ ] Register Inngest job in `src/app/api/inngest/route.ts`
+  - [ ] Handle API rate limits with retry logic (Shopify rate limit: 2 requests/second)
+  - [ ] Log sync execution: orders synced, products captured, execution time
+
+- [ ] Implement uninstall flow (AC: #6)
+  - [ ] Create `src/app/api/shopify/uninstall/route.ts` webhook endpoint
+  - [ ] Register uninstall webhook in Shopify app configuration: `app/uninstalled`
+  - [ ] Verify webhook HMAC signature for security
+  - [ ] On uninstall webhook, mark ShopifyStore.uninstalledAt with current timestamp
+  - [ ] Remove tracking script tag via Shopify Admin API (delete ScriptTag by ID)
+  - [ ] Optionally: Mark Business as inactive or notify user via email
+  - [ ] Handle webhook delivery failures with retry mechanism
+  - [ ] Test uninstall flow in development store (install → uninstall → verify script removed)
+
+- [ ] Create Server Actions for Shopify integration management (AC: #2, #3)
+  - [ ] Create or update `src/actions/shopify.ts` with Server Actions
+  - [ ] Implement `getShopifyStore(businessId: string): Promise<ActionResult<ShopifyStore | null>>`
+  - [ ] Implement `reinstallTrackingScript(businessId: string): Promise<ActionResult<void>>` for manual re-injection
+  - [ ] Implement `disconnectShopifyStore(businessId: string): Promise<ActionResult<void>>` for manual disconnect
+  - [ ] Add authentication checks via `auth()` and business ownership verification
+  - [ ] Use ActionResult<T> response format: `{ success: boolean, data?: T, error?: string }`
+  - [ ] Add input validation with Zod schemas
+
+- [ ] Implement comprehensive testing (AC: #1-7)
+  - [ ] Create `tests/unit/script-injector.test.ts` for script injection logic
+  - [ ] Mock Shopify Admin API calls in tests
+  - [ ] Test OAuth flow with mock Shopify authorization and token exchange
+  - [ ] Test tracking script injection creates proper ScriptTag resource
+  - [ ] Test uninstall webhook properly removes script tag and marks store uninstalled
+  - [ ] Integration test for complete install → inject → uninstall flow
+  - [ ] Test order metadata sync with sample Shopify order data
+  - [ ] Verify error handling for API failures, invalid tokens, rate limits
+
+- [ ] Create TypeScript types and interfaces (AC: #2, #4, #5)
+  - [ ] Create `src/types/shopify.ts` with types
+  - [ ] Define ShopifyOAuthParams interface (shop, code, hmac, timestamp)
+  - [ ] Define ShopifyAccessToken interface (access_token, scope)
+  - [ ] Define ShopifyOrder interface (id, total_price, line_items, created_at)
+  - [ ] Define ShopifyProduct interface (id, title, variants, price)
+  - [ ] Define ScriptTagParams interface (event, src, display_scope)
+  - [ ] Export all types for use across the application
+
+- [ ] Manual testing and app submission preparation (AC: #7)
+  - [ ] Test complete OAuth flow in Shopify development store
+  - [ ] Verify tracking script loads and captures events correctly
+  - [ ] Test add-to-cart, checkout, and purchase completion tracking
+  - [ ] Verify order and product metadata appears in PostgreSQL
+  - [ ] Test uninstall flow removes script cleanly
+  - [ ] Document installation process for users
+  - [ ] Prepare app listing content: description, screenshots, privacy policy URL
+  - [ ] Verify app meets Shopify app requirements for public listing
+
+## Dev Notes
+
+### Architecture Decisions Applied
+
+**Shopify OAuth Flow (from architecture.md#Integration-Points):**
+- OAuth endpoints: `src/app/api/shopify/install/route.ts` and `src/app/api/shopify/callback/route.ts`
+- Shopify Admin API integration for app installation and script injection
+- Store shop domain and access token in database (ShopifyStore model)
+- Associate with Business using shop domain or create new business profile
+
+**Script Injection via Shopify Admin API (from epics.md#Story-1.9):**
+- Use Shopify `ScriptTag` resource to inject tracking script into storefront
+- Script tag points to `public/tracking.js` hosted on Vercel Edge Network
+- Script tag properties: `event: "onload"`, `display_scope: "all"`
+- Store script tag ID for removal on uninstall
+
+**Tracking Script Enhancement (from architecture.md#Epic-to-Architecture-Mapping):**
+- Modify `public/tracking.js` to detect Shopify environment
+- Add event listeners for Shopify-specific conversion events:
+  - Add to cart: Shopify `cart/add` theme event or Ajax cart API
+  - Checkout started: Navigation to `/checkout` URL
+  - Purchase completed: Shopify order confirmation page detection
+- Capture e-commerce metadata: product IDs, prices, order totals
+
+**Order and Product Metadata Sync (AC #5):**
+- Service location: `src/services/shopify/data-sync.ts`
+- Query Shopify Admin API Orders endpoint for recent orders
+- Store order data in ShopifyOrder model with JSON field for flexibility
+- Inngest scheduled job: `src/inngest/shopify-data-sync.ts` runs daily
+- Handle Shopify API rate limits: 2 requests/second (use throttling)
+
+**Uninstall Webhook (AC #6):**
+- Webhook endpoint: `src/app/api/shopify/uninstall/route.ts`
+- Shopify webhook topic: `app/uninstalled`
+- HMAC signature validation required for security
+- Remove tracking script tag via Shopify Admin API on uninstall
+- Mark ShopifyStore.uninstalledAt timestamp (soft delete)
+
+**Database Schema (from architecture.md#Data-Architecture):**
+```prisma
+model ShopifyStore {
+  id              String         @id @default(cuid())
+  businessId      String         @unique
+  business        Business       @relation(fields: [businessId], references: [id])
+  shopDomain      String         @unique
+  accessToken     String         // Encrypted in production
+  scriptTagId     String?        // For removal on uninstall
+  installedAt     DateTime       @default(now())
+  uninstalledAt   DateTime?
+  orders          ShopifyOrder[]
+
+  @@index([businessId])
+  @@index([shopDomain])
+}
+
+model ShopifyOrder {
+  id              String        @id @default(cuid())
+  shopifyStoreId  String
+  shopifyStore    ShopifyStore  @relation(fields: [shopifyStoreId], references: [id])
+  shopifyOrderId  String        @unique
+  orderData       Json          // Complete order JSON from Shopify
+  total           Float
+  currency        String
+  createdAt       DateTime
+
+  @@index([shopifyStoreId])
+  @@index([shopifyOrderId])
+}
+
+// Add relation to Business model
+model Business {
+  // ... existing fields
+  shopifyStore    ShopifyStore?
+}
+```
+
+**Server Actions Pattern (from architecture.md#API-Contracts):**
+- `getShopifyStore(businessId: string): Promise<ActionResult<ShopifyStore | null>>`
+- `reinstallTrackingScript(businessId: string): Promise<ActionResult<void>>`
+- `disconnectShopifyStore(businessId: string): Promise<ActionResult<void>>`
+- Use ActionResult<T> = `{ success: boolean, data?: T, error?: string }` format
+
+**Performance Requirements (NFR001, NFR002):**
+- OAuth flow completes in <5 seconds (depends on Shopify API response time)
+- Script injection completes in <2 seconds after OAuth callback
+- Order data sync processes 1000 orders in <60 seconds
+- Tracking script injection does not impact storefront performance (async loading)
+
+**Integration with Tracking System (Stories 1.2, 1.3):**
+- Tracking script (`public/tracking.js`) already created in Story 1.2
+- Data ingestion API (`/api/track`) already created in Story 1.3
+- This story enhances tracking script with Shopify-specific event detection
+- Shopify conversion events feed into existing tracking pipeline
+
+### Project Structure Notes
+
+**Files to Create:**
+```
+src/
+├── app/
+│   └── api/
+│       └── shopify/
+│           ├── install/
+│           │   └── route.ts                    # OAuth initiation
+│           ├── callback/
+│           │   └── route.ts                    # OAuth callback handler
+│           └── uninstall/
+│               └── route.ts                    # Uninstall webhook
+
+├── services/
+│   └── shopify/
+│       ├── script-injector.ts                  # Script tag injection logic
+│       └── data-sync.ts                        # Order/product metadata sync
+
+├── inngest/
+│   └── shopify-data-sync.ts                    # Daily order sync job
+
+├── actions/
+│   └── shopify.ts                              # Server Actions for Shopify management
+
+├── types/
+│   └── shopify.ts                              # Shopify-specific TypeScript types
+
+tests/
+└── unit/
+    ├── script-injector.test.ts                 # Script injection tests
+    └── shopify-oauth.test.ts                   # OAuth flow tests
+```
+
+**Files to Modify:**
+- `prisma/schema.prisma`: Add ShopifyStore and ShopifyOrder models, add relation to Business
+- `public/tracking.js`: Enhance with Shopify-specific event detection (add-to-cart, checkout, purchase)
+- `src/app/api/inngest/route.ts`: Register shopify-data-sync Inngest job
+- `.env.example`: Add SHOPIFY_API_KEY and SHOPIFY_API_SECRET placeholders
+- `README.md`: Add Shopify integration setup instructions
+
+**Integration Points:**
+- Story 1.2 (Tracking Script): Enhance tracking.js with Shopify event detection
+- Story 1.3 (Data Ingestion): Shopify conversion events feed into /api/track endpoint
+- Story 1.4 (User Registration): ShopifyStore associates with Business model
+- Story 2.1+ (Dashboard): Display Shopify order data and conversion metrics
+
+### Learnings from Previous Story
+
+**From Story 1-8-recommendation-generation-engine (Status: review)**
+
+- **Service Layer Pattern Established**: Follow same service architecture as `src/services/analytics/recommendation-engine.ts` - create `src/services/shopify/script-injector.ts` and `src/services/shopify/data-sync.ts` as pure business logic modules (no Next.js dependencies). Keep Shopify Admin API calls isolated in service layer.
+
+- **Inngest Background Job Pattern**: Use Inngest for background processing. Create `src/inngest/shopify-data-sync.ts` following patterns from `recommendation-generation.ts`. Configure as **scheduled job** (cron-based, runs daily) to sync recent Shopify orders. Implement structured logging with execution context: orders synced, API calls made, execution time, errors.
+
+- **API Routes for External Integration**: Create API routes in `src/app/api/shopify/` for OAuth flow and webhooks. Follow patterns from `/api/track/route.ts` (Story 1.3). Use Next.js Route Handlers with proper error handling and security validation (HMAC verification for Shopify webhooks).
+
+- **Prisma Schema Extensions**: Add ShopifyStore and ShopifyOrder models to `prisma/schema.prisma` following patterns from Recommendation model (Story 1.8). Use proper relations (ShopifyStore → Business), indexes for query performance, and JSON fields for flexible data storage (orderData).
+
+- **Server Actions Architecture**: Use ActionResult<T> response format: `{ success: boolean, data?: T, error?: string }`. Create `src/actions/shopify.ts` following same structure as `src/actions/recommendations.ts`. Include authentication checks via `auth()` and business ownership verification.
+
+- **TypeScript Strict Mode**: All code must pass strict TypeScript checks. Define proper types in `src/types/shopify.ts` (ShopifyOAuthParams, ShopifyAccessToken, ShopifyOrder, ShopifyProduct, ScriptTagParams). Import Shopify Admin API types if available from `@shopify/shopify-api` package.
+
+- **Testing Infrastructure Ready**: Vitest 4.0 configured with 135+ passing tests. Create `tests/unit/script-injector.test.ts` and `tests/unit/shopify-oauth.test.ts` following patterns from `recommendation-engine.test.ts`. Mock Shopify Admin API calls using Vitest mocking.
+
+- **Background Job Best Practices**:
+  - Use `console.time()` and `console.timeEnd()` for execution time tracking
+  - Log with context: `{ shopDomain, ordersSynced, apiCallsMade, executionTime, errors }`
+  - Inngest handles retries automatically (up to 3 with exponential backoff)
+  - Return structured results from job function for Inngest dashboard visibility
+  - Handle API rate limits gracefully (Shopify: 2 requests/second)
+
+- **Error Handling**: Let Inngest handle retries for transient failures. For API errors (invalid token, rate limit exceeded), log errors but continue processing. Return summary with success/failure counts. Implement exponential backoff for rate limit errors.
+
+- **Build Validation**: Run `npm run build` before marking story complete - ensure zero TypeScript errors. Verify all new API routes and Server Actions compile correctly.
+
+**Key Files from Previous Stories to Reference:**
+- `src/services/analytics/recommendation-engine.ts` - Service layer architecture pattern, structured exports
+- `src/inngest/recommendation-generation.ts` - Inngest background job structure, logging, error handling
+- `src/actions/recommendations.ts` - Server Actions pattern with ActionResult<T>, authentication checks
+- `prisma/schema.prisma` - Data models (Recommendation, Pattern, Business) to reference for ShopifyStore schema
+- `tests/unit/recommendation-engine.test.ts` - Unit testing patterns, mocking external dependencies
+
+**Technical Insights to Apply:**
+- **Shopify Admin API Integration**: Use `@shopify/shopify-api` package for Admin API calls. Initialize client with API key, secret, and shop-specific access token. Handle API versioning (use latest stable version: 2024-10).
+- **OAuth Security**: Validate HMAC signatures on OAuth callback and webhook requests. Use crypto module to verify Shopify request authenticity. Prevent replay attacks by checking timestamp freshness.
+- **Script Tag Injection**: Use ScriptTag resource endpoint: `POST /admin/api/2024-10/script_tags.json`. Include `event: "onload"` for script execution timing, `display_scope: "all"` for visibility on all pages. Store script_tag.id for later deletion.
+- **Tracking Script Enhancement**: Modify `public/tracking.js` to detect Shopify environment (check for `window.Shopify` object). Listen for Shopify theme events using `document.addEventListener('cart:add')` or observe Ajax cart API calls. Capture product/variant IDs from event payload.
+- **Rate Limit Handling**: Shopify Admin API has bucket-based rate limiting (40 requests per second burst, 2 requests/second sustained). Implement exponential backoff on 429 responses. Use `Retry-After` header to determine wait time.
+- **Access Token Security**: Store Shopify access tokens encrypted in database (use AES-256 encryption). Never log tokens or expose in client-side code. Rotate tokens if security breach detected.
+- **Webhook Delivery**: Shopify webhooks retry failed deliveries up to 19 times over 48 hours. Return 200 OK quickly (within 5 seconds) to prevent retries. Process webhook asynchronously if heavy processing needed.
+
+**Recommendations for This Story:**
+- Start by setting up Shopify Partner account and development store before implementing OAuth
+- Test OAuth flow thoroughly with HMAC validation before moving to script injection
+- Use Shopify API library (@shopify/shopify-api) instead of raw HTTP calls for better error handling
+- Implement rate limit handling early to avoid API throttling during order sync
+- Test script injection on multiple Shopify themes (Dawn, Debut, Minimal) for compatibility
+- Store complete order JSON in orderData field for future analytics flexibility
+- Add monitoring for webhook delivery failures (Shopify dashboard shows webhook status)
+- Consider privacy implications: document what order data is stored and for how long
+
+**New Services/Patterns Created in Story 1.8 to Reuse:**
+- `src/services/analytics/recommendation-engine.ts`: Service layer pattern with clear exports - use for script-injector.ts and data-sync.ts
+- `src/actions/recommendations.ts`: ActionResult<T> pattern with auth checks - use for shopify.ts Server Actions
+- `src/types/recommendation.ts`: Comprehensive type definitions - use as template for shopify.ts types
+- Inngest job pattern with structured logging and error handling - apply to shopify-data-sync.ts
+- Unit testing with Vitest and mocking - apply to script-injector and OAuth flow tests
+
+**Files Created/Modified in Story 1.8:**
+- `src/services/analytics/recommendation-engine.ts` (635 lines) - Service architecture reference
+- `src/inngest/recommendation-generation.ts` (186 lines) - Inngest job reference
+- `src/actions/recommendations.ts` (523 lines) - Server Actions reference
+- `tests/unit/recommendation-engine.test.ts` (776 lines) - Testing reference
+- `prisma/schema.prisma` - Model definition patterns (Recommendation with enums and relations)
+
+[Source: stories/1-8-recommendation-generation-engine.md#Dev-Agent-Record, #Completion-Notes-List, #Learnings-from-Previous-Story]
+
+### Shopify Integration Technical Details
+
+**Shopify Admin API Setup:**
+```typescript
+// src/lib/shopify.ts
+import '@shopify/shopify-api/adapters/node';
+import { shopifyApi, LATEST_API_VERSION } from '@shopify/shopify-api';
+
+export const shopify = shopifyApi({
+  apiKey: process.env.SHOPIFY_API_KEY!,
+  apiSecretKey: process.env.SHOPIFY_API_SECRET!,
+  scopes: ['read_orders', 'read_products', 'write_script_tags'],
+  hostName: process.env.NEXTAUTH_URL!.replace('https://', ''),
+  apiVersion: LATEST_API_VERSION,
+  isEmbeddedApp: false,
+});
+```
+
+**OAuth Flow Sequence:**
+1. User clicks "Install MetricFortune" from Shopify App Store or app listing
+2. Redirect to `/api/shopify/install?shop={shop-domain}`
+3. Install endpoint validates shop domain, generates OAuth authorization URL
+4. Redirect to Shopify authorization page with scopes and redirect_uri
+5. User approves permissions, Shopify redirects to `/api/shopify/callback` with code and HMAC
+6. Callback endpoint validates HMAC, exchanges code for access token
+7. Store shop domain and access token in database (ShopifyStore model)
+8. Inject tracking script via ScriptTag API
+9. Redirect user to onboarding or dashboard
+
+**Script Tag Injection Example:**
+```typescript
+// src/services/shopify/script-injector.ts
+import { shopify } from '@/lib/shopify';
+
+export async function injectTrackingScript(
+  shopDomain: string,
+  accessToken: string,
+  siteId: string
+) {
+  const session = shopify.session.customAppSession(shopDomain);
+  session.accessToken = accessToken;
+
+  const client = new shopify.clients.Rest({ session });
+
+  const scriptTag = await client.post({
+    path: 'script_tags',
+    data: {
+      script_tag: {
+        event: 'onload',
+        src: `${process.env.NEXTAUTH_URL}/tracking.js?siteId=${siteId}`,
+        display_scope: 'all',
+      },
+    },
+  });
+
+  return scriptTag.body.script_tag.id;
+}
+```
+
+**Tracking Script Shopify Enhancement:**
+```javascript
+// public/tracking.js (Shopify-specific additions)
+
+// Detect Shopify environment
+if (window.Shopify) {
+  console.log('[MetricFortune] Shopify environment detected');
+
+  // Track add to cart events
+  document.addEventListener('click', (e) => {
+    const target = e.target.closest('[data-add-to-cart]') || e.target.closest('form[action*="/cart/add"]');
+    if (target) {
+      // Capture product data from form
+      const formData = new FormData(target);
+      const variantId = formData.get('id');
+
+      trackEvent('conversion', {
+        type: 'add_to_cart',
+        product_variant_id: variantId,
+        timestamp: Date.now(),
+      });
+    }
+  });
+
+  // Track checkout started (navigation to /checkout)
+  const observer = new PerformanceObserver((list) => {
+    for (const entry of list.getEntries()) {
+      if (entry.name.includes('/checkout')) {
+        trackEvent('conversion', {
+          type: 'checkout_started',
+          timestamp: Date.now(),
+        });
+      }
+    }
+  });
+  observer.observe({ entryTypes: ['navigation'] });
+
+  // Track purchase completion (order confirmation page)
+  if (window.location.pathname.includes('/thank_you') || window.location.pathname.includes('/orders/')) {
+    // Extract order data from Shopify object if available
+    const orderData = window.Shopify.checkout || {};
+
+    trackEvent('conversion', {
+      type: 'purchase_completed',
+      order_id: orderData.order_id,
+      total: orderData.total_price,
+      currency: orderData.currency,
+      timestamp: Date.now(),
+    });
+  }
+}
+```
+
+**Order Data Sync Job:**
+```typescript
+// src/inngest/shopify-data-sync.ts
+import { inngest } from '@/lib/inngest';
+import { shopify } from '@/lib/shopify';
+import { prisma } from '@/lib/prisma';
+
+export const shopifyDataSyncJob = inngest.createFunction(
+  { id: 'shopify-data-sync', name: 'Sync Shopify Order Data' },
+  { cron: '0 2 * * *' }, // Daily at 2 AM
+  async ({ step }) => {
+    const stores = await prisma.shopifyStore.findMany({
+      where: { uninstalledAt: null },
+      include: { business: true },
+    });
+
+    const results = { synced: 0, errors: 0 };
+
+    for (const store of stores) {
+      try {
+        const session = shopify.session.customAppSession(store.shopDomain);
+        session.accessToken = store.accessToken;
+
+        const client = new shopify.clients.Rest({ session });
+
+        // Fetch orders from last 7 days
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+        const ordersResponse = await client.get({
+          path: 'orders',
+          query: {
+            status: 'any',
+            created_at_min: sevenDaysAgo.toISOString(),
+            limit: 250,
+          },
+        });
+
+        const orders = ordersResponse.body.orders;
+
+        // Store orders in database
+        await prisma.shopifyOrder.createMany({
+          data: orders.map((order: any) => ({
+            shopifyStoreId: store.id,
+            shopifyOrderId: order.id.toString(),
+            orderData: order,
+            total: parseFloat(order.total_price),
+            currency: order.currency,
+            createdAt: new Date(order.created_at),
+          })),
+          skipDuplicates: true,
+        });
+
+        results.synced += orders.length;
+      } catch (error) {
+        console.error(`[Shopify Sync] Failed for ${store.shopDomain}:`, error);
+        results.errors += 1;
+      }
+    }
+
+    return results;
+  }
+);
+```
+
+**Uninstall Webhook Handler:**
+```typescript
+// src/app/api/shopify/uninstall/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { shopify } from '@/lib/shopify';
+import { prisma } from '@/lib/prisma';
+
+export async function POST(req: NextRequest) {
+  const body = await req.text();
+  const hmac = req.headers.get('x-shopify-hmac-sha256');
+  const shop = req.headers.get('x-shopify-shop-domain');
+
+  // Verify HMAC
+  const verified = shopify.webhooks.validate({
+    rawBody: body,
+    rawRequest: req,
+  });
+
+  if (!verified) {
+    return NextResponse.json({ error: 'Invalid HMAC' }, { status: 401 });
+  }
+
+  // Mark store as uninstalled
+  const store = await prisma.shopifyStore.update({
+    where: { shopDomain: shop! },
+    data: { uninstalledAt: new Date() },
+  });
+
+  // Remove script tag (optional - Shopify auto-removes on uninstall)
+  // Note: Access token may be invalid at this point
+
+  return NextResponse.json({ success: true });
+}
+```
+
+**Environment Variables Required:**
+```
+# Shopify Integration
+SHOPIFY_API_KEY=your_shopify_api_key
+SHOPIFY_API_SECRET=your_shopify_api_secret
+
+# App URLs (already exists)
+NEXTAUTH_URL=https://metricfortune.vercel.app
+```
+
+**Security Considerations:**
+- HMAC validation for all OAuth callbacks and webhooks (prevent request forgery)
+- Access token encryption at rest in database (use AES-256)
+- Scope validation: only request necessary scopes (read_orders, read_products, write_script_tags)
+- Rate limit handling: respect Shopify API rate limits (2 req/s sustained, 40 req/s burst)
+- Webhook replay prevention: validate timestamp freshness (<5 minutes)
+- Error handling: never expose access tokens in error messages or logs
+
+**Shopify App Requirements for Public Listing:**
+- Privacy policy URL required (create /privacy-policy page)
+- Terms of service URL recommended
+- Support email or URL required
+- App description, screenshots, and demo video
+- GDPR compliance: data deletion webhook (`customers/data_request`, `customers/redact`, `shop/redact`)
+- Merchant billing integration (if charging for app)
+- App review process: 7-14 days for Shopify approval
+
+### References
+
+- [PRD: Functional Requirement FR002](docs/PRD.md#Functional-Requirements) - Shopify integration for automatic tracking
+- [PRD: User Journey](docs/PRD.md#User-Journeys) - Sarah's journey includes one-click Shopify installation
+- [Epic 1: Story 1.9](docs/epics.md#Story-1.9-Shopify-Integration)
+- [Architecture: Integration Points](docs/architecture.md#Integration-Points) - Shopify OAuth flow
+- [Architecture: Project Structure](docs/architecture.md#Project-Structure) - `src/app/api/shopify/` location
+- [Prisma Schema](prisma/schema.prisma) - Business, User models to relate ShopifyStore
+- [Shopify Admin API Documentation](https://shopify.dev/docs/api/admin-rest) - OAuth, ScriptTags, Orders endpoints
+- [Shopify App Development Guides](https://shopify.dev/docs/apps) - OAuth flow, webhooks, app requirements
+
+## Dev Agent Record
+
+### Context Reference
+
+- [Story Context XML](./1-9-shopify-integration.context.xml) - Generated 2025-11-08
+
+### Agent Model Used
+
+{{agent_model_name_version}}
+
+### Debug Log References
+
+### Completion Notes List
+
+### File List
+
+## Change Log
+
+- **2025-11-08**: Story drafted - Shopify Integration specification created from epics, PRD, and architecture documentation

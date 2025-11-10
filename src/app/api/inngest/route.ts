@@ -14,6 +14,7 @@ import { inngest } from '@/lib/inngest';
 import { sessionAggregationJob } from '@/inngest/session-aggregation';
 import { patternDetectionJob } from '@/inngest/pattern-detection';
 import { recommendationGenerationJob } from '@/inngest/recommendation-generation';
+import { shopifyDataSyncJob } from '@/inngest/shopify-data-sync';
 
 /**
  * Register all Inngest functions
@@ -24,6 +25,7 @@ export const { GET, POST, PUT } = serve({
     sessionAggregationJob,
     patternDetectionJob,
     recommendationGenerationJob,
+    shopifyDataSyncJob,
     // Add more functions here as they are created
   ],
 });

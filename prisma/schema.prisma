@@ -36,6 +36,7 @@ model Business {
   peerGroupId       String?
   peerGroup         PeerGroup?       @relation(fields: [peerGroupId], references: [id])
   recommendations   Recommendation[]
+  shopifyStore      ShopifyStore?
   createdAt         DateTime         @default(now())
 
   @@index([siteId])
@@ -136,4 +137,33 @@ enum ConfidenceLevel {
   HIGH
   MEDIUM
   LOW
+}
+
+model ShopifyStore {
+  id              String         @id @default(cuid())
+  businessId      String         @unique
+  business        Business       @relation(fields: [businessId], references: [id])
+  shopDomain      String         @unique
+  accessToken     String         // Encrypted in production
+  scriptTagId     String?        // For removal on uninstall
+  installedAt     DateTime       @default(now())
+  uninstalledAt   DateTime?
+  orders          ShopifyOrder[]
+
+  @@index([businessId])
+  @@index([shopDomain])
+}
+
+model ShopifyOrder {
+  id              String        @id @default(cuid())
+  shopifyStoreId  String
+  shopifyStore    ShopifyStore  @relation(fields: [shopifyStoreId], references: [id])
+  shopifyOrderId  String        @unique
+  orderData       Json          // Complete order JSON from Shopify
+  total           Float
+  currency        String
+  createdAt       DateTime
+
+  @@index([shopifyStoreId])
+  @@index([shopifyOrderId])
 }

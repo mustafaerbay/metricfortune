@@ -45,7 +45,7 @@ development_status:
   1-6-session-aggregation-journey-mapping: done
   1-7-pattern-detection-engine: done
   1-8-recommendation-generation-engine: done
-  1-9-shopify-integration: backlog
+  1-9-shopify-integration: done
   1-10-system-testing-validation: backlog
   epic-1-retrospective: optional
 
