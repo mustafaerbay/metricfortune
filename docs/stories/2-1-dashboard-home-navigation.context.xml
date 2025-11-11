@@ -1,0 +1,283 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>1</storyId>
+    <title>Dashboard Home &amp; Navigation</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-11</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-1-dashboard-home-navigation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>e-commerce business owner</asA>
+    <iWant>a clean dashboard home that shows my top priority and key metrics at a glance</iWant>
+    <soThat>I immediately understand what needs my attention</soThat>
+    <tasks>
+      - Set up dashboard layout structure with authentication (AC: #6)
+      - Implement sidebar navigation with active states (AC: #3)
+      - Create key metrics sidebar panel (AC: #2)
+      - Build hero section with top-priority recommendation (AC: #1)
+      - Implement empty states for new users (AC: #5)
+      - Make layout responsive for tablet (AC: #4)
+      - Optimize performance to meet &lt;2s load target (AC: #7)
+      - Style dashboard with shadcn/ui and Bold Purple theme (Design)
+      - Create loading and error states (UX Polish)
+      - Test complete dashboard functionality (Integration Testing)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. Dashboard home page with hero section displaying top-priority recommendation
+    2. Quick stats cards showing: current conversion rate, peer benchmark comparison, active recommendations count
+    3. Main navigation with tabs: Home, Recommendations, Journey Insights, Peer Benchmarks
+    4. Responsive layout works on desktop and tablet (mobile-phone deferred)
+    5. Empty states displayed when no data available yet ("Collecting data - check back in 24 hours")
+    6. User profile menu with: settings, business profile, logout
+    7. Dashboard loads in &lt;2 seconds
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Functional Requirements - FR013</section>
+        <snippet>System shall provide a dashboard with three core tabs: Recommendations (priority-ranked), Journey Insights (behavior patterns), and Peer Benchmarks (comparative metrics)</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Non-Functional Requirements - NFR001</section>
+        <snippet>Performance - Dashboard shall load in &lt;2 seconds for initial load and &lt;500ms for navigation</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>UX Design Principles</section>
+        <snippet>Action-First Design - Every screen prioritizes what to do next over data visualization. Radical Simplicity - Dashboard eliminates analysis paralysis by showing only decision-ready insights; target is &lt;5 minutes to understand and act</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Project Structure</section>
+        <snippet>Next.js App Router with src/ directory structure, Server Components by default, Route groups for shared layouts, Middleware for authentication protection</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Component Patterns</section>
+        <snippet>Server Components for data fetching (zero JS by default), Client Components only when interactivity needed, Server Actions for mutations</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Technology Stack - Epic 2</section>
+        <snippet>Tailwind CSS 4.x for styling, NextAuth.js 5.0.0-beta.25 for authentication, Next.js Server Actions for API patterns</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>1.1 Design System Choice</section>
+        <snippet>shadcn/ui with Tailwind CSS - 50+ accessible components, easy theming with CSS variables, perfect for Next.js/React. Install components: Button, Card, Badge, Dialog, Form, Table</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>Color System - Bold Purple</section>
+        <snippet>Primary: #7c3aed (purple) for CTAs and active states, Secondary: #f97316 (orange), Success: #10b981 (green), Text primary: #1f2937 (near black)</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>Desktop Layout</section>
+        <snippet>Sidebar 260px fixed width with logo and navigation, Main content fluid (max 1100px), Card-based layouts with 16px padding</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>Tablet Layout</section>
+        <snippet>Responsive breakpoints: 768px-1024px. Sidebar collapses to 80px icon-only (expands on hover), Cards reflow to 2 columns</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-2-dashboard-user-experience.md</path>
+        <title>Epic 2: Dashboard &amp; User Experience</title>
+        <section>Story 2.1: Dashboard Home &amp; Navigation</section>
+        <snippet>Build complete user-facing dashboard transforming backend intelligence into intuitive, action-oriented interface. Prerequisites: 1.4 (user authentication), 1.8 (recommendations API)</snippet>
+      </doc>
+      <doc>
+        <path>docs/testing-strategy.md</path>
+        <title>Testing Strategy</title>
+        <section>Testing Tools and Frameworks</section>
+        <snippet>Vitest 4.0 for unit/integration testing (fast, TypeScript-native), Playwright 1.56.1 for E2E testing (cross-browser support), @testing-library/react for component testing</snippet>
+      </doc>
+      <doc>
+        <path>docs/testing-strategy.md</path>
+        <title>Testing Strategy</title>
+        <section>Testing Pyramid</section>
+        <snippet>Unit tests (80%+ coverage for critical services), Integration tests (API endpoints, Server Actions, database), E2E tests (complete user journeys, cross-browser)</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/lib/auth.ts</path>
+        <kind>service</kind>
+        <symbol>auth, signIn, signOut</symbol>
+        <lines>1-99</lines>
+        <reason>NextAuth.js v5 configuration with credentials provider. Use auth() for session checking, signIn/signOut for authentication actions</reason>
+      </artifact>
+      <artifact>
+        <path>src/app/(dashboard)/layout.tsx</path>
+        <kind>layout</kind>
+        <symbol>DashboardLayout</symbol>
+        <lines>1-85</lines>
+        <reason>Existing basic dashboard layout with authentication check. Will be redesigned with sidebar navigation per UX spec</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>schema</kind>
+        <symbol>User, Business, Recommendation</symbol>
+        <lines>12-140</lines>
+        <reason>Database models for user auth, business profile, and recommendations. Recommendation has status (NEW/PLANNED/IMPLEMENTED/DISMISSED) and impactLevel (HIGH/MEDIUM/LOW) enums</reason>
+      </artifact>
+      <artifact>
+        <path>src/actions/recommendations.ts</path>
+        <kind>server-action</kind>
+        <symbol>getRecommendations</symbol>
+        <lines>36-49</lines>
+        <reason>Server Action to fetch recommendations with filtering by status, impactLevel, confidenceLevel. Returns ActionResult with Recommendation array</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/ui/button.tsx</path>
+        <kind>component</kind>
+        <symbol>Button</symbol>
+        <lines>1-50</lines>
+        <reason>shadcn/ui Button component already installed. Use for CTAs and navigation</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/ui/card.tsx</path>
+        <kind>component</kind>
+        <symbol>Card, CardHeader, CardContent</symbol>
+        <lines>1-50</lines>
+        <reason>shadcn/ui Card component already installed. Use for metric cards and recommendation hero section</reason>
+      </artifact>
+      <artifact>
+        <path>src/app/globals.css</path>
+        <kind>stylesheet</kind>
+        <symbol>CSS variables</symbol>
+        <lines>8-37</lines>
+        <reason>Bold Purple theme already configured: --primary: #7c3aed, --secondary: #f97316, --success: #10b981. Use these CSS variables for theming</reason>
+      </artifact>
+      <artifact>
+        <path>tests/integration/actions/recommendations.test.ts</path>
+        <kind>test</kind>
+        <symbol>Integration test patterns</symbol>
+        <lines>1-50</lines>
+        <reason>Example of Vitest integration testing with database helpers (createTestUser, seedBusiness). Follow this pattern for dashboard tests</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="next" version="16.0.1" type="runtime">App Router, Server Components, React 19 support</package>
+        <package name="react" version="19.2.0" type="runtime">UI library</package>
+        <package name="react-dom" version="19.2.0" type="runtime">DOM rendering</package>
+        <package name="next-auth" version="^5.0.0-beta.30" type="runtime">Authentication (NextAuth.js v5)</package>
+        <package name="@prisma/client" version="6.17.0" type="runtime">Database ORM client</package>
+        <package name="zod" version="^4.1.12" type="runtime">Schema validation</package>
+        <package name="bcrypt" version="^6.0.0" type="runtime">Password hashing</package>
+      </node>
+      <node-dev>
+        <package name="typescript" version="^5" type="dev">Type safety</package>
+        <package name="tailwindcss" version="^4" type="dev">Utility-first CSS</package>
+        <package name="vitest" version="4.0" type="dev">Unit/integration testing</package>
+        <package name="@playwright/test" version="^1.56.1" type="dev">E2E testing</package>
+        <package name="@vitest/ui" version="4.0" type="dev">Test UI</package>
+        <package name="eslint" version="^9" type="dev">Code linting</package>
+      </node-dev>
+      <ui-components>
+        <installed>Button, Card, Input (shadcn/ui)</installed>
+        <required>Badge, Avatar, DropdownMenu, Skeleton (to be installed per tasks)</required>
+      </ui-components>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Use Next.js Server Components by default for all pages and data fetching
+    - Only add 'use client' directive when client-side interactivity is required (navigation state, dropdowns, modals)
+    - Protect all /dashboard routes with authentication via NextAuth middleware
+    - Use route groups (dashboard) for shared layout without affecting URLs
+    - Follow shadcn/ui component patterns for consistent UI
+    - Apply Bold Purple theme using CSS variables from globals.css
+    - Meet performance requirement: Dashboard must load in &lt;2 seconds
+    - Ensure WCAG 2.1 AA accessibility compliance (4.5:1 contrast, keyboard nav, ARIA labels)
+    - Use Prisma for all database queries with select to minimize data transfer
+    - Test responsive layout at 768px and 1024px breakpoints (tablet support required)
+    - Server Component data fetching pattern: async function, await auth(), await prisma queries
+    - Use React Suspense boundaries with loading skeletons for progressive loading
+    - All new components must have TypeScript types - zero compilation errors required
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>auth()</name>
+      <kind>function</kind>
+      <signature>async function auth(): Promise&lt;Session | null&gt;</signature>
+      <path>src/lib/auth.ts</path>
+    </interface>
+    <interface>
+      <name>getRecommendations</name>
+      <kind>server-action</kind>
+      <signature>async function getRecommendations(businessId: string, options?: RecommendationQueryOptions): Promise&lt;ActionResult&lt;Recommendation[]&gt;&gt;</signature>
+      <path>src/actions/recommendations.ts</path>
+    </interface>
+    <interface>
+      <name>Recommendation (Prisma model)</name>
+      <kind>database-model</kind>
+      <signature>{ id, businessId, title, problemStatement, actionSteps, expectedImpact, confidenceLevel, status, impactLevel, peerSuccessData, createdAt }</signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+    <interface>
+      <name>Business (Prisma model)</name>
+      <kind>database-model</kind>
+      <signature>{ id, userId, name, industry, revenueRange, siteId, peerGroupId }</signature>
+      <path>prisma/schema.prisma</path>
+    </interface>
+    <interface>
+      <name>Session (NextAuth)</name>
+      <kind>type</kind>
+      <signature>{ user: { id: string, email: string, emailVerified: boolean, businessId?: string } }</signature>
+      <path>src/lib/auth.ts</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>Following the Testing Pyramid approach with Vitest 4.0 for unit/integration tests and Playwright 1.56.1 for E2E tests. Unit tests target 80%+ coverage for critical services, integration tests cover Server Actions and database operations, E2E tests validate complete user journeys. Use @testing-library/react for component testing with user-centric patterns. Test database setup uses separate test database with helpers (createTestUser, seedBusiness). All tests must pass with zero TypeScript errors before story completion.</standards>
+    <locations>
+      - tests/unit/ - Unit tests for individual functions and utilities
+      - tests/integration/ - Integration tests for Server Actions, API endpoints, database
+      - tests/e2e/ - End-to-end tests with Playwright
+      - Component tests co-located with components or in tests/components/
+    </locations>
+    <ideas>
+      <test ac="1" type="integration">Fetch top recommendation (highest impactLevel, status=NEW) and verify display</test>
+      <test ac="1" type="e2e">Load dashboard, verify hero card shows recommendation title, impact badge, problem statement</test>
+      <test ac="1" type="unit">Empty state when no recommendations available</test>
+      <test ac="2" type="integration">Calculate metrics from database (conversion rate, peer comparison, active count)</test>
+      <test ac="2" type="component">StatsCard renders with correct values, trend arrows, and styling</test>
+      <test ac="2" type="e2e">Verify all 4 metric cards display on dashboard load</test>
+      <test ac="3" type="component">Navigation menu renders all 4 tabs (Home, Recommendations, Journey Insights, Peer Benchmarks)</test>
+      <test ac="3" type="e2e">Click navigation items, verify active state styling changes, URL updates</test>
+      <test ac="3" type="integration">Verify navigation transitions complete in &lt;500ms (NFR001)</test>
+      <test ac="4" type="e2e">Test layout at 1280px (desktop), 1024px, 768px (tablet) breakpoints</test>
+      <test ac="4" type="component">Sidebar collapses to 80px icon-only at tablet size</test>
+      <test ac="4" type="visual">Screenshot comparison at different viewport sizes</test>
+      <test ac="5" type="component">EmptyState component renders with message and CTA</test>
+      <test ac="5" type="integration">Show "Collecting data" when session count = 0</test>
+      <test ac="5" type="e2e">New user without data sees appropriate empty states</test>
+      <test ac="6" type="component">User profile dropdown shows settings, business profile, logout options</test>
+      <test ac="6" type="e2e">Click logout, verify redirect to /login page</test>
+      <test ac="6" type="integration">Verify signOut() Server Action called on logout</test>
+      <test ac="7" type="performance">Lighthouse audit - LCP &lt;2s, FID &lt;100ms, CLS &lt;0.1</test>
+      <test ac="7" type="e2e">Measure time to interactive on dashboard load</test>
+      <test ac="7" type="performance">Test on 3G network simulation</test>
+    </ideas>
+  </tests>
+</story-context>

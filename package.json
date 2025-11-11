@@ -24,6 +24,7 @@
     "bcrypt": "^6.0.0",
     "dotenv": "^17.2.3",
     "inngest": "^3.44.4",
+    "lucide-react": "^0.553.0",
     "nanoid": "^5.1.6",
     "next": "16.0.1",
     "next-auth": "^5.0.0-beta.30",
