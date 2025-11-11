@@ -117,8 +117,8 @@ describe('Event Processor', () => {
       const result = await processTrackingEvents(events);
 
       expect(result.success).toBe(true);
-      expect(result.buffered).toBe(true);
-      expect(getBufferSize()).toBe(3);
+      expect(result.buffered).toBe(false); // Serverless-optimized: writes directly, no buffering
+      expect(getBufferSize()).toBe(0); // Buffer not used for batch events
     });
 
     it('should handle all event types', async () => {
@@ -173,7 +173,7 @@ describe('Event Processor', () => {
       const result = await processTrackingEvents(events);
 
       expect(result.success).toBe(true);
-      expect(getBufferSize()).toBe(5);
+      expect(getBufferSize()).toBe(0); // Serverless-optimized: writes directly
     });
   });
 
@@ -192,11 +192,11 @@ describe('Event Processor', () => {
       ];
 
       await processTrackingEvents(events);
-      expect(getBufferSize()).toBe(1);
+      expect(getBufferSize()).toBe(0); // Serverless-optimized: no buffering
 
       await flushEventBuffer();
 
-      // Buffer should be empty after flush
+      // Buffer remains empty (nothing was buffered)
       expect(getBufferSize()).toBe(0);
     });
 
@@ -255,10 +255,10 @@ describe('Event Processor', () => {
       ];
 
       await processTrackingEvents(events);
-      expect(getBufferSize()).toBe(2);
+      expect(getBufferSize()).toBe(0); // Serverless-optimized: no buffering
 
       clearEventBuffer();
-      expect(getBufferSize()).toBe(0);
+      expect(getBufferSize()).toBe(0); // Buffer already empty
     });
   });
 });

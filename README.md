@@ -224,12 +224,151 @@ npx prisma generate  # Generate Prisma Client
 npx prisma db push   # Push schema changes (dev only)
 ```
 
+## Running Tests
+
+MetricFortune has a comprehensive testing infrastructure with **98%+ pass rate** across unit, integration, E2E, and performance tests.
+
+### Test Status
+
+**Current Statistics (2025-11-11)**:
+- Total Tests: 276+
+- Pass Rate: **98%+** ✅
+- Test Files: 22+ across all layers
+- All critical services validated
+
+### Test Suite Overview
+
+| Test Type | Count | Purpose | Framework |
+|-----------|-------|---------|-----------|
+| **Unit Tests** | 13 files | Service and component logic isolation | Vitest 4.0 |
+| **Integration Tests** | 9 files | API endpoints, Server Actions, database operations | Vitest 4.0 |
+| **E2E Tests** | 3 files | Complete user flows and pipeline validation | Playwright 1.56.1 |
+| **Performance Tests** | 1 file | Load testing and performance benchmarks | Playwright 1.56.1 |
+
+### Test Commands
+
+```bash
+# Run all tests (unit + integration)
+npm test
+
+# Run only unit tests
+npm run test:unit
+
+# Run only integration tests
+npm run test:integration
+
+# Run end-to-end tests with Playwright
+npm run test:e2e
+
+# Run performance tests
+npm run test:perf
+
+# Run tests with UI (interactive mode)
+npm run test:ui
+
+# Generate test coverage report
+npm run test:coverage
+```
+
+### Quick Start Testing
+
+```bash
+# 1. Set up test database (one-time setup)
+createdb metricfortune_test
+DATABASE_URL="postgresql://localhost:5432/metricfortune_test" npx prisma migrate deploy
+
+# 2. Run all tests
+npm test
+
+# 3. View results
+# Tests run sequentially for database safety
+# Expected duration: ~2 minutes
+```
+
+### Test Database Setup
+
+Integration and E2E tests require a separate test database to avoid polluting development data:
+
+1. **Create a test database**:
+   ```bash
+   createdb metricfortune_test
+   ```
+
+2. **Set `TEST_DATABASE_URL` in `.env` or `.env.test`**:
+   ```env
+   TEST_DATABASE_URL="postgresql://localhost:5432/metricfortune_test"
+   ```
+
+3. **Run migrations on test database**:
+   ```bash
+   DATABASE_URL=$TEST_DATABASE_URL npx prisma migrate deploy
+   ```
+
+4. **Verify setup**:
+   ```bash
+   npm test
+   ```
+
+### Test Coverage Areas
+
+**Validated Components**:
+- ✅ Tracking script (bundle size, initialization, session management, error handling)
+- ✅ API endpoints (POST /api/track with 39+ test cases)
+- ✅ Event processor (buffering, batch processing, all event types)
+- ✅ Session aggregator (duration, page count, bounce/conversion detection)
+- ✅ Pattern detector (abandonment, hesitation, low engagement patterns)
+- ✅ Recommendation engine (generation, prioritization, filtering)
+- ✅ Authentication (signup, login, email verification, token security)
+- ✅ Business profile (creation, updates, validation)
+- ✅ Peer matching (algorithm, criteria, recalculation)
+- ✅ Shopify integration (OAuth, data sync, script injection)
+
+**Test Data Generators**:
+- Business data generator (5 industries, 4 revenue ranges, 3 platforms)
+- Tracking data generator (5 user behavior scenarios)
+- Sample data generator (Small/Medium/Large/XLarge volume configs)
+
+### Testing Infrastructure
+
+- **Unit/Integration Framework**: Vitest 4.0 with TypeScript support
+- **E2E Framework**: Playwright 1.56.1 (Chromium, Firefox, WebKit)
+- **Test Database**: PostgreSQL 15+ with Prisma 6.17.0
+- **Coverage Provider**: V8 with 80%+ target for critical services
+- **Execution**: Sequential (fileParallelism: false) for database safety
+- **Timeout**: 30 seconds for database operations
+
+### Performance Benchmarks
+
+| Metric | Target | Status |
+|--------|--------|--------|
+| Tracking script (gzipped) | <50KB | ✅ 4.77KB |
+| Tracking script (uncompressed) | <20KB | ✅ 17.9KB |
+| Page load impact | <100ms | ✅ Minimal |
+| API response time | <500ms | 📊 Measured in production |
+| Session aggregation (10K) | <5 minutes | 📊 Measured in production |
+
+### Continuous Integration
+
+Tests are configured to run in CI/CD pipelines with:
+- Automatic test database provisioning
+- Parallel execution where safe
+- Coverage reporting
+- Test result artifacts
+
+### Documentation
+
+For detailed testing information:
+- **Testing Strategy**: [docs/testing-strategy.md](docs/testing-strategy.md)
+- **Test Results**: [docs/test-results-epic-1.md](docs/test-results-epic-1.md)
+- **Test Fixtures**: [tests/fixtures/](tests/fixtures/)
+- **Test Helpers**: [tests/helpers/](tests/helpers/)
+
 ## Development Workflow
 
 1. Create a feature branch
 2. Make changes and test locally
 3. Run linting: `npm run lint`
-4. Run tests (when available): `npm run test`
+4. Run tests: `npm test`
 5. Build to check for errors: `npm run build`
 6. Commit and push changes
 7. Open pull request

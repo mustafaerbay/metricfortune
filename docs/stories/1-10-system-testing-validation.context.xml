@@ -1,0 +1,381 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>1</epicId>
+    <storyId>10</storyId>
+    <title>System Testing & Validation</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-10</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>/Users/mustafaerbay/code/00000-Projects/metricfortune/docs/stories/1-10-system-testing-validation.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>a developer</asA>
+    <iWant>comprehensive end-to-end testing of the entire data pipeline</iWant>
+    <soThat>I can verify the system works correctly before building the dashboard</soThat>
+    <tasks>
+- [ ] Create test data generation harness (AC: #1)
+- [ ] Create end-to-end pipeline test (AC: #2, #3)
+- [ ] Create API integration tests (AC: #4)
+- [ ] Create performance tests (AC: #5)
+- [ ] Create data accuracy validation tests (AC: #6)
+- [ ] Create comprehensive testing infrastructure (supporting AC: #1-7)
+- [ ] Document test results and system capabilities (AC: #7)
+- [ ] Run complete test suite and validate results (AC: #1-7)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. Test harness creates sample tracking data for multiple simulated businesses
+2. End-to-end test validates: tracking → ingestion → aggregation → pattern detection → recommendation generation
+3. Test verifies recommendations are generated within 24 hours of data collection
+4. API integration tests for all endpoints (track, business profile, recommendations)
+5. Performance tests validate system handles 1M sessions/month load
+6. Data accuracy validated (session counts, pattern detection, peer matching)
+7. Documentation of test results and system capabilities
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document - Non-Functional Requirements</title>
+        <section>Non-Functional Requirements</section>
+        <snippet>NFR001: Performance - Dashboard loads in &lt;2s, tracking adds &lt;100ms, 99.9% uptime. NFR002: Scalability - Support 100 customers with 1M sessions/month at MVP launch, scaling to 500 customers with 10M sessions/month by Year 1. Performance targets critical for testing validation.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture - Testing Strategy</title>
+        <section>Technology Stack - Testing</section>
+        <snippet>Testing (Unit/Integration): Vitest 4.0 - Fast, TypeScript support, modern API. Testing (E2E): Playwright 1.56.1 - Browser automation, user journey testing. Test structure: tests/unit/, tests/integration/, tests/e2e/ directories.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture - Database</title>
+        <section>Technology Stack - Database</section>
+        <snippet>Database (Operational): PostgreSQL 15/16/17 for relational data, ACID compliance. Database (Time-Series): TimescaleDB 2.22.1 extension for high-volume tracking data processing. ORM: Prisma 6.17.0 for type-safe database client and migrations.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-1-foundation-core-analytics-engine.md</path>
+        <title>Epic 1 - Story 1.10 Acceptance Criteria</title>
+        <section>Story 1.10: System Testing &amp; Validation</section>
+        <snippet>Test harness creates sample data, E2E validates tracking→ingestion→aggregation→pattern detection→recommendation generation pipeline, verify 24-hour recommendation generation, API integration tests for all endpoints, performance tests for 1M sessions/month load, data accuracy validation (session counts, pattern detection, peer matching), comprehensive documentation of test results and system capabilities.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/app/api/track/route.ts</path>
+        <kind>api-endpoint</kind>
+        <symbol>POST /api/track</symbol>
+        <lines>1-120</lines>
+        <reason>Primary tracking endpoint requiring comprehensive integration tests for event validation, rate limiting, CORS, batch processing, and error handling</reason>
+      </artifact>
+      <artifact>
+        <path>src/services/tracking/event-processor.ts</path>
+        <kind>service</kind>
+        <symbol>processTrackingEvents</symbol>
+        <lines>1-200</lines>
+        <reason>Core event processing logic for tracking data ingestion - needs integration tests for batch writes and validation</reason>
+      </artifact>
+      <artifact>
+        <path>src/services/analytics/session-aggregator.ts</path>
+        <kind>service</kind>
+        <symbol>aggregateSessions, createSessions</symbol>
+        <lines>1-300</lines>
+        <reason>Session aggregation service - critical for data accuracy validation tests (session grouping, duration calculation, bounce detection)</reason>
+      </artifact>
+      <artifact>
+        <path>src/services/analytics/pattern-detector.ts</path>
+        <kind>service</kind>
+        <symbol>detectPatterns</symbol>
+        <lines>1-250</lines>
+        <reason>Pattern detection algorithm - needs accuracy validation for abandonment detection, hesitation patterns, statistical significance</reason>
+      </artifact>
+      <artifact>
+        <path>src/services/analytics/recommendation-engine.ts</path>
+        <kind>service</kind>
+        <symbol>generateRecommendations</symbol>
+        <lines>1-300</lines>
+        <reason>Recommendation generation service - requires validation of priority ranking, peer data integration, impact calculation</reason>
+      </artifact>
+      <artifact>
+        <path>src/inngest/session-aggregation.ts</path>
+        <kind>inngest-function</kind>
+        <symbol>sessionAggregationJob</symbol>
+        <lines>1-100</lines>
+        <reason>Background job for session aggregation - needs testing for job execution, error handling, incremental processing</reason>
+      </artifact>
+      <artifact>
+        <path>src/inngest/pattern-detection.ts</path>
+        <kind>inngest-function</kind>
+        <symbol>patternDetectionJob</symbol>
+        <lines>1-100</lines>
+        <reason>Background job for pattern detection - requires testing of scheduled execution and job chaining</reason>
+      </artifact>
+      <artifact>
+        <path>src/inngest/recommendation-generation.ts</path>
+        <kind>inngest-function</kind>
+        <symbol>recommendationGenerationJob</symbol>
+        <lines>1-100</lines>
+        <reason>Background job for recommendation generation - needs validation of 24-hour timeline constraint</reason>
+      </artifact>
+      <artifact>
+        <path>src/actions/auth.ts</path>
+        <kind>server-action</kind>
+        <symbol>signUp, signIn, verifyEmail</symbol>
+        <lines>1-200</lines>
+        <reason>Authentication Server Actions - requires integration tests for user creation, password hashing, email verification, session management</reason>
+      </artifact>
+      <artifact>
+        <path>src/actions/business-profile.ts</path>
+        <kind>server-action</kind>
+        <symbol>createBusinessProfile, updateBusinessProfile</symbol>
+        <lines>1-150</lines>
+        <reason>Business profile Server Actions - needs tests for profile validation, siteId generation, peer recalculation triggers</reason>
+      </artifact>
+      <artifact>
+        <path>src/actions/recommendations.ts</path>
+        <kind>server-action</kind>
+        <symbol>getRecommendations, markImplemented, dismissRecommendation, planRecommendation</symbol>
+        <lines>1-200</lines>
+        <reason>Recommendation Server Actions - requires tests for fetching by businessId, status updates, filtering by status</reason>
+      </artifact>
+      <artifact>
+        <path>tests/unit/shopify-actions.test.ts</path>
+        <kind>test-pattern</kind>
+        <symbol>ActionResult&lt;T&gt; testing pattern</symbol>
+        <lines>1-50</lines>
+        <reason>Established pattern for testing Server Actions with ActionResult format - use as template for new action tests</reason>
+      </artifact>
+      <artifact>
+        <path>vitest.config.ts</path>
+        <kind>config</kind>
+        <symbol>Vitest configuration</symbol>
+        <lines>1-27</lines>
+        <reason>Testing framework configuration - may need updates for test database connection and global setup files</reason>
+      </artifact>
+      <artifact>
+        <path>playwright.config.ts</path>
+        <kind>config</kind>
+        <symbol>Playwright configuration</symbol>
+        <lines>1-34</lines>
+        <reason>E2E testing configuration - needs global setup/teardown scripts for test database and Inngest dev server</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>schema</kind>
+        <symbol>Database schema</symbol>
+        <lines>1-300</lines>
+        <reason>Database models defining structure for all entities - needed for test database setup and data generation fixtures</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <framework>
+        <name>Next.js</name>
+        <version>16.0.1</version>
+        <category>web-framework</category>
+      </framework>
+      <framework>
+        <name>React</name>
+        <version>19.2.0</version>
+        <category>ui-library</category>
+      </framework>
+      <framework>
+        <name>TypeScript</name>
+        <version>^5</version>
+        <category>language</category>
+      </framework>
+      <database>
+        <name>Prisma</name>
+        <version>6.17.0</version>
+        <category>orm</category>
+      </database>
+      <database>
+        <name>@prisma/client</name>
+        <version>6.17.0</version>
+        <category>database-client</category>
+      </database>
+      <testing>
+        <name>Vitest</name>
+        <version>4.0</version>
+        <category>unit-integration-testing</category>
+      </testing>
+      <testing>
+        <name>@vitest/ui</name>
+        <version>4.0</version>
+        <category>test-ui</category>
+      </testing>
+      <testing>
+        <name>@playwright/test</name>
+        <version>^1.56.1</version>
+        <category>e2e-testing</category>
+      </testing>
+      <authentication>
+        <name>next-auth</name>
+        <version>^5.0.0-beta.30</version>
+        <category>auth-library</category>
+      </authentication>
+      <authentication>
+        <name>bcrypt</name>
+        <version>^6.0.0</version>
+        <category>password-hashing</category>
+      </authentication>
+      <background-jobs>
+        <name>inngest</name>
+        <version>^3.44.4</version>
+        <category>job-scheduler</category>
+      </background-jobs>
+      <validation>
+        <name>zod</name>
+        <version>^4.1.12</version>
+        <category>schema-validation</category>
+      </validation>
+      <email>
+        <name>resend</name>
+        <version>^6.2.0</version>
+        <category>email-service</category>
+      </email>
+      <email>
+        <name>react-email</name>
+        <version>^4.2.3</version>
+        <category>email-templates</category>
+      </email>
+      <integration>
+        <name>@shopify/shopify-api</name>
+        <version>^12.1.1</version>
+        <category>shopify-integration</category>
+      </integration>
+      <utilities>
+        <name>nanoid</name>
+        <version>^5.1.6</version>
+        <category>id-generation</category>
+      </utilities>
+      <utilities>
+        <name>dotenv</name>
+        <version>^17.2.3</version>
+        <category>env-management</category>
+      </utilities>
+      <styling>
+        <name>tailwindcss</name>
+        <version>^4</version>
+        <category>css-framework</category>
+      </styling>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+- Use Vitest 4.0 for unit and integration tests with node environment
+- Use Playwright 1.56.1 for E2E tests across chromium, firefox, webkit browsers
+- Test files must follow structure: tests/unit/, tests/integration/, tests/e2e/, tests/performance/
+- All tests must use TypeScript with strict mode enabled
+- Test database must be separate from development database (TEST_DATABASE_URL environment variable)
+- Use Inngest dev server for background job testing (npx inngest-cli@latest dev)
+- Vitest config requires @/ path alias resolution to src/ directory
+- Playwright config includes global setup/teardown for test database and Inngest server
+- Server Actions must return ActionResult&lt;T&gt; format: { success: boolean, data?: T, error?: string }
+- All Server Actions require authentication check via auth() returning valid session
+- Performance targets: 100+ events/second tracking, 10K sessions in &lt;5 minutes aggregation, queries &lt;500ms
+- Test coverage target: 80%+ for critical services (session-aggregator, pattern-detector, recommendation-engine)
+- Use Zod schemas for input validation in all API endpoints and Server Actions
+- Mock external services (Inngest, Resend) in unit tests, use real implementations in integration tests
+- Test data fixtures must generate realistic business profiles with variety (industries, revenue ranges, platforms)
+- Performance tests must establish baselines for future regression detection
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>POST /api/track</name>
+      <kind>REST endpoint</kind>
+      <signature>POST /api/track - Body: { events: TrackingEvent[] } - Response: ApiResponse&lt;{ received: number }&gt;</signature>
+      <path>src/app/api/track/route.ts</path>
+    </interface>
+    <interface>
+      <name>TrackingEvent</name>
+      <kind>type-interface</kind>
+      <signature>interface TrackingEvent { type: EventType; timestamp: Date; sessionId: string; siteId: string; data: EventData }</signature>
+      <path>src/types/tracking.ts</path>
+    </interface>
+    <interface>
+      <name>SessionData</name>
+      <kind>type-interface</kind>
+      <signature>interface SessionData { siteId: string; sessionId: string; entryPage: string; exitPage: string | null; duration: number | null; pageCount: number; bounced: boolean; converted: boolean; journeyPath: string[]; createdAt: Date }</signature>
+      <path>src/types/session.ts</path>
+    </interface>
+    <interface>
+      <name>aggregateSessions</name>
+      <kind>function-signature</kind>
+      <signature>async function aggregateSessions(startTime: Date, endTime: Date): Promise&lt;SessionData[]&gt;</signature>
+      <path>src/services/analytics/session-aggregator.ts</path>
+    </interface>
+    <interface>
+      <name>detectPatterns</name>
+      <kind>function-signature</kind>
+      <signature>async function detectPatterns(businessId: string, minimumSessions?: number): Promise&lt;PatternData[]&gt;</signature>
+      <path>src/services/analytics/pattern-detector.ts</path>
+    </interface>
+    <interface>
+      <name>generateRecommendations</name>
+      <kind>function-signature</kind>
+      <signature>async function generateRecommendations(businessId: string, patterns: PatternData[]): Promise&lt;RecommendationData[]&gt;</signature>
+      <path>src/services/analytics/recommendation-engine.ts</path>
+    </interface>
+    <interface>
+      <name>getRecommendations</name>
+      <kind>server-action</kind>
+      <signature>async function getRecommendations(businessId: string, options?: RecommendationQueryOptions): Promise&lt;ActionResult&lt;Recommendation[]&gt;&gt;</signature>
+      <path>src/actions/recommendations.ts</path>
+    </interface>
+    <interface>
+      <name>createBusinessProfile</name>
+      <kind>server-action</kind>
+      <signature>async function createBusinessProfile(data: BusinessProfileInput): Promise&lt;ActionResult&lt;Business&gt;&gt;</signature>
+      <path>src/actions/business-profile.ts</path>
+    </interface>
+    <interface>
+      <name>signUp</name>
+      <kind>server-action</kind>
+      <signature>async function signUp(email: string, password: string, name: string): Promise&lt;ActionResult&lt;User&gt;&gt;</signature>
+      <path>src/actions/auth.ts</path>
+    </interface>
+    <interface>
+      <name>sessionAggregationJob</name>
+      <kind>inngest-function</kind>
+      <signature>inngest.createFunction({ id: 'session-aggregation', name: 'Session Aggregation Job' }, { cron: '0 */4 * * *' }, handler)</signature>
+      <path>src/inngest/session-aggregation.ts</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>Project uses Vitest 4.0 for unit and integration tests with node environment, TypeScript strict mode, and vi.mock for mocking Prisma and external services. Playwright 1.56.1 handles E2E tests across chromium, firefox, webkit browsers with automatic server startup. Testing follows Arrange-Act-Assert pattern with describe blocks organized by acceptance criteria. Tests map explicitly to AC numbers in comments (e.g., "// AC #1: Session grouping"). Mocking strategy: mock external services (Prisma, Inngest, Resend) in unit tests, use real implementations in integration tests. Server Actions return ActionResult&lt;T&gt; format tested for both success and error cases. All tests use beforeEach for setup, afterEach for cleanup. Coverage reporting via Vitest with v8 provider targeting 80%+ for critical services. Existing test suite: 262 tests passing (97.8% pass rate), established patterns in tests/unit/shopify-actions.test.ts for Server Action testing, tests/unit/session-aggregator.test.ts for service testing, tests/e2e/tracking.spec.ts for browser automation.</standards>
+    <locations>
+      <location>tests/unit/**/*.test.ts - Unit tests for services, utilities, and business logic</location>
+      <location>tests/integration/**/*.test.ts - Integration tests for API endpoints and Server Actions</location>
+      <location>tests/e2e/**/*.spec.ts - E2E tests using Playwright for user journeys</location>
+      <location>tests/performance/**/*.spec.ts - Performance and load testing (to be created)</location>
+      <location>tests/fixtures/ - Test data generators for businesses and tracking events (to be created)</location>
+      <location>tests/setup/ - Global setup/teardown for test database and Inngest (to be created)</location>
+      <location>tests/helpers/ - Test utilities for database operations and API calls (to be created)</location>
+    </locations>
+    <ideas>
+      <idea ac="1">
+        Create tests/fixtures/business-generator.ts to generate realistic business profiles with variety (industries: fashion/electronics/home-goods, revenue ranges: 500K-10M, platforms: Shopify/WooCommerce/Other). Create tests/fixtures/tracking-data-generator.ts for synthetic tracking events with realistic user behavior patterns (entry pages, navigation sequences, conversion/abandonment scenarios, form interactions, Shopify e-commerce events). Export generated data as JSON fixtures for reuse across test suites. Include edge cases: bounces, long sessions, cart interactions.
+      </idea>
+      <idea ac="2">
+        Create tests/e2e/complete-pipeline.spec.ts using Playwright to validate end-to-end flow: (1) Generate test businesses and tracking data, (2) Submit events to POST /api/track, (3) Trigger sessionAggregationJob via Inngest, (4) Verify sessions created in database with accurate metadata, (5) Trigger patternDetectionJob, (6) Verify patterns detected (abandonment, hesitation, low engagement), (7) Trigger recommendationGenerationJob, (8) Verify 3-5 recommendations generated per business with correct prioritization. Add assertions for data quality at each pipeline stage.
+      </idea>
+      <idea ac="3">
+        In tests/e2e/complete-pipeline.spec.ts, add timeline validation test that submits tracking data at T0, triggers aggregation job immediately, pattern detection after aggregation completes, recommendation generation after pattern detection, and asserts recommendations exist within simulated 24-hour window. Use Inngest test helpers to await job completion at each stage. Verify recommendation createdAt timestamps fall within expected timeframe.
+      </idea>
+      <idea ac="4">
+        Create tests/integration/api/track.test.ts for POST /api/track endpoint (valid event submission, malformed data rejection, rate limiting enforcement, duplicate event handling, batch submissions). Create tests/integration/actions/business-profile.test.ts for createBusinessProfile/updateBusinessProfile Server Actions (validation, siteId generation, peer recalculation triggers). Create tests/integration/actions/recommendations.test.ts for getRecommendations/markImplemented/dismissRecommendation/planRecommendation (fetching by businessId, status updates, filtering). Create tests/integration/actions/auth.test.ts for signUp/signIn/verifyEmail (user creation, password hashing, session management, error cases).
+      </idea>
+      <idea ac="5">
+        Create tests/performance/load-testing.spec.ts using Playwright to simulate 1M sessions/month load (33K sessions/day, 23 sessions/minute avg, 100+ events/second burst). Test tracking endpoint throughput (target: 100+ events/second sustained). Test session aggregation speed (10K sessions processed in &lt;5 minutes per NFR). Test pattern detection performance (analyze 10K sessions in reasonable time). Test recommendation generation speed (&lt;30 seconds). Measure database query performance (all queries &lt;500ms). Monitor memory usage during processing. Verify no memory leaks in Inngest functions. Document performance baselines for regression detection.
+      </idea>
+      <idea ac="6">
+        Create tests/integration/analytics/session-aggregation.test.ts to validate session grouping accuracy (multiple events → single session), metadata calculation (duration, page count, bounce status), conversion detection (purchase events mark converted), entry/exit page accuracy, edge cases (single-page sessions, very long sessions). Create tests/integration/analytics/pattern-detection.test.ts for abandonment detection (&gt;30% drop-off), hesitation detection (form re-entry), low engagement detection, statistical significance thresholds (min 100 sessions), severity ranking. Create tests/integration/matching/peer-matching.test.ts for exact industry match, revenue range matching (±1 tier), product type overlap, platform matching, minimum peer group size (10 businesses), recalculation triggers.
+      </idea>
+      <idea ac="7">
+        Create docs/testing-strategy.md documenting testing pyramid (unit, integration, E2E, performance), test coverage targets (80%+ for critical services), frameworks (Vitest, Playwright), how to run tests (npm commands), CI/CD integration. Create docs/test-results-epic-1.md with validation report: summary of tests executed (count, pass rate), E2E pipeline validation results, performance test results (throughput, latency, resource usage), data accuracy validation, known issues/limitations, system readiness assessment for Epic 2. Update README.md with "Running Tests" section, test database setup requirements, link to testing-strategy.md.
+      </idea>
+    </ideas>
+  </tests>
+</story-context>

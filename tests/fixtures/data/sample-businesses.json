@@ -1,0 +1,194 @@
+[
+  {
+    "userId": "test_user_q-ELkNIcQQ",
+    "user": {
+      "email": "trendy.threads.co@example.com",
+      "passwordHash": "$2a$10$dummyHashForTestingPurposesOnly1234567890",
+      "emailVerified": true
+    },
+    "business": {
+      "name": "Trendy Threads Co",
+      "industry": "fashion",
+      "revenueRange": "500K-1M",
+      "productTypes": [
+        "clothing",
+        "accessories",
+        "shoes"
+      ],
+      "platform": "Shopify",
+      "siteId": "test1_WtceyWVpaU"
+    }
+  },
+  {
+    "userId": "test_user_L9K-EW-vjn",
+    "user": {
+      "email": "techgear.pro@example.com",
+      "passwordHash": "$2a$10$dummyHashForTestingPurposesOnly1234567890",
+      "emailVerified": true
+    },
+    "business": {
+      "name": "TechGear Pro",
+      "industry": "electronics",
+      "revenueRange": "500K-1M",
+      "productTypes": [
+        "computers"
+      ],
+      "platform": "WooCommerce",
+      "siteId": "test2_e0l-NwiOox"
+    }
+  },
+  {
+    "userId": "test_user_w67L-CVuxU",
+    "user": {
+      "email": "homestyle.essentials@example.com",
+      "passwordHash": "$2a$10$dummyHashForTestingPurposesOnly1234567890",
+      "emailVerified": true
+    },
+    "business": {
+      "name": "HomeStyle Essentials",
+      "industry": "home-goods",
+      "revenueRange": "500K-1M",
+      "productTypes": [
+        "kitchen",
+        "decor",
+        "furniture"
+      ],
+      "platform": "Other",
+      "siteId": "test3_qC5E8xGfWU"
+    }
+  },
+  {
+    "userId": "test_user_BCxmUJgqsN",
+    "user": {
+      "email": "beauty.bliss@example.com",
+      "passwordHash": "$2a$10$dummyHashForTestingPurposesOnly1234567890",
+      "emailVerified": true
+    },
+    "business": {
+      "name": "Beauty Bliss",
+      "industry": "beauty",
+      "revenueRange": "500K-1M",
+      "productTypes": [
+        "makeup"
+      ],
+      "platform": "Shopify",
+      "siteId": "test4_iHzrCtPjjp"
+    }
+  },
+  {
+    "userId": "test_user_4A5YM_oX80",
+    "user": {
+      "email": "sports.haven@example.com",
+      "passwordHash": "$2a$10$dummyHashForTestingPurposesOnly1234567890",
+      "emailVerified": true
+    },
+    "business": {
+      "name": "Sports Haven",
+      "industry": "sports",
+      "revenueRange": "500K-1M",
+      "productTypes": [
+        "accessories",
+        "apparel",
+        "equipment"
+      ],
+      "platform": "WooCommerce",
+      "siteId": "test5_Pfd-y3dOBq"
+    }
+  },
+  {
+    "userId": "test_user_D71yBWPg--",
+    "user": {
+      "email": "urban.apparel.store@example.com",
+      "passwordHash": "$2a$10$dummyHashForTestingPurposesOnly1234567890",
+      "emailVerified": true
+    },
+    "business": {
+      "name": "Urban Apparel Store",
+      "industry": "fashion",
+      "revenueRange": "1M-5M",
+      "productTypes": [
+        "clothing",
+        "accessories"
+      ],
+      "platform": "Other",
+      "siteId": "test6_AvCKYbxEuN"
+    }
+  },
+  {
+    "userId": "test_user_Ug2rpP3Xcn",
+    "user": {
+      "email": "electromart@example.com",
+      "passwordHash": "$2a$10$dummyHashForTestingPurposesOnly1234567890",
+      "emailVerified": true
+    },
+    "business": {
+      "name": "ElectroMart",
+      "industry": "electronics",
+      "revenueRange": "1M-5M",
+      "productTypes": [
+        "computers",
+        "accessories",
+        "smartphones"
+      ],
+      "platform": "Shopify",
+      "siteId": "test7_OZBADVOvvj"
+    }
+  },
+  {
+    "userId": "test_user_lN7-D-_hhy",
+    "user": {
+      "email": "homestyle.essentials@example.com",
+      "passwordHash": "$2a$10$dummyHashForTestingPurposesOnly1234567890",
+      "emailVerified": true
+    },
+    "business": {
+      "name": "HomeStyle Essentials",
+      "industry": "home-goods",
+      "revenueRange": "1M-5M",
+      "productTypes": [
+        "furniture",
+        "kitchen",
+        "decor"
+      ],
+      "platform": "WooCommerce",
+      "siteId": "test8__O1Cw5m0dG"
+    }
+  },
+  {
+    "userId": "test_user_nlx8GqSoHS",
+    "user": {
+      "email": "beauty.bliss@example.com",
+      "passwordHash": "$2a$10$dummyHashForTestingPurposesOnly1234567890",
+      "emailVerified": true
+    },
+    "business": {
+      "name": "Beauty Bliss",
+      "industry": "beauty",
+      "revenueRange": "1M-5M",
+      "productTypes": [
+        "makeup"
+      ],
+      "platform": "Other",
+      "siteId": "test9_Jx3sTWIySd"
+    }
+  },
+  {
+    "userId": "test_user_OgBw6x5SHl",
+    "user": {
+      "email": "fitlife.equipment@example.com",
+      "passwordHash": "$2a$10$dummyHashForTestingPurposesOnly1234567890",
+      "emailVerified": true
+    },
+    "business": {
+      "name": "FitLife Equipment",
+      "industry": "sports",
+      "revenueRange": "1M-5M",
+      "productTypes": [
+        "accessories",
+        "apparel"
+      ],
+      "platform": "Shopify",
+      "siteId": "test10_af3KctSFlp"
+    }
+  }
+]

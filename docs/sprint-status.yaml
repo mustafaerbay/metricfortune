@@ -46,7 +46,7 @@ development_status:
   1-7-pattern-detection-engine: done
   1-8-recommendation-generation-engine: done
   1-9-shopify-integration: done
-  1-10-system-testing-validation: backlog
+  1-10-system-testing-validation: done
   epic-1-retrospective: optional
 
   epic-2: backlog

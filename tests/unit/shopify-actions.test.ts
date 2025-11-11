@@ -10,7 +10,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 describe('Shopify Server Actions', () => {
   describe('Input Validation', () => {
     it('should validate businessId as CUID format', () => {
-      const validBusinessId = 'clx12345678901234567890'; // Real CUID format: 25 chars, starts with 'c'
+      const validBusinessId = 'clx1234567890123456789012'; // Real CUID format: 25 chars, starts with 'c'
       const invalidBusinessId = 'invalid-id-format';
 
       // CUID validation: must be 25 characters starting with 'c'

@@ -6,6 +6,12 @@ export default defineConfig({
     globals: true,
     environment: 'node',
     include: ['tests/unit/**/*.test.ts', 'tests/integration/**/*.test.ts'],
+    setupFiles: ['./tests/setup/vitest-setup.ts'],
+    // Run tests sequentially to avoid database race conditions
+    fileParallelism: false,
+    // Increase timeout for database operations
+    testTimeout: 30000,
+    hookTimeout: 30000,
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
