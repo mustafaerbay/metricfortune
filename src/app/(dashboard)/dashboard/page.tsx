@@ -55,23 +55,61 @@ async function getMetrics(businessId: string) {
       abandonmentRate: "0.0",
       peerPercentile: 50,
       hasData: false,
+      conversionTrend: null,
+      abandonmentTrend: null,
     };
   }
 
   const siteId = business.siteId;
 
-  // Get session count and conversions
-  const sessions = await prisma.session.findMany({
-    where: { siteId },
-    select: {
-      converted: true,
+  // Calculate date ranges for trend analysis (current 7 days vs previous 7 days)
+  const now = new Date();
+  const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+
+  // Get current period sessions (last 7 days)
+  const currentSessions = await prisma.session.findMany({
+    where: {
+      siteId,
+      createdAt: { gte: sevenDaysAgo },
     },
+    select: { converted: true },
   });
 
-  const totalSessions = sessions.length;
-  const conversions = sessions.filter((s) => s.converted).length;
+  // Get previous period sessions (7-14 days ago)
+  const previousSessions = await prisma.session.findMany({
+    where: {
+      siteId,
+      createdAt: {
+        gte: fourteenDaysAgo,
+        lt: sevenDaysAgo,
+      },
+    },
+    select: { converted: true },
+  });
+
+  // Calculate current metrics
+  const totalSessions = currentSessions.length;
+  const conversions = currentSessions.filter((s) => s.converted).length;
   const conversionRate =
     totalSessions > 0 ? ((conversions / totalSessions) * 100).toFixed(1) : "0.0";
+
+  // Calculate previous metrics for trend
+  const prevTotalSessions = previousSessions.length;
+  const prevConversions = previousSessions.filter((s) => s.converted).length;
+  const prevConversionRate =
+    prevTotalSessions > 0 ? (prevConversions / prevTotalSessions) * 100 : 0;
+
+  // Calculate conversion rate trend
+  const currentConvRate = parseFloat(conversionRate);
+  let conversionTrend: { direction: "up" | "down"; value: string } | null = null;
+  if (prevConversionRate > 0 && totalSessions >= 10) {
+    const trendChange = ((currentConvRate - prevConversionRate) / prevConversionRate) * 100;
+    conversionTrend = {
+      direction: trendChange >= 0 ? "up" : "down",
+      value: `${trendChange >= 0 ? "+" : ""}${trendChange.toFixed(1)}%`,
+    };
+  }
 
   // Get active recommendations count
   const activeRecommendations = await prisma.recommendation.count({
@@ -81,33 +119,77 @@ async function getMetrics(businessId: string) {
     },
   });
 
-  // Get cart abandonment rate using TrackingEvent
-  const addToCartEvents = await prisma.trackingEvent.findMany({
+  // Get cart abandonment rate using TrackingEvent (current period)
+  const currentCartEvents = await prisma.trackingEvent.findMany({
     where: {
       siteId,
       eventType: "ADD_TO_CART",
+      createdAt: { gte: sevenDaysAgo },
     },
-    select: {
-      sessionId: true,
-    },
+    select: { sessionId: true },
     distinct: ["sessionId"],
   });
 
-  const cartSessionIds = addToCartEvents.map((e) => e.sessionId);
-  const cartSessions = cartSessionIds.length;
+  const currentCartSessionIds = currentCartEvents.map((e) => e.sessionId);
+  const currentCartSessions = currentCartSessionIds.length;
 
-  const abandonedCarts = await prisma.session.count({
+  const currentAbandonedCarts = await prisma.session.count({
     where: {
       siteId,
-      sessionId: { in: cartSessionIds },
+      sessionId: { in: currentCartSessionIds },
       converted: false,
     },
   });
 
   const abandonmentRate =
-    cartSessions > 0 ? ((abandonedCarts / cartSessions) * 100).toFixed(1) : "0.0";
+    currentCartSessions > 0 ? ((currentAbandonedCarts / currentCartSessions) * 100).toFixed(1) : "0.0";
 
-  // Peer benchmark - simplified for MVP (would compare with peer group in production)
+  // Get previous period cart abandonment for trend
+  const prevCartEvents = await prisma.trackingEvent.findMany({
+    where: {
+      siteId,
+      eventType: "ADD_TO_CART",
+      createdAt: {
+        gte: fourteenDaysAgo,
+        lt: sevenDaysAgo,
+      },
+    },
+    select: { sessionId: true },
+    distinct: ["sessionId"],
+  });
+
+  const prevCartSessionIds = prevCartEvents.map((e) => e.sessionId);
+  const prevCartSessions = prevCartSessionIds.length;
+
+  const prevAbandonedCarts = await prisma.session.count({
+    where: {
+      siteId,
+      sessionId: { in: prevCartSessionIds },
+      converted: false,
+    },
+  });
+
+  const prevAbandonmentRate =
+    prevCartSessions > 0 ? (prevAbandonedCarts / prevCartSessions) * 100 : 0;
+
+  // Calculate abandonment rate trend
+  const currentAbandonRate = parseFloat(abandonmentRate);
+  let abandonmentTrend: { direction: "up" | "down"; value: string } | null = null;
+  if (prevAbandonmentRate > 0 && currentCartSessions >= 5) {
+    const trendChange = ((currentAbandonRate - prevAbandonmentRate) / prevAbandonmentRate) * 100;
+    abandonmentTrend = {
+      direction: trendChange >= 0 ? "up" : "down",
+      value: `${trendChange >= 0 ? "+" : ""}${trendChange.toFixed(1)}%`,
+    };
+  }
+
+  // Peer benchmark - MVP LIMITATION (Story 2.1 code review finding #8)
+  // TODO: Implement real peer comparison once Story 1.5 peer matching is complete
+  // Real implementation would:
+  // 1. Query peer group via business.peerGroupId
+  // 2. Aggregate conversion rates across peer businesses
+  // 3. Calculate percentile ranking (e.g., P50, P75, P90)
+  // Current: Simple heuristic based on session volume as proxy
   const peerPercentile = totalSessions > 100 ? 75 : 50;
 
   return {
@@ -116,6 +198,8 @@ async function getMetrics(businessId: string) {
     abandonmentRate,
     peerPercentile,
     hasData: totalSessions > 0,
+    conversionTrend,
+    abandonmentTrend,
   };
 }
 
@@ -219,8 +303,8 @@ export default async function DashboardPage() {
         <StatsCard
           label="Conversion Rate"
           value={`${metrics.conversionRate}%`}
-          trend="up"
-          trendValue="+2.3%"
+          trend={metrics.conversionTrend?.direction}
+          trendValue={metrics.conversionTrend?.value}
         />
         <StatsCard
           label="Active Recommendations"
@@ -235,8 +319,8 @@ export default async function DashboardPage() {
         <StatsCard
           label="Cart Abandonment"
           value={`${metrics.abandonmentRate}%`}
-          trend="down"
-          trendValue="-1.5%"
+          trend={metrics.abandonmentTrend?.direction}
+          trendValue={metrics.abandonmentTrend?.value}
         />
       </div>
     </div>

@@ -69,13 +69,13 @@ export function Sidebar({ businessName, userEmail }: SidebarProps) {
               key={item.name}
               href={item.href}
               title={item.name}
-              className={`flex items-center gap-3 rounded-lg px-3 py-2 text-sm font-medium transition-colors ${
+              className={`flex items-center gap-3 rounded-lg px-4 py-3 text-sm font-medium transition-colors ${
                 isActive
                   ? "bg-[#7c3aed] text-white"
                   : "text-[#4b5563] hover:bg-[#faf5ff] hover:text-[#7c3aed]"
               }`}
             >
-              <Icon className="h-5 w-5 shrink-0" />
+              <Icon className="h-6 w-6 shrink-0" />
               <span className="hidden group-hover:block lg:block">{item.name}</span>
             </Link>
           );

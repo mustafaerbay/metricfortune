@@ -50,7 +50,7 @@ development_status:
   epic-1-retrospective: optional
 
   epic-2: backlog
-  2-1-dashboard-home-navigation: review
+  2-1-dashboard-home-navigation: done
   2-2-recommendations-tab-list-view: backlog
   2-3-recommendation-detail-view: backlog
   2-4-journey-insights-tab-visual-funnels: backlog
