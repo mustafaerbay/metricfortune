@@ -1,0 +1,274 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>2</storyId>
+    <title>Recommendations Tab - List View</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-12</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-2-recommendations-tab-list-view.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>an e-commerce business owner</asA>
+    <iWant>to see all my optimization recommendations in a prioritized list</iWant>
+    <soThat>I can review what changes to make to my site</soThat>
+    <tasks>
+      - Create Recommendations page Server Component (fetch via Prisma, sort HIGH→MEDIUM→LOW manually)
+      - Build RecommendationCard component (Client Component: icon, impact badge, title, summary, peer proof)
+      - Implement responsive card grid layout (3→2→1 columns, 24px gap, stagger animation)
+      - Add filter controls (status/impact filters via URL query params, server-side Prisma filtering)
+      - Add visual indicator for new recommendations (NEW badge for <7 days old, pulse animation)
+      - Implement card click navigation (Link to /dashboard/recommendations/[id], preserve scroll)
+      - Create empty states (no recs, all dismissed, no filter results)
+      - Add loading states (loading.tsx with 6 skeleton cards)
+      - Add error boundary (error.tsx with user-friendly message + retry)
+      - Style with Bold Purple theme (purple primary, impact badges colored)
+      - Create integration tests (Vitest: fetch, sort, filter, empty states)
+      - Verify responsive layout (test at 1280/1024/768/375px breakpoints)
+      - Accessibility validation (WCAG AA: keyboard nav, ARIA labels, contrast, screen reader)
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    1. Card-based layout displaying 3-5 recommendations per business
+    2. Each card shows: recommendation title, impact level badge (High/Medium/Low), confidence indicator, one-line summary
+    3. Recommendations sorted by priority (impact × confidence)
+    4. Filter options: status (New, Planned, Implemented, Dismissed), impact level
+    5. Click card to open detailed view (modal or side panel)
+    6. Visual indicators for new recommendations (badge or highlight)
+    7. Empty state when all recommendations addressed ("Great work! Check back next week for new insights")
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Functional Requirements - Recommendation Engine (FR010, FR013)</section>
+        <snippet>FR010: System shall generate 3-5 specific, actionable recommendations per week prioritized by potential impact. FR013: System shall provide a dashboard with three core tabs: Recommendations (priority-ranked), Journey Insights (behavior patterns), and Peer Benchmarks.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>6.1.1 RecommendationCard Component</section>
+        <snippet>Card-based layout displaying recommendation summary with Icon/Emoji area (64×64px gradient circle), Impact Badge (top right corner), Title (H3, 2-line max with ellipsis), Description (body text, 3-line max), Peer Proof footer (small text with checkmark icon).</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Technology Stack - Epic 2</section>
+        <snippet>Next.js 16.0.1 App Router with React 19, TypeScript 5.x, Tailwind CSS 4.x for styling, Prisma 6.17.0 for database access, NextAuth.js 5.0.0-beta.25 for authentication.</snippet>
+      </doc>
+      <doc>
+        <path>docs/testing-strategy.md</path>
+        <title>Testing Strategy</title>
+        <section>Testing Pyramid - Integration Tests</section>
+        <snippet>Integration tests use Vitest 4.0 with test database, located in tests/integration/**/*.test.ts, covering Server Actions, service layer integration, and database operations. Coverage target: 80%+ for critical services.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-2-dashboard-user-experience.md</path>
+        <title>Epic 2: Dashboard User Experience</title>
+        <section>Story 2.2: Recommendations Tab - List View</section>
+        <snippet>Card-based layout displaying 3-5 recommendations per business, sorted by priority (impact × confidence), with filter options for status and impact level. Prerequisites: 1.8 (recommendations data), 2.1 (dashboard navigation).</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/app/(dashboard)/dashboard/page.tsx</path>
+        <kind>page</kind>
+        <symbol>DashboardPage</symbol>
+        <lines>1-329</lines>
+        <reason>Server Component pattern reference: async function, Prisma queries, auth() usage, getTopRecommendation() with manual HIGH→MEDIUM→LOW sorting</reason>
+      </artifact>
+      <artifact>
+        <path>src/app/(dashboard)/dashboard/page.tsx</path>
+        <kind>function</kind>
+        <symbol>getTopRecommendation</symbol>
+        <lines>10-42</lines>
+        <reason>Manual impact level sorting pattern (HIGH→MEDIUM→LOW) - REUSE this exact approach for Story 2.2 sorting</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/dashboard/stats-card.tsx</path>
+        <kind>component</kind>
+        <symbol>StatsCard</symbol>
+        <lines>1-62</lines>
+        <reason>Card component pattern reference: Border colors (#e9d5ff), 80px height, trend indicators, badge usage</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/dashboard/sidebar.tsx</path>
+        <kind>component</kind>
+        <symbol>Sidebar</symbol>
+        <lines>1-50</lines>
+        <reason>Navigation structure: Recommendations tab exists at /dashboard/recommendations (line 21)</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/ui/card.tsx</path>
+        <kind>ui-component</kind>
+        <symbol>Card, CardContent</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui Card component - already installed and themed</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/ui/badge.tsx</path>
+        <kind>ui-component</kind>
+        <symbol>Badge</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui Badge component - already installed, use for impact badges and NEW badge</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/ui/skeleton.tsx</path>
+        <kind>ui-component</kind>
+        <symbol>Skeleton</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui Skeleton component - already installed, use for loading.tsx skeleton cards</reason>
+      </artifact>
+      <artifact>
+        <path>src/lib/auth.ts</path>
+        <kind>service</kind>
+        <symbol>auth</symbol>
+        <lines>all</lines>
+        <reason>NextAuth auth() function - use to get session and businessId in Server Component</reason>
+      </artifact>
+      <artifact>
+        <path>src/lib/prisma.ts</path>
+        <kind>service</kind>
+        <symbol>prisma</symbol>
+        <lines>all</lines>
+        <reason>Prisma client instance - use for database queries</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>schema</kind>
+        <symbol>Recommendation</symbol>
+        <lines>104-121</lines>
+        <reason>Recommendation model: id, businessId, title, problemStatement, actionSteps, expectedImpact, confidenceLevel, status, impactLevel, peerSuccessData, timestamps</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <framework name="next" version="16.0.1">App Router, React 19, TypeScript support</framework>
+        <framework name="react" version="19.2.0">React 19 with concurrent features</framework>
+        <framework name="typescript" version="^5">Type safety and developer experience</framework>
+        <ui name="tailwindcss" version="^4">Utility-first CSS for styling</ui>
+        <ui name="lucide-react" version="^0.553.0">Icon library for UI</ui>
+        <database name="@prisma/client" version="6.17.0">Type-safe database client</database>
+        <auth name="next-auth" version="^5.0.0-beta.30">NextAuth.js for authentication</auth>
+        <testing name="vitest" version="4.0">Unit and integration testing</testing>
+        <testing name="@playwright/test" version="^1.56.1">E2E testing</testing>
+      </node>
+      <note>shadcn/ui components installed: Card, Badge, Skeleton, Button (from Story 2.1)</note>
+      <note>Need to add: Select component for filter dropdowns - npx shadcn-ui@latest add select</note>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - Use Next.js 16 App Router with Server Components (default) and Client Components (only when 'use client' needed for interactivity)
+    - Recommendations page MUST be Server Component (src/app/(dashboard)/dashboard/recommendations/page.tsx) fetching data via Prisma
+    - RecommendationCard MUST be Client Component for hover states and click handlers
+    - Implement manual sorting by impactLevel (HIGH→MEDIUM→LOW) - Prisma enum sorting is alphabetical, not enum position (REUSE pattern from dashboard/page.tsx lines 31-39)
+    - Apply secondary sort by createdAt (newest first) within same impact level
+    - Filters MUST use URL query params (e.g., ?status=NEW&impact=HIGH) for state preservation on refresh
+    - Server-side filtering via Prisma where clauses (NOT client-side filtering)
+    - Use Bold Purple theme colors: primary #7c3aed, borders #e9d5ff, backgrounds #faf5ff
+    - Impact badges: High (green #dcfce7 bg, #15803d text), Medium (amber #fef3c7 bg, #a16207 text), Low (gray #f3f4f6 bg, #374151 text)
+    - Card hover states: border primary purple (#7c3aed), subtle shadow, lift 2px (transform: translateY(-2px))
+    - NEW badge: purple background (#7c3aed), white text, show for createdAt within last 7 days
+    - Responsive grid: 3 columns (>1024px), 2 columns (768-1024px), 1 column (<768px), 24px gap, CSS Grid (not Flexbox)
+    - Card min-width: 360px (desktop/tablet), full-width (mobile)
+    - WCAG AA compliance: 4.5:1 contrast ratio minimum, keyboard navigation, ARIA labels, screen reader support
+    - 48px minimum touch targets for mobile (entire card is tappable)
+    - Loading states via loading.tsx (6 skeleton cards matching real card dimensions)
+    - Error boundaries via error.tsx (user-friendly message with retry button)
+    - Integration tests in tests/integration/dashboard/recommendations-list.test.ts using Vitest 4.0
+    - Achieve 100% coverage of data fetching logic
+    - Run 'npm run build' before marking story complete - MUST have zero TypeScript errors
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>auth()</name>
+      <kind>function</kind>
+      <signature>async function auth(): Promise&lt;Session | null&gt;</signature>
+      <path>src/lib/auth.ts</path>
+      <description>NextAuth auth function - returns session with user.businessId</description>
+    </interface>
+    <interface>
+      <name>prisma.recommendation.findMany</name>
+      <kind>prisma-query</kind>
+      <signature>
+        findMany({
+          where: { businessId, status?, impactLevel? },
+          orderBy: { createdAt: 'desc' },
+          select: { id, title, problemStatement, impactLevel, confidenceLevel, status, peerSuccessData, createdAt }
+        })
+      </signature>
+      <path>prisma/schema.prisma</path>
+      <description>Query recommendations with optional status/impact filters, ordered by createdAt descending</description>
+    </interface>
+    <interface>
+      <name>Recommendation Model</name>
+      <kind>database-model</kind>
+      <signature>
+        {
+          id: string;
+          businessId: string;
+          title: string;
+          problemStatement: string;
+          actionSteps: string[];
+          expectedImpact: string;
+          confidenceLevel: 'HIGH' | 'MEDIUM' | 'LOW';
+          status: 'NEW' | 'PLANNED' | 'IMPLEMENTED' | 'DISMISSED';
+          impactLevel: 'HIGH' | 'MEDIUM' | 'LOW';
+          peerSuccessData: string | null;
+          implementedAt: Date | null;
+          dismissedAt: Date | null;
+          createdAt: Date;
+        }
+      </signature>
+      <path>prisma/schema.prisma</path>
+      <description>Recommendation database model with enums for status, impactLevel, confidenceLevel</description>
+    </interface>
+    <interface>
+      <name>Card Component (shadcn/ui)</name>
+      <kind>react-component</kind>
+      <signature>import { Card, CardContent } from '@/components/ui/card'</signature>
+      <path>src/components/ui/card.tsx</path>
+      <description>Installed shadcn/ui Card component with Bold Purple theme applied</description>
+    </interface>
+    <interface>
+      <name>Badge Component (shadcn/ui)</name>
+      <kind>react-component</kind>
+      <signature>import { Badge } from '@/components/ui/badge'</signature>
+      <path>src/components/ui/badge.tsx</path>
+      <description>Installed shadcn/ui Badge component with variants: default, error, secondary</description>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>
+      Integration tests use Vitest 4.0 with test database. Tests follow the testing pyramid model with focus on integration tests for Server Components and data fetching logic. Story 2.1 established patterns in tests/integration/dashboard/dashboard-home.test.ts with 262+ passing tests. Target: 80%+ coverage for critical services, 100% coverage for data fetching logic. Tests verify Server Component async functions, Prisma queries, filtering logic, sorting algorithms, and empty state detection.
+    </standards>
+    <locations>
+      - tests/integration/dashboard/recommendations-list.test.ts (NEW - integration tests for this story)
+      - tests/integration/dashboard/dashboard-home.test.ts (REFERENCE - existing patterns from Story 2.1)
+      - tests/e2e/ (E2E tests if needed for user journeys)
+    </locations>
+    <ideas>
+      AC#1: Test card-based layout renders 3-5 recommendations from database correctly
+      AC#2: Test each card displays title, impact badge, confidence indicator, and summary (verify all fields present)
+      AC#3: Test manual sorting - recommendations ordered HIGH→MEDIUM→LOW, then by createdAt within same impact
+      AC#4: Test status filter (NEW, PLANNED, IMPLEMENTED, DISMISSED) - verify Prisma where clause works
+      AC#4: Test impact level filter (HIGH, MEDIUM, LOW) - verify Prisma where clause works
+      AC#4: Test combined filters (status + impact) - verify both filters apply simultaneously
+      AC#6: Test NEW badge appears for recommendations created within last 7 days
+      AC#6: Test NEW badge does NOT appear for recommendations older than 7 days
+      AC#7: Test empty state when no recommendations exist (expect "Analyzing your data" message)
+      AC#7: Test empty state when all recommendations dismissed (expect "Great work!" message)
+      AC#7: Test empty state when filters return no results (expect "No recommendations match" message)
+      Integration: Test recommendation count per business (expect 3-5 recommendations)
+      Integration: Test fetching recommendations for specific businessId (verify query isolation)
+      Integration: Test Server Component auth() integration - verify businessId extracted correctly
+      Error handling: Test behavior when businessId is null or invalid
+      Performance: Test query performance with 100+ recommendations (verify <500ms response)
+    </ideas>
+  </tests>
+</story-context>
