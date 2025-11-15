@@ -42,7 +42,8 @@ export const sessionAggregationJob = inngest.createFunction(
   },
   [
     { event: 'session/aggregate' },
-    { cron: '0 */4 * * *' }, // Run every 4 hours at minute 0
+    { cron: '0/15 * * * *' }, // Run every 15 minutes for testing
+    // { cron: '0 */4 * * *' }, // Run every 4 hours at minute 0
   ],
   async ({ event, step }) => {
     const jobStartTime = Date.now();
