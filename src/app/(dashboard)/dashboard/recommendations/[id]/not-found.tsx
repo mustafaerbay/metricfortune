@@ -15,27 +15,25 @@ export default function RecommendationNotFound() {
       </Link>
 
       {/* Not Found Card */}
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Card className="max-w-md border-2 border-[#e9d5ff] bg-[#faf5ff]">
-          <CardContent className="p-8 text-center">
-            <div className="mb-4 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-[#7c3aed]">
-                <FileQuestion className="h-8 w-8 text-white" />
-              </div>
+      <Card className="border-2 border-[#e9d5ff]">
+        <CardContent className="p-8">
+          <div className="flex flex-col items-center text-center">
+            <div className="mb-4 rounded-full bg-[#faf5ff] p-3">
+              <FileQuestion className="h-8 w-8 text-[#7c3aed]" />
             </div>
-            <h2 className="mb-2 text-xl font-bold text-gray-900">
+            <h2 className="mb-2 text-2xl font-bold text-[#1f2937]">
               Recommendation Not Found
             </h2>
-            <p className="mb-6 text-sm text-gray-600">
-              This recommendation doesn&apos;t exist or you don&apos;t have
-              permission to view it.
+            <p className="mb-6 max-w-md text-[#6b7280]">
+              The recommendation you're looking for doesn't exist or you don't
+              have permission to view it.
             </p>
             <Link href="/dashboard/recommendations">
-              <Button className="w-full">Back to Recommendations</Button>
+              <Button>Back to Recommendations</Button>
             </Link>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

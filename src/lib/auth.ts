@@ -3,6 +3,7 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcrypt";
 import { prisma } from "./prisma";
 
+const TOKEN_MAX_AGE_SECONDS = 60 * 60;
 export const authOptions = {
   providers: [
     Credentials({
@@ -49,6 +50,10 @@ export const authOptions = {
   ],
   session: {
     strategy: "jwt" as const,
+    maxAge: TOKEN_MAX_AGE_SECONDS,
+  },
+  jwt: {
+    maxAge: TOKEN_MAX_AGE_SECONDS,
   },
   pages: {
     signIn: "/login",
@@ -64,12 +69,20 @@ export const authOptions = {
       return true;
     },
     async jwt({ token, user, trigger }) {
+      const now = Math.floor(Date.now() / 1000);
       if (user) {
         token.id = user.id;
         token.emailVerified = user.emailVerified;
         token.businessId = user.businessId;
+        token.sessionStartedAt = token.sessionStartedAt || Date.now();
       }
-
+      if (
+        token.sessionStartedAt &&
+        now - (token.sessionStartedAt as number) > TOKEN_MAX_AGE_SECONDS
+      ) {
+        // Returning an empty token makes session() return null (see below)
+        return {} as typeof token;
+      }
       // Refresh user data on update trigger (e.g., after email verification or profile completion)
       if (trigger === "update" && token.id) {
         const updatedUser = await prisma.user.findUnique({
@@ -85,6 +98,10 @@ export const authOptions = {
       return token;
     },
     async session({ session, token }) {
+      if (!token || !token.id) {
+        // If there's no user ID in the token, return the original session (must not be null)
+        return session;
+      }
       if (session.user) {
         session.user.id = token.id as string;
         session.user.emailVerified = token.emailVerified as boolean;

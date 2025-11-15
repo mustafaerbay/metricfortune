@@ -102,20 +102,21 @@ model Pattern {
 }
 
 model Recommendation {
-  id                  String                 @id @default(cuid())
-  businessId          String
-  business            Business               @relation(fields: [businessId], references: [id])
-  title               String
-  problemStatement    String
-  actionSteps         String[]
-  expectedImpact      String
-  confidenceLevel     ConfidenceLevel
-  status              RecommendationStatus   @default(NEW)
-  impactLevel         ImpactLevel
-  peerSuccessData     String?
-  implementedAt       DateTime?
-  dismissedAt         DateTime?
-  createdAt           DateTime               @default(now())
+  id                   String                 @id @default(cuid())
+  businessId           String
+  business             Business               @relation(fields: [businessId], references: [id])
+  title                String
+  problemStatement     String
+  actionSteps          String[]
+  expectedImpact       String
+  confidenceLevel      ConfidenceLevel
+  status               RecommendationStatus   @default(NEW)
+  impactLevel          ImpactLevel
+  peerSuccessData      String?
+  implementedAt        DateTime?
+  implementationNotes  String?
+  dismissedAt          DateTime?
+  createdAt            DateTime               @default(now())
 
   @@index([businessId, status])
 }

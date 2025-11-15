@@ -15,7 +15,7 @@ export default function RecommendationDetailError({
 }) {
   useEffect(() => {
     // Log error to console with context
-    console.error("Recommendation detail page error:", {
+    console.error("Recommendation detail error:", {
       message: error.message,
       digest: error.digest,
       timestamp: new Date().toISOString(),
@@ -33,32 +33,30 @@ export default function RecommendationDetailError({
       </Link>
 
       {/* Error Card */}
-      <div className="flex min-h-[60vh] items-center justify-center">
-        <Card className="max-w-md border-2 border-red-200 bg-red-50">
-          <CardContent className="p-8 text-center">
-            <div className="mb-4 flex justify-center">
-              <div className="flex h-16 w-16 items-center justify-center rounded-full bg-red-100">
-                <AlertCircle className="h-8 w-8 text-red-600" />
-              </div>
+      <Card className="border-2 border-red-200">
+        <CardContent className="p-8">
+          <div className="flex flex-col items-center text-center">
+            <div className="mb-4 rounded-full bg-red-100 p-3">
+              <AlertCircle className="h-8 w-8 text-red-600" />
             </div>
-            <h2 className="mb-2 text-xl font-bold text-gray-900">
-              Unable to load recommendation details
+            <h2 className="mb-2 text-2xl font-bold text-[#1f2937]">
+              Unable to Load Recommendation Details
             </h2>
-            <p className="mb-6 text-sm text-gray-600">
-              We encountered an error while loading this recommendation. Please
-              try again or return to the recommendations list.
+            <p className="mb-6 max-w-md text-[#6b7280]">
+              We encountered an error while loading this recommendation. This
+              might be a temporary issue.
             </p>
             <div className="flex gap-3">
-              <Button onClick={reset} variant="outline" className="flex-1">
-                Retry
+              <Button onClick={reset} variant="default">
+                Try Again
               </Button>
-              <Link href="/dashboard/recommendations" className="flex-1">
-                <Button className="w-full">Back to List</Button>
+              <Link href="/dashboard/recommendations">
+                <Button variant="outline">Back to Recommendations</Button>
               </Link>
             </div>
-          </CardContent>
-        </Card>
-      </div>
+          </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }

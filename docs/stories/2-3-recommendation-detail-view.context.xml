@@ -1,0 +1,395 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>3</storyId>
+    <title>Recommendation Detail View</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-14</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-3-recommendation-detail-view.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>an e-commerce business owner</asA>
+    <iWant>to see detailed information about each recommendation including the problem, solution, and peer proof</iWant>
+    <soThat>I understand why this matters and feel confident implementing it</soThat>
+    <tasks>
+- Create recommendation detail page (AC: #1, #2, #6, #7)
+  - Create `src/app/(dashboard)/dashboard/recommendations/[id]/page.tsx` as async Server Component
+  - Fetch single recommendation by ID with business ownership verification
+  - Return RecommendationDetail component with fetched data
+  - Implement catch-all error handling for invalid IDs or unauthorized access
+  - Add back navigation link/button to recommendations list
+  - Pass recommendation data to client component for display
+
+- Build RecommendationDetail client component (AC: #1, #5)
+  - Create `src/components/dashboard/recommendation-detail.tsx` as Client Component
+  - Add problem statement section with title (H2) and description
+  - Display supporting data statistics (e.g., "43% of users abandon at shipping form")
+  - Add visual journey snippet component showing drop-off point (placeholder or simplified funnel)
+  - Style with shadcn/ui Card component + Bold Purple theme
+  - Ensure responsive layout (desktop 2-column, mobile single-column)
+
+- Add solution section (AC: #1)
+  - Display specific action steps as numbered list
+  - Format action steps clearly with checkboxes or numbered items
+  - Add optional code snippet or plugin suggestion if applicable
+  - Style with proper spacing and hierarchy (H3 for section title)
+
+- Add proof section (AC: #1)
+  - Display expected impact range (e.g., "15-20% reduction in abandonment")
+  - Show confidence level with ConfidenceMeter component (HIGH/MEDIUM/LOW)
+  - Add explanation tooltip for confidence level (e.g., "Based on 100+ sessions analyzed")
+  - Display peer success data if available (e.g., "12 similar stores saw 18% average improvement")
+  - Include visual PeerBenchmarkComparison if applicable
+  - Add optional link to industry article or case study
+
+- Implement action buttons (AC: #2, #3, #4, #7)
+  - Create "Mark as Planned" button (primary CTA)
+  - Create "Mark as Implemented" button (secondary CTA) - opens date picker modal
+  - Create "Dismiss" button (tertiary/ghost button)
+  - Add Server Action handlers for each status change (`updateRecommendationStatus`)
+  - Implement optimistic UI updates (status changes immediately, reverts on error)
+  - Show toast notifications on success/error
+  - Redirect or refresh list view to reflect status change
+
+- Build implementation date picker modal (AC: #3, #4)
+  - Create modal using shadcn/ui Dialog component
+  - Add date picker component (Calendar from shadcn/ui)
+  - Default to today's date
+  - Add optional notes textarea field (500 character limit)
+  - Add "Confirm" and "Cancel" buttons
+  - On confirm: call Server Action with date and notes, update status to IMPLEMENTED
+  - Close modal and show success toast
+
+- Create Server Actions for status updates (AC: #7)
+  - Create `src/actions/recommendations.ts` if not exists
+  - Implement `markAsPlanned(id: string)` action
+  - Implement `markAsImplemented(id: string, implementedAt: Date, notes?: string)` action
+  - Implement `dismissRecommendation(id: string, reason?: string)` action
+  - Add authentication check (only business owner can update their recommendations)
+  - Update Prisma recommendation model with new status
+  - Return updated recommendation data
+  - Handle errors gracefully with structured response
+
+- Add loading and error states (AC: #6)
+  - Create `loading.tsx` in recommendations/[id] folder
+  - Show skeleton layout matching detail view structure (heading skeleton, content blocks)
+  - Create `error.tsx` in recommendations/[id] folder
+  - Show user-friendly error: "Unable to load recommendation details" with back button
+  - Log error to console with context (recommendationId, userId, timestamp)
+
+- Create not-found state (AC: #6)
+  - Create `not-found.tsx` in recommendations/[id] folder
+  - Show "Recommendation not found" message
+  - Add "Back to recommendations" link
+  - Handle case where recommendation ID doesn't exist or user doesn't have access
+
+- Style with Bold Purple theme (Design)
+  - Apply primary purple (#7c3aed) for primary action buttons
+  - Style section headings with proper hierarchy (H2: Problem, H3: Solution, H3: Proof)
+  - Use shadcn/ui Card for main content container
+  - Add proper spacing between sections (24px)
+  - Ensure confidence meter uses proper colors (HIGH: green, MEDIUM: amber, LOW: gray)
+  - Style action buttons according to hierarchy (primary solid, secondary outline, tertiary ghost)
+
+- Create integration tests (Testing)
+  - Test fetching single recommendation by ID
+  - Test business ownership verification (user can only access their own recommendations)
+  - Test status update Server Actions (planned, implemented, dismissed)
+  - Test implementation date recording
+  - Test invalid ID handling (404 response)
+  - Test unauthorized access (different business trying to access recommendation)
+  - Place tests in `tests/integration/dashboard/recommendation-detail.test.ts`
+  - Achieve 100% coverage of Server Actions
+
+- Verify responsive layout (AC: #1, #5)
+  - Test layout at 1280px (2-column: content left, journey snippet right)
+  - Test layout at 768px (single column, journey snippet below content)
+  - Test layout at 375px (mobile, all stacked vertically)
+  - Verify action buttons stack on mobile (full-width buttons)
+  - Ensure journey snippet is readable and functional on mobile
+
+- Accessibility validation (WCAG AA)
+  - Verify keyboard navigation (Tab through buttons, Enter to activate)
+  - Add ARIA labels: "Mark recommendation as planned", etc.
+  - Verify 4.5:1 contrast ratio for all text
+  - Screen reader test: Ensure recommendation details announce correctly
+  - Focus management: Modal opens → focus moves to close/cancel, modal closes → focus returns
+  - Ensure date picker is keyboard accessible
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. Detail view displays:
+   - Problem statement with supporting data ("43% of users abandon at shipping form")
+   - Specific action steps to implement the fix
+   - Expected impact range ("15-20% reduction in abandonment")
+   - Confidence level explanation (Medium: based on 100+ sessions)
+   - Peer success data if available ("12 similar stores saw 18% average improvement")
+2. Action buttons: "Mark as Planned", "Mark as Implemented", "Dismiss"
+3. Implementation date picker when marking as implemented
+4. Notes field for user to add context
+5. Visual journey snippet showing where the problem occurs
+6. Close/back action returns to recommendations list
+7. Recommendation status changes reflected immediately in list view
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Functional Requirements - Recommendation Engine (FR010-FR012)</section>
+        <snippet>System shall generate 3-5 specific, actionable recommendations per week prioritized by potential impact. Format: Problem → Specific Action → Expected Impact → Confidence Level. Incorporate peer success data when available.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Functional Requirements - Dashboard & Reporting (FR013, FR015)</section>
+        <snippet>Dashboard shall provide Recommendations (priority-ranked), Journey Insights, and Peer Benchmarks tabs. Users can mark recommendations as "Implemented," "Dismissed," or "Planned" and track before/after metrics.</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Non-Functional Requirements - Performance (NFR001)</section>
+        <snippet>Dashboard shall load in &lt;2 seconds for initial load and &lt;500ms for navigation. System shall achieve 99.9% uptime.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-2-dashboard-user-experience.md</path>
+        <title>Epic 2: Dashboard & User Experience</title>
+        <section>Story 2.3 - Recommendation Detail View</section>
+        <snippet>Detail view displays problem statement with supporting data, specific action steps, expected impact range, confidence level explanation, and peer success data. Action buttons: "Mark as Planned", "Mark as Implemented", "Dismiss". Implementation date picker and notes field.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Technical Architecture</title>
+        <section>Epic to Architecture Mapping - Story 2.3</section>
+        <snippet>Recommendation Detail: Modal/side panel component, src/actions/recommendations.ts for status updates.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Technical Architecture</title>
+        <section>Integration Points - Frontend ↔ Backend</section>
+        <snippet>Server Actions for mutations (mark recommendation, update profile). Server Components for data fetching (fetch recommendations, sessions).</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>Responsive Breakpoint Strategy (4.5)</section>
+        <snippet>Mobile: 0-767px (single column), Tablet: 768px-1023px (2-col cards), Desktop: 1024px+ (2-3 col cards). Touch targets: 48px × 48px minimum (mobile). Responsive typography: H2: 20px → 22px → 24px, H3: 18px → 19px → 20px.</snippet>
+      </doc>
+      <doc>
+        <path>docs/testing-strategy.md</path>
+        <title>Testing Strategy</title>
+        <section>Integration Tests</section>
+        <snippet>Integration tests cover Server Actions (auth, business profile, recommendations), service layer integration, and database operations. Tests located in tests/integration/**/*.test.ts using Vitest 4.0.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/app/(dashboard)/dashboard/recommendations/[id]/page.tsx</path>
+        <kind>Server Component (page)</kind>
+        <symbol>RecommendationDetailPage</symbol>
+        <lines>11-141</lines>
+        <reason>Existing detail page with basic display - needs action buttons, date picker modal, and full implementation per Story 2.3 ACs</reason>
+      </artifact>
+      <artifact>
+        <path>src/actions/recommendations.ts</path>
+        <kind>Server Actions</kind>
+        <symbol>markRecommendationImplemented, dismissRecommendation, planRecommendation</symbol>
+        <lines>269-533</lines>
+        <reason>Existing Server Actions for status updates - need to be integrated with UI action buttons and date picker modal</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/dashboard/recommendation-card.tsx</path>
+        <kind>Client Component</kind>
+        <symbol>RecommendationCard</symbol>
+        <lines>23-79</lines>
+        <reason>List view card component with Link to detail view - shows data structure and styling patterns to follow</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/dashboard/impact-badge.tsx</path>
+        <kind>Client Component</kind>
+        <symbol>ImpactBadge</symbol>
+        <lines>8-19</lines>
+        <reason>Reusable impact level badge component - already used in detail page header</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/dashboard/confidence-meter.tsx</path>
+        <kind>Client Component</kind>
+        <symbol>ConfidenceMeter</symbol>
+        <lines>8-31</lines>
+        <reason>Reusable confidence visualization component - already used in detail page, use in proof section</reason>
+      </artifact>
+      <artifact>
+        <path>src/lib/recommendation-utils.ts</path>
+        <kind>Utility functions</kind>
+        <symbol>isNewRecommendation, getConfidencePercentage, getImpactBadgeStyles</symbol>
+        <lines>4-58</lines>
+        <reason>Helper functions for recommendation display logic - reuse for consistency</reason>
+      </artifact>
+      <artifact>
+        <path>src/lib/auth.ts</path>
+        <kind>Authentication</kind>
+        <symbol>auth, authOptions</symbol>
+        <lines>0-49</lines>
+        <reason>NextAuth authentication - use auth() in Server Components to get session and verify businessId</reason>
+      </artifact>
+      <artifact>
+        <path>tests/integration/dashboard/recommendations-list.test.ts</path>
+        <kind>Integration tests</kind>
+        <symbol>Test suite patterns</symbol>
+        <lines>0-79</lines>
+        <reason>Testing patterns for recommendations - use same structure for detail view tests (ownership verification, data isolation)</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <package name="next" version="16.0.1">App Router, Server Components, Server Actions</package>
+        <package name="react" version="19.2.0">Client Components</package>
+        <package name="next-auth" version="5.0.0-beta.30">Authentication</package>
+        <package name="@prisma/client" version="6.17.0">Database ORM</package>
+        <package name="zod" version="4.1.12">Schema validation</package>
+        <package name="lucide-react" version="0.553.0">Icons</package>
+        <package name="tailwindcss" version="4">Styling</package>
+      </node>
+      <testing>
+        <package name="vitest" version="4.0">Unit and integration tests</package>
+        <package name="@playwright/test" version="1.56.1">E2E tests</package>
+      </testing>
+      <shadcn_ui>
+        <installed>Card, Button, Badge, Avatar, DropdownMenu, Skeleton, Input</installed>
+        <needed>Dialog, Calendar, Textarea (for implementation date picker and notes)</needed>
+      </shadcn_ui>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint>Next.js App Router: Server Component for [id]/page.tsx fetches data, Client Component for interactive UI</constraint>
+    <constraint>Authentication: Use await auth() to get session, verify session.user.businessId matches recommendation.businessId</constraint>
+    <constraint>Business ownership: All Prisma queries must filter by businessId to prevent cross-business data access</constraint>
+    <constraint>Server Actions: Use "use server" directive, return ActionResult&lt;T&gt; type with {success, data?, error?} structure</constraint>
+    <constraint>Server Actions: Call revalidatePath('/dashboard/recommendations') after mutations to update cached data</constraint>
+    <constraint>Error handling: Use notFound() for invalid IDs, structured error responses for Server Actions</constraint>
+    <constraint>Responsive layout: 2-column desktop (content left, journey visual right), single-column mobile</constraint>
+    <constraint>Typography hierarchy: H2 for main sections (Problem, Solution, Proof), H3 for subsections</constraint>
+    <constraint>Bold Purple theme: Primary #7c3aed for action buttons, maintain WCAG AA contrast (4.5:1 minimum)</constraint>
+    <constraint>Touch targets: 48px × 48px minimum for mobile buttons and interactive elements</constraint>
+    <constraint>Loading/error states: Provide loading.tsx, error.tsx, not-found.tsx for graceful UX</constraint>
+    <constraint>Testing: Integration tests in tests/integration/dashboard/, 100% coverage for Server Actions</constraint>
+    <constraint>File organization: Server Components in app/, Client Components in components/, Server Actions in actions/</constraint>
+    <constraint>No new Recommendation database fields: Work with existing Prisma schema (implementedAt and dismissedAt exist, but implementationNotes does NOT exist yet)</constraint>
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>Recommendation (Prisma model)</name>
+      <kind>Database model</kind>
+      <signature>
+        id: string (cuid)
+        businessId: string
+        title: string
+        problemStatement: string
+        actionSteps: string[] (array)
+        expectedImpact: string
+        confidenceLevel: ConfidenceLevel (HIGH | MEDIUM | LOW)
+        status: RecommendationStatus (NEW | PLANNED | IMPLEMENTED | DISMISSED)
+        impactLevel: ImpactLevel (HIGH | MEDIUM | LOW)
+        peerSuccessData: string | null
+        implementedAt: DateTime | null
+        dismissedAt: DateTime | null
+        createdAt: DateTime
+      </signature>
+      <path>prisma/schema.prisma (lines 104-121)</path>
+    </interface>
+    <interface>
+      <name>markRecommendationImplemented</name>
+      <kind>Server Action</kind>
+      <signature>async function markRecommendationImplemented(recommendationId: string, implementedAt?: Date): Promise&lt;ActionResult&lt;Recommendation&gt;&gt;</signature>
+      <path>src/actions/recommendations.ts (lines 269-350)</path>
+    </interface>
+    <interface>
+      <name>dismissRecommendation</name>
+      <kind>Server Action</kind>
+      <signature>async function dismissRecommendation(recommendationId: string): Promise&lt;ActionResult&lt;Recommendation&gt;&gt;</signature>
+      <path>src/actions/recommendations.ts (lines 364-442)</path>
+    </interface>
+    <interface>
+      <name>planRecommendation</name>
+      <kind>Server Action</kind>
+      <signature>async function planRecommendation(recommendationId: string): Promise&lt;ActionResult&lt;Recommendation&gt;&gt;</signature>
+      <path>src/actions/recommendations.ts (lines 456-533)</path>
+    </interface>
+    <interface>
+      <name>auth()</name>
+      <kind>NextAuth function</kind>
+      <signature>async function auth(): Promise&lt;Session | null&gt; where Session.user contains {id, email, businessId?}</signature>
+      <path>src/lib/auth.ts</path>
+    </interface>
+    <interface>
+      <name>ActionResult&lt;T&gt;</name>
+      <kind>Server Action response type</kind>
+      <signature>type ActionResult&lt;T&gt; = {success: true, data: T} | {success: false, error: string}</signature>
+      <path>src/actions/business-profile.ts (referenced in recommendations.ts line 15)</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>Integration tests use Vitest 4.0 with test database isolation. Each test suite creates unique test users/businesses in beforeEach and cleans up in afterEach to prevent cross-contamination. Server Actions must verify authentication and business ownership. Test coverage target: 100% for Server Actions, 80%+ for critical services. Use structured ActionResult assertions: check success boolean, validate data shape on success, validate error messages on failure. Follow existing pattern from recommendations-list.test.ts for business isolation and ownership verification.</standards>
+
+    <locations>
+      <location>tests/integration/dashboard/recommendation-detail.test.ts (new file for this story)</location>
+      <location>tests/integration/dashboard/recommendations-list.test.ts (reference for patterns)</location>
+    </locations>
+
+    <ideas>
+      <test ac="AC#1" description="Detail view displays all required information">
+        <case>Should fetch recommendation by ID with business ownership verification</case>
+        <case>Should display problem statement with supporting data</case>
+        <case>Should display action steps as numbered list</case>
+        <case>Should display expected impact range</case>
+        <case>Should display confidence level with ConfidenceMeter component</case>
+        <case>Should display peer success data when available</case>
+        <case>Should hide peer success section when data is null</case>
+      </test>
+
+      <test ac="AC#2" description="Action buttons work correctly">
+        <case>Should call planRecommendation Server Action when "Mark as Planned" clicked</case>
+        <case>Should call dismissRecommendation Server Action when "Dismiss" clicked</case>
+        <case>Should open date picker modal when "Mark as Implemented" clicked</case>
+        <case>Should show toast notification on successful status update</case>
+        <case>Should show error toast on failed status update</case>
+      </test>
+
+      <test ac="AC#3, AC#4" description="Implementation date picker and notes">
+        <case>Should call markRecommendationImplemented with selected date and notes</case>
+        <case>Should default date picker to today's date</case>
+        <case>Should validate notes field length (500 character limit)</case>
+        <case>Should close modal and redirect after successful implementation</case>
+        <case>Should allow implementation without notes (optional field)</case>
+      </test>
+
+      <test ac="AC#6" description="Navigation and error handling">
+        <case>Should return 404 (notFound) when recommendation ID doesn't exist</case>
+        <case>Should return 404 when user tries to access another business's recommendation</case>
+        <case>Should navigate back to recommendations list on back button click</case>
+        <case>Should show user-friendly error message on Server Action failure</case>
+      </test>
+
+      <test ac="AC#7" description="Status changes reflected immediately">
+        <case>Should update recommendation status in database after marking as planned</case>
+        <case>Should update recommendation status in database after marking as implemented</case>
+        <case>Should update recommendation status in database after dismissing</case>
+        <case>Should set implementedAt timestamp when marking as implemented</case>
+        <case>Should set dismissedAt timestamp when dismissing</case>
+        <case>Should revalidate recommendations list path after status update</case>
+      </test>
+
+      <test description="Business isolation and security">
+        <case>Should only allow authenticated users to access detail view</case>
+        <case>Should verify businessId matches session.user.businessId before mutations</case>
+        <case>Should prevent user from updating recommendations belonging to other businesses</case>
+        <case>Should handle missing session gracefully with redirect to login</case>
+      </test>
+    </ideas>
+  </tests>
+</story-context>

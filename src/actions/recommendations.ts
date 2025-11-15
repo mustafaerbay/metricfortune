@@ -10,6 +10,7 @@
  */
 
 import { z } from "zod";
+import { revalidatePath } from "next/cache";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import type { ActionResult } from "./business-profile";
@@ -261,14 +262,16 @@ export async function getRecommendationById(
  *
  * @param recommendationId - Recommendation ID to mark implemented
  * @param implementedAt - Optional timestamp (defaults to now)
+ * @param notes - Optional implementation notes (max 500 characters)
  * @returns Updated recommendation record
  *
  * @example
- * const result = await markRecommendationImplemented('rec_abc123');
+ * const result = await markRecommendationImplemented('rec_abc123', new Date(), 'Installed new plugin');
  */
 export async function markRecommendationImplemented(
   recommendationId: string,
-  implementedAt?: Date
+  implementedAt?: Date,
+  notes?: string
 ): Promise<ActionResult<Recommendation>> {
   try {
     console.log(
@@ -320,14 +323,26 @@ export async function markRecommendationImplemented(
       };
     }
 
+    // Validate notes length if provided
+    if (notes && notes.length > 500) {
+      return {
+        success: false,
+        error: "Implementation notes must be 500 characters or less",
+      };
+    }
+
     // Update recommendation
     const updatedRecommendation = await prisma.recommendation.update({
       where: { id: recommendationId },
       data: {
         status: "IMPLEMENTED",
         implementedAt: implementedAt || new Date(),
+        implementationNotes: notes,
       },
     });
+
+    // Revalidate recommendations list to show updated status
+    revalidatePath("/dashboard/recommendations");
 
     console.log(
       `[markRecommendationImplemented] Recommendation ${recommendationId} marked as IMPLEMENTED`
@@ -423,6 +438,9 @@ export async function dismissRecommendation(
       },
     });
 
+    // Revalidate recommendations list to show updated status
+    revalidatePath("/dashboard/recommendations");
+
     console.log(
       `[dismissRecommendation] Recommendation ${recommendationId} marked as DISMISSED`
     );
@@ -513,6 +531,9 @@ export async function planRecommendation(
         status: "PLANNED",
       },
     });
+
+    // Revalidate recommendations list to show updated status
+    revalidatePath("/dashboard/recommendations");
 
     console.log(
       `[planRecommendation] Recommendation ${recommendationId} marked as PLANNED`

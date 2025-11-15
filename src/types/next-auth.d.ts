@@ -8,6 +8,7 @@ declare module "next-auth" {
       emailVerified: boolean;
       businessId?: string;
     } & DefaultSession["user"];
+    expiresAt?: string;
   }
 
   interface User {
@@ -23,5 +24,6 @@ declare module "next-auth/jwt" {
     id: string;
     emailVerified: boolean;
     businessId?: string;
+    sessionStartedAt?: number;
   }
 }
