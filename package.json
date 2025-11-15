@@ -19,10 +19,14 @@
   },
   "dependencies": {
     "@prisma/client": "6.17.0",
+    "@radix-ui/react-select": "^2.2.6",
+    "@radix-ui/react-tabs": "^1.1.13",
     "@react-email/components": "^0.0.25",
     "@shopify/shopify-api": "^12.1.1",
     "@vercel/analytics": "^1.5.0",
     "bcrypt": "^6.0.0",
+    "clsx": "^2.1.1",
+    "date-fns": "^4.1.0",
     "dotenv": "^17.2.3",
     "inngest": "^3.44.4",
     "lucide-react": "^0.553.0",
@@ -35,6 +39,7 @@
     "react-email": "^4.2.3",
     "resend": "^6.2.0",
     "sonner": "^2.0.7",
+    "tailwind-merge": "^3.4.0",
     "zod": "^4.1.12"
   },
   "devDependencies": {

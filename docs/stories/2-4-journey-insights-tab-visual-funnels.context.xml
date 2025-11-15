@@ -1,0 +1,362 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>4</storyId>
+    <title>Journey Insights Tab - Visual Funnels</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-15</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-4-journey-insights-tab-visual-funnels.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>an e-commerce business owner</asA>
+    <iWant>to see visual journey maps showing where customers drop off</iWant>
+    <soThat>I understand my site's conversion funnel and friction points</soThat>
+    <tasks>
+  <task id="1" ac="1,6,7">Create Journey Insights page
+    <subtask>Create src/app/(dashboard)/dashboard/journey-insights/page.tsx as async Server Component</subtask>
+    <subtask>Fetch session aggregation data by businessId with date range filter</subtask>
+    <subtask>Calculate funnel stages: Entry → Product → Cart → Checkout → Purchase</subtask>
+    <subtask>Compute drop-off percentages and conversion rates for each stage</subtask>
+    <subtask>Identify journey types (homepage, search, direct-to-product) from session data</subtask>
+    <subtask>Generate plain-language summary for biggest drop-off point</subtask>
+    <subtask>Pass computed funnel data to client component</subtask>
+    <subtask>Add date range parameter handling (7/30/90 days, default: 30 days)</subtask>
+  </task>
+  <task id="2" ac="2,3,4">Build JourneyFunnel client component
+    <subtask>Create src/components/dashboard/journey-funnel.tsx as Client Component</subtask>
+    <subtask>Render horizontal funnel diagram with 5 stages (Entry, Product, Cart, Checkout, Purchase)</subtask>
+    <subtask>Display visitor count for each stage (absolute numbers)</subtask>
+    <subtask>Show drop-off percentage between stages</subtask>
+    <subtask>Display conversion rate for each stage</subtask>
+    <subtask>Implement hover state showing detailed tooltip (page names, time spent)</subtask>
+    <subtask>Add click handler to expand stage details</subtask>
+    <subtask>Style with Bold Purple theme and responsive layout (horizontal desktop, vertical mobile)</subtask>
+  </task>
+  <task id="3" ac="4">Build stage detail expansion
+    <subtask>Create expandable section below funnel showing stage breakdown</subtask>
+    <subtask>Display top pages in stage with session counts</subtask>
+    <subtask>Show average time spent on each page in stage</subtask>
+    <subtask>Show entry/exit points within stage</subtask>
+    <subtask>Add "Close Details" button to collapse</subtask>
+    <subtask>Animate expansion/collapse transition</subtask>
+  </task>
+  <task id="4" ac="5">Create journey type selector
+    <subtask>Add journey type tabs/buttons: All, Homepage Visitors, Search Visitors, Direct-to-Product</subtask>
+    <subtask>Derive journey type from session entry page</subtask>
+    <subtask>Filter funnel data by selected journey type</subtask>
+    <subtask>Update funnel visualization when journey type changes</subtask>
+    <subtask>Show session count for each journey type</subtask>
+  </task>
+  <task id="5" ac="6">Implement date range selector
+    <subtask>Create date range dropdown/select: "Last 7 days", "Last 30 days", "Last 90 days"</subtask>
+    <subtask>Set default to "Last 30 days"</subtask>
+    <subtask>Add onChange handler to refetch data with new date range</subtask>
+    <subtask>Update URL query param to preserve date range selection</subtask>
+    <subtask>Show loading state while refetching data</subtask>
+    <subtask>Display selected date range in page header</subtask>
+  </task>
+  <task id="6" ac="7">Generate plain-language insights
+    <subtask>Calculate biggest drop-off stage (highest percentage drop)</subtask>
+    <subtask>Generate contextual summary: "Your biggest opportunity: [X]% abandon at [stage]"</subtask>
+    <subtask>Display summary prominently above funnel (H2 heading, accent color)</subtask>
+    <subtask>Include actionable suggestion</subtask>
+    <subtask>Show secondary insight if available</subtask>
+  </task>
+  <task id="7" prerequisite="Epic 1.6">Create data aggregation service
+    <subtask>Create src/services/analytics/journey-calculator.ts</subtask>
+    <subtask>Implement calculateFunnelStages(sessions: Session[]): FunnelData</subtask>
+    <subtask>Identify session stages from URL patterns (product, cart, checkout paths)</subtask>
+    <subtask>Calculate drop-off rates between stages</subtask>
+    <subtask>Compute conversion rates for each stage</subtask>
+    <subtask>Return structured funnel data with stage counts and percentages</subtask>
+    <subtask>Add unit tests for funnel calculation logic</subtask>
+  </task>
+  <task id="8" ac="1">Add loading and error states
+    <subtask>Create loading.tsx in journey-insights folder with skeleton funnel diagram</subtask>
+    <subtask>Create error.tsx in journey-insights folder with retry button</subtask>
+    <subtask>Log error to console with context (businessId, dateRange, timestamp)</subtask>
+  </task>
+  <task id="9" ac="1">Handle empty states
+    <subtask>Check if session data exists for date range</subtask>
+    <subtask>Show "No data yet" message if less than 10 sessions in period</subtask>
+    <subtask>Display placeholder funnel with "Collecting data..." labels</subtask>
+    <subtask>Suggest: "Install tracking script if you haven't already"</subtask>
+  </task>
+  <task id="10" type="design">Style with Bold Purple theme
+    <subtask>Apply primary purple (#7c3aed) for funnel stage highlights</subtask>
+    <subtask>Use green for high conversion stages (>50%)</subtask>
+    <subtask>Use amber for medium conversion stages (25-50%)</subtask>
+    <subtask>Use red for high drop-off stages (>50% drop)</subtask>
+    <subtask>Ensure 4.5:1 contrast ratio for all text on funnel</subtask>
+    <subtask>Add smooth transitions (300ms) for stage interactions</subtask>
+    <subtask>Implement responsive layout (horizontal funnel desktop, vertical mobile)</subtask>
+  </task>
+  <task id="11" type="testing">Create integration tests
+    <subtask>Test fetching session data filtered by businessId and date range</subtask>
+    <subtask>Test funnel calculation with sample session data</subtask>
+    <subtask>Test business ownership verification</subtask>
+    <subtask>Test date range filtering (7/30/90 days)</subtask>
+    <subtask>Test journey type filtering (homepage/search/direct)</subtask>
+    <subtask>Test empty state handling (less than 10 sessions)</subtask>
+    <subtask>Place tests in tests/integration/dashboard/journey-insights.test.ts</subtask>
+  </task>
+  <task id="12" ac="2,3" type="testing">Verify responsive layout
+    <subtask>Test layout at 1280px (horizontal funnel, 5 stages side-by-side)</subtask>
+    <subtask>Test layout at 768px (tablet, compact horizontal funnel)</subtask>
+    <subtask>Test layout at 375px (mobile, vertical funnel with stages stacked)</subtask>
+    <subtask>Verify stage details expand properly on all breakpoints</subtask>
+    <subtask>Ensure date range selector works on mobile (dropdown not cut off)</subtask>
+  </task>
+  <task id="13" type="accessibility">Accessibility validation (WCAG AA)
+    <subtask>Verify keyboard navigation (Tab through stages, Enter to expand)</subtask>
+    <subtask>Add ARIA labels for journey stages with visitor and conversion data</subtask>
+    <subtask>Verify 4.5:1 contrast ratio for all text and stage labels</subtask>
+    <subtask>Screen reader test: Ensure funnel data announces correctly</subtask>
+    <subtask>Provide data table fallback for screen readers (visually hidden)</subtask>
+    <subtask>Add skip link: "Skip to funnel data table"</subtask>
+  </task>
+</tasks>
+  </story>
+
+  <acceptanceCriteria>
+  <criterion id="AC1">Journey Insights tab displays visual funnel diagram</criterion>
+  <criterion id="AC2">Funnel shows key stages: Entry → Product View → Cart → Checkout → Purchase</criterion>
+  <criterion id="AC3">Each stage shows: visitor count, drop-off percentage, conversion rate</criterion>
+  <criterion id="AC4">Clickable stages reveal detailed breakdown (which pages, average time spent)</criterion>
+  <criterion id="AC5">Multiple journey types displayed: Homepage visitors, Search visitors, Direct-to-product visitors</criterion>
+  <criterion id="AC6">Date range selector (Last 7 days, Last 30 days, Last 90 days)</criterion>
+  <criterion id="AC7">Plain-language summary above chart ("Your biggest opportunity: 43% abandon at checkout")</criterion>
+</acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+  <doc>
+    <path>docs/PRD.md</path>
+    <title>Product Requirements Document</title>
+    <section>Functional Requirements - Pattern Detection & Analysis</section>
+    <snippet>FR007: System shall automatically analyze customer behavior patterns across sessions and identify statistically significant friction points. FR008: System shall generate human-readable journey summaries (e.g., "3 out of 5 customers abandon at checkout step 2"). FR009: System shall detect user hesitation, data re-entry, and abandonment patterns with minimum session thresholds for statistical confidence.</snippet>
+  </doc>
+  <doc>
+    <path>docs/PRD.md</path>
+    <title>Product Requirements Document</title>
+    <section>Functional Requirements - Dashboard Interface</section>
+    <snippet>FR013: Main navigation with tabs including Journey Insights for visualizing customer journey funnels and drop-off points.</snippet>
+  </doc>
+  <doc>
+    <path>docs/architecture.md</path>
+    <title>System Architecture</title>
+    <section>Data Architecture - Session Model</section>
+    <snippet>Session model includes: siteId, sessionId, entryPage, exitPage, duration, pageCount, bounced, converted, journeyPath (array of page URLs in visit order), createdAt. Indexed on siteId+createdAt for efficient date-range queries.</snippet>
+  </doc>
+  <doc>
+    <path>docs/architecture.md</path>
+    <title>System Architecture</title>
+    <section>Component Structure - Dashboard Pages</section>
+    <snippet>Dashboard pages follow Next.js App Router pattern with Server Components for data fetching. Journey insights located at src/app/(dashboard)/dashboard/journey-insights/page.tsx.</snippet>
+  </doc>
+  <doc>
+    <path>docs/ux-design-specification.md</path>
+    <title>UX Design Specification</title>
+    <section>6.1.5 JourneyVisualization Component</section>
+    <snippet>Funnel stages show percentage and absolute numbers. Drop-off visualization between stages. Clickable stages for details. Variants: Horizontal funnel (desktop), Vertical funnel (mobile). Animated entrance with stages filling in sequence. Table fallback for screen readers with stage name, entry count, exit count, conversion rate.</snippet>
+  </doc>
+  <doc>
+    <path>docs/ux-design-specification.md</path>
+    <title>UX Design Specification</title>
+    <section>Color System</section>
+    <snippet>Primary purple #7c3aed for highlights. Semantic colors: Green for high conversion (>50%), Amber for medium (25-50%), Red for high drop-off (>50%). All text must meet 4.5:1 contrast ratio for WCAG AA compliance.</snippet>
+  </doc>
+  <doc>
+    <path>docs/epics.md</path>
+    <title>Epic Breakdown</title>
+    <section>Epic 2 - Story 2.4: Journey Insights Tab - Visual Funnels</section>
+    <snippet>Business owner wants to see visual journey maps showing where customers drop off to understand conversion funnel and friction points. Prerequisites: 1.6 (Session aggregation), 2.2 (Recommendations list).</snippet>
+  </doc>
+  <doc>
+    <path>docs/testing-strategy.md</path>
+    <title>Testing Strategy</title>
+    <section>Testing Pyramid Overview</section>
+    <snippet>Integration tests with Vitest 4.0 in tests/integration/**/*.test.ts. Test API endpoints, Server Actions, service layer integration, and database operations. Coverage target 80%+ for critical services.</snippet>
+  </doc>
+  <doc>
+    <path>docs/stories/2-1-dashboard-home-navigation.md</path>
+    <title>Story 2.1 - Dashboard Home & Navigation</title>
+    <section>Navigation Implementation</section>
+    <snippet>Main navigation includes Journey Insights tab. Navigation link already implemented in dashboard layout from Story 2.1.</snippet>
+  </doc>
+  <doc>
+    <path>docs/stories/2-3-recommendation-detail-view.md</path>
+    <title>Story 2.3 - Recommendation Detail View</title>
+    <section>Learnings - Component Patterns</section>
+    <snippet>Server Component + Client Component pattern established. Business ownership verification with businessId filtering in Prisma queries. Bold Purple theme #7c3aed consistently applied. Responsive layout patterns (lg:grid-cols-3, sm:flex-row). Zero TypeScript errors achieved - maintain this standard.</snippet>
+  </doc>
+</docs>
+    <code>
+  <artifact>
+    <path>prisma/schema.prisma</path>
+    <kind>database schema</kind>
+    <symbol>Session</symbol>
+    <lines>59-73</lines>
+    <reason>Session model is the primary data source for journey funnel calculations. Contains entryPage, exitPage, journeyPath (page sequence), converted flag, and timestamps needed for funnel stages.</reason>
+  </artifact>
+  <artifact>
+    <path>src/app/(dashboard)/dashboard/recommendations/page.tsx</path>
+    <kind>server component</kind>
+    <symbol>RecommendationsPage</symbol>
+    <lines>1-110</lines>
+    <reason>Reference pattern for Server Component data fetching with auth, businessId verification, and Prisma queries. Shows proper date filtering and error handling patterns to replicate.</reason>
+  </artifact>
+  <artifact>
+    <path>src/services/analytics/session-aggregator.ts</path>
+    <kind>service</kind>
+    <symbol>aggregateSessions, JourneyFunnel types</symbol>
+    <lines>1-50</lines>
+    <reason>Existing session aggregation service with JourneyFunnel types and FUNNEL_STAGES constants. May contain reusable funnel calculation logic or need new calculateFunnelStages function.</reason>
+  </artifact>
+  <artifact>
+    <path>src/components/dashboard/confidence-meter.tsx</path>
+    <kind>client component</kind>
+    <symbol>ConfidenceMeter</symbol>
+    <lines>1-32</lines>
+    <reason>Reference pattern for data visualization components with progress bars, ARIA labels, and accessible design. Similar pattern needed for funnel stage visualization.</reason>
+  </artifact>
+  <artifact>
+    <path>src/components/dashboard/recommendation-card.tsx</path>
+    <kind>client component</kind>
+    <symbol>RecommendationCard</symbol>
+    <lines>all</lines>
+    <reason>Example of responsive card layout with Bold Purple theme, proper spacing, and interactive states. Pattern to follow for funnel stage cards.</reason>
+  </artifact>
+  <artifact>
+    <path>src/lib/auth.ts</path>
+    <kind>utility</kind>
+    <symbol>auth</symbol>
+    <lines>all</lines>
+    <reason>Authentication helper used in Server Components to get current user session and businessId for data filtering.</reason>
+  </artifact>
+  <artifact>
+    <path>src/lib/prisma.ts</path>
+    <kind>utility</kind>
+    <symbol>prisma</symbol>
+    <lines>all</lines>
+    <reason>Prisma client instance for database queries. Used to fetch Session records filtered by businessId and date range.</reason>
+  </artifact>
+</code>
+    <dependencies>
+  <node>
+    <package name="next" version="16.0.1">App Router, Server Components, React 19</package>
+    <package name="react" version="19.2.0">UI framework</package>
+    <package name="@prisma/client" version="6.17.0">Database ORM for Session queries</package>
+    <package name="next-auth" version="5.0.0-beta.30">Authentication and session management</package>
+    <package name="tailwindcss" version="4.x">Styling framework</package>
+    <package name="lucide-react" version="0.553.0">Icon library</package>
+    <package name="zod" version="4.1.12">Runtime validation</package>
+  </node>
+  <ui-components>
+    <component name="Card" status="installed">Base card component</component>
+    <component name="Button" status="installed">Interactive buttons</component>
+    <component name="Badge" status="installed">Status indicators</component>
+    <component name="Skeleton" status="installed">Loading states</component>
+    <component name="Select" status="needed">Date range and journey type selectors - run: npx shadcn@latest add select</component>
+    <component name="Tabs" status="needed">Journey type tabs - run: npx shadcn@latest add tabs</component>
+  </ui-components>
+  <testing>
+    <package name="vitest" version="4.0">Unit and integration testing</package>
+    <package name="@playwright/test" version="1.56.1">E2E testing</package>
+  </testing>
+</dependencies>
+  </artifacts>
+
+  <constraints>
+  <architecture>
+    <constraint>Use Next.js 16 App Router with Server Components for data fetching</constraint>
+    <constraint>Client Components only for interactive visualization (funnel diagram, stage expansion)</constraint>
+    <constraint>Server Component must verify business ownership: filter all Session queries by business.siteId</constraint>
+    <constraint>Never expose sessions from other businesses - critical security requirement</constraint>
+    <constraint>Use path alias @/ for all imports</constraint>
+    <constraint>Co-locate loading.tsx and error.tsx with page.tsx</constraint>
+  </architecture>
+  <performance>
+    <constraint>Journey Insights page load must be under 2 seconds (NFR001)</constraint>
+    <constraint>Funnel visualization render under 500ms</constraint>
+    <constraint>Date range filter change under 1 second</constraint>
+    <constraint>Use Prisma select to minimize data transfer - only fetch needed session fields</constraint>
+  </performance>
+  <design>
+    <constraint>Bold Purple theme: primary #7c3aed, secondary #f97316</constraint>
+    <constraint>Semantic colors: Green (>50% conversion), Amber (25-50%), Red (>50% drop-off)</constraint>
+    <constraint>All text must meet WCAG AA 4.5:1 contrast ratio</constraint>
+    <constraint>Minimum 48px touch targets for mobile interactions</constraint>
+    <constraint>Smooth transitions 300ms on interactive elements</constraint>
+    <constraint>Responsive: horizontal funnel desktop, vertical funnel mobile</constraint>
+  </design>
+  <testing>
+    <constraint>Zero TypeScript errors - run npm run build before completing</constraint>
+    <constraint>80%+ test coverage for funnel calculation service</constraint>
+    <constraint>Integration tests must verify business isolation</constraint>
+    <constraint>All tests must use test database, never production</constraint>
+  </testing>
+  <accessibility>
+    <constraint>Keyboard navigation: Tab through stages, Enter to expand details</constraint>
+    <constraint>ARIA labels on all funnel stages with visitor and conversion data</constraint>
+    <constraint>Screen reader fallback: visually hidden data table with full funnel data</constraint>
+    <constraint>Respect prefers-reduced-motion for animations</constraint>
+  </accessibility>
+</constraints>
+  <interfaces>
+  <api>
+    <name>Session Prisma Query</name>
+    <kind>Database query</kind>
+    <signature>prisma.session.findMany({ where: { siteId: string, createdAt: { gte: Date } }, orderBy: { createdAt: 'asc' } })</signature>
+    <path>src/app/(dashboard)/dashboard/journey-insights/page.tsx</path>
+  </api>
+  <api>
+    <name>calculateFunnelStages</name>
+    <kind>Service function</kind>
+    <signature>calculateFunnelStages(sessions: Session[]): FunnelData</signature>
+    <path>src/services/analytics/journey-calculator.ts</path>
+  </api>
+  <type>
+    <name>FunnelStage</name>
+    <kind>TypeScript interface</kind>
+    <signature>{ name: string; count: number; percentage: number; dropOffRate?: number; avgTimeSpent?: number; topPages?: { url: string; count: number }[] }</signature>
+    <path>src/types/journey.ts or src/services/analytics/journey-calculator.ts</path>
+  </type>
+  <type>
+    <name>FunnelData</name>
+    <kind>TypeScript interface</kind>
+    <signature>{ stages: FunnelStage[]; totalSessions: number; overallConversion: number }</signature>
+    <path>src/types/journey.ts or src/services/analytics/journey-calculator.ts</path>
+  </type>
+  <type>
+    <name>JourneyType</name>
+    <kind>TypeScript type</kind>
+    <signature>'homepage' | 'search' | 'direct-to-product' | 'other'</signature>
+    <path>src/types/journey.ts</path>
+  </type>
+  <component>
+    <name>JourneyFunnel</name>
+    <kind>Client Component</kind>
+    <signature>JourneyFunnel({ data }: { data: FunnelData })</signature>
+    <path>src/components/dashboard/journey-funnel.tsx</path>
+  </component>
+</interfaces>
+  <tests>
+  <standards>Vitest 4.0 for unit and integration tests. Integration tests in tests/integration/dashboard/journey-insights.test.ts. Use test database with Prisma. Follow existing patterns from tests/integration/dashboard/recommendations-list.test.ts for business isolation and data fetching tests. Target 80%+ coverage for journey-calculator.ts service.</standards>
+  <locations>tests/integration/dashboard/journey-insights.test.ts, tests/unit/services/analytics/journey-calculator.test.ts</locations>
+  <ideas>
+    <test ac="AC1,AC2,AC3">Fetch sessions filtered by businessId and date range (7/30/90 days), verify only user's sessions returned, calculate funnel stages, verify stage counts and percentages match expected values</test>
+    <test ac="AC4">Click funnel stage, verify detailed breakdown shows top pages, average time spent, entry/exit points</test>
+    <test ac="AC5">Filter by journey type (homepage/search/direct-to-product), verify funnel recalculates with correct session subset</test>
+    <test ac="AC6">Change date range selector, verify new data fetched with correct date filter, URL query param updated</test>
+    <test ac="AC7">Calculate biggest drop-off stage, verify plain-language summary generated correctly ("Your biggest opportunity: X% abandon at [stage]")</test>
+    <test>Empty state: Verify "No data yet" message shown when less than 10 sessions in date range</test>
+    <test>Business isolation: Verify user cannot access sessions from other businesses (siteId filtering)</test>
+    <test>Journey type detection: Test homepage (/, /home), search (/search, /collections), direct-to-product (/products/)</test>
+    <test>Funnel calculation edge cases: All stages 100%, no conversions, single session, all sessions bounced</test>
+    <test>Responsive layout: Test horizontal funnel at 1280px, vertical funnel at 375px mobile</test>
+  </ideas>
+</tests>
+</story-context>
