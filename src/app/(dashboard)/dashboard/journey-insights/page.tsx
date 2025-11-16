@@ -83,8 +83,8 @@ export default async function JourneyInsightsPage({ searchParams }: PageProps) {
   // Calculate journey type statistics
   const journeyTypeStats = calculateJourneyTypeStats(sessions);
 
-  // Check for empty state
-  const hasInsufficientData = sessions.length < 10;
+  // Check for empty state (lowered to 1 for testing, consider 10+ for production)
+  const hasInsufficientData = sessions.length < 1;
 
   return (
     <div className="container mx-auto px-4 py-8">
@@ -101,7 +101,7 @@ export default async function JourneyInsightsPage({ searchParams }: PageProps) {
         <div className="rounded-lg border border-blue-200 bg-blue-50 p-8 text-center">
           <h2 className="text-xl font-semibold text-blue-900">Not Enough Data Yet</h2>
           <p className="mt-2 text-blue-700">
-            You need at least 10 sessions to see journey insights. You currently have {sessions.length} session{sessions.length !== 1 ? 's' : ''}.
+            You need at least 1 session to see journey insights. You currently have {sessions.length} session{sessions.length !== 1 ? 's' : ''}.
           </p>
           <p className="mt-4 text-sm text-blue-600">
             Install the tracking script on your website to start collecting data.
