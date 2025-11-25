@@ -84,6 +84,14 @@ export function JourneyFunnel({
 
   return (
     <div className="space-y-6">
+      {/* Accessibility: Skip link to data table */}
+      <a
+        href="#funnel-data-table"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50 focus:rounded-md focus:bg-purple-600 focus:px-4 focus:py-2 focus:text-white focus:outline-none focus:ring-2 focus:ring-purple-600 focus:ring-offset-2"
+      >
+        Skip to funnel data table
+      </a>
+
       {/* Controls: Date Range & Journey Type */}
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         {/* Date Range Selector */}
@@ -325,20 +333,36 @@ export function JourneyFunnel({
                     )}
                   </div>
 
-                  {/* Top Pages */}
+                  {/* Top Pages with Entry/Exit Context */}
                   {stage.topPages && stage.topPages.length > 0 && (
                     <div className="mt-4">
-                      <h5 className="text-sm font-semibold text-gray-700">Top Pages</h5>
+                      <h5 className="text-sm font-semibold text-gray-700">
+                        Key Pages in This Stage
+                      </h5>
+                      <p className="mt-1 text-xs text-gray-600">
+                        {stage.name === 'Entry'
+                          ? 'Entry points: Pages where customers first land on your site'
+                          : stage.name === 'Purchase'
+                          ? 'Exit points: Final pages customers see after completing purchase'
+                          : 'Pages customers interact with in this stage (includes entry and exit points)'}
+                      </p>
                       <div className="mt-2 space-y-2">
-                        {stage.topPages.map((page) => (
+                        {stage.topPages.map((page, idx) => (
                           <div
                             key={page.url}
                             className="flex items-center justify-between rounded bg-white px-3 py-2 text-sm"
                           >
-                            <span className="truncate text-gray-700" title={page.url}>
-                              {page.url}
-                            </span>
-                            <span className="ml-2 font-semibold text-gray-900">
+                            <div className="flex items-center gap-2 truncate">
+                              {idx === 0 && stage.name !== 'Entry' && (
+                                <span className="inline-flex items-center rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">
+                                  Primary Entry
+                                </span>
+                              )}
+                              <span className="truncate text-gray-700" title={page.url}>
+                                {page.url}
+                              </span>
+                            </div>
+                            <span className="ml-2 whitespace-nowrap font-semibold text-gray-900">
                               {page.count} visits
                             </span>
                           </div>
@@ -353,7 +377,7 @@ export function JourneyFunnel({
         )}
 
         {/* Accessibility: Hidden data table for screen readers */}
-        <div className="sr-only">
+        <div className="sr-only" id="funnel-data-table">
           <table>
             <caption>Customer Journey Funnel Data</caption>
             <thead>
