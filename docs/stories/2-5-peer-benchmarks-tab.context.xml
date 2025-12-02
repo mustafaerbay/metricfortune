@@ -1,0 +1,366 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>5</storyId>
+    <title>Peer Benchmarks Tab</title>
+    <status>drafted</status>
+    <generatedAt>2025-11-25</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>/Users/mustafaerbay/code/00000-Projects/metricfortune/docs/stories/2-5-peer-benchmarks-tab.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>an e-commerce business owner</asA>
+    <iWant>to see how my site performance compares to similar businesses</iWant>
+    <soThat>I understand if I'm competitive and where I need to improve</soThat>
+    <tasks>
+- Create Peer Benchmarks page (AC: #1, #5, #6)
+  - Create `src/app/(dashboard)/dashboard/peer-benchmarks/page.tsx` as async Server Component
+  - Fetch user's business profile with peer group ID
+  - Query peer group businesses (matched by industry, revenue range from Story 1.5)
+  - Calculate user's metrics from sessions (conversion rate, AOV, cart abandonment, bounce rate)
+  - Calculate peer group aggregate metrics (averages across all peer businesses)
+  - Calculate percentile rankings for each metric
+  - Generate peer group composition string
+  - Generate contextual explanations for each metric
+  - Pass computed data to client component
+
+- Build PeerComparisonTable client component (AC: #2, #3, #4)
+  - Create `src/components/dashboard/peer-comparison-table.tsx` as Client Component
+  - Render table with 4 metrics rows
+  - Display three columns per metric: Your Value, Peer Average, Percentile
+  - Show visual comparison bars (horizontal bar chart pattern)
+  - Apply color coding (Green/Amber/Red/Gray)
+  - Display percentile badge (Top 25%, Median, Bottom 25%)
+  - Add hover tooltips showing detailed peer group composition
+  - Style with Bold Purple theme and responsive layout
+
+- Create peer metrics calculation service (AC: #2, #3)
+  - Create `src/services/analytics/peer-calculator.ts`
+  - Implement `calculateUserMetrics(sessions: Session[]): MetricsData`
+  - Calculate conversion rate, AOV, cart abandonment, bounce rate
+  - Implement `calculatePeerMetrics(peerBusinesses: Business[]): MetricsData`
+  - Implement `calculatePercentile(userValue: number, peerValues: number[]): Percentile`
+  - Add unit tests for all calculation functions
+
+- Generate contextual explanations (AC: #6)
+  - Create explanation generator function in peer-calculator service
+  - Generate text based on percentile
+  - Include specific metric value in explanation
+  - Apply appropriate tone
+  - Return structured explanation data
+
+- Link to recommendations (AC: #7)
+  - Add "View Recommendations" link/button for underperforming metrics
+  - Link to recommendations page with filter for relevant metric
+  - Show count of related recommendations if available
+  - Conditionally render link only when recommendations exist
+  - Style link as secondary action button
+
+- Create loading and error states (AC: #1)
+  - Create `loading.tsx` in peer-benchmarks folder
+  - Show skeleton table with 4 metric rows
+  - Create `error.tsx` in peer-benchmarks folder
+  - Show user-friendly error with retry button
+  - Log error to console with context
+
+- Handle edge cases (AC: #1, #5)
+  - Check if user has peer group assigned
+  - Show message if no peer group
+  - Check if peer group has enough businesses (minimum 10)
+  - Show warning if insufficient peers
+  - Handle missing session data gracefully
+  - Handle new businesses with insufficient sessions
+
+- Style with Bold Purple theme (Design)
+  - Apply primary purple (#7c3aed) for highlights
+  - Use semantic colors for performance indicators
+  - Ensure 4.5:1 contrast ratio for accessibility
+  - Add smooth transitions (300ms)
+  - Implement responsive layout (table desktop, stacked cards mobile)
+
+- Create integration tests (Testing)
+  - Test fetching peer group businesses
+  - Test peer metrics calculation
+  - Test business ownership verification
+  - Test percentile calculation accuracy
+  - Test edge cases (no peer group, insufficient data)
+  - Place tests in `tests/integration/dashboard/peer-benchmarks.test.ts`
+
+- Verify responsive layout (AC: #4)
+  - Test layout at 1280px, 768px, 375px
+  - Verify visual indicators visible on all breakpoints
+  - Ensure tooltips work on mobile
+
+- Accessibility validation (WCAG AA)
+  - Verify keyboard navigation
+  - Add ARIA labels
+  - Verify 4.5:1 contrast ratio
+  - Screen reader test
+  - Provide data table semantic HTML
+  - Add table headers with proper scope attributes
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+1. Peer Benchmarks tab displays comparative metrics table
+2. Key metrics shown: Conversion rate, Average order value, Cart abandonment rate, Bounce rate
+3. Each metric shows: Your value, Peer average, Your percentile (top 25%, median, bottom 25%)
+4. Visual indicators (colored badges or charts) for at-a-glance comparison
+5. Peer group composition displayed ("Compared to 47 fashion e-commerce stores, $1-5M revenue")
+6. Contextual explanations ("Your 3.2% conversion rate is in the bottom 40% of peers")
+7. Link to relevant recommendations for underperforming metrics
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Functional Requirements - Business Matching & Segmentation (FR004-FR006)</section>
+        <snippet>FR004: System shall collect business metadata through onboarding questionnaire. FR005: System shall automatically match users with similar businesses based on industry, size, product type, and detected tech stack. FR006: System shall display peer group composition to users (e.g., "matched with 47 similar e-commerce businesses").</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Functional Requirements - Dashboard & Reporting (FR013)</section>
+        <snippet>FR013: System shall provide a dashboard with three core tabs: Recommendations (priority-ranked), Journey Insights (behavior patterns), and Peer Benchmarks (comparative metrics).</snippet>
+      </doc>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Non-Functional Requirements - Performance (NFR001)</section>
+        <snippet>NFR001: Dashboard shall load in less than 2 seconds for initial load and less than 500ms for navigation. System shall achieve 99.9% uptime.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>6.1.6 PeerBenchmarkComparison Component</section>
+        <snippet>Two horizontal bars (Your Store vs Peer Average). Values labeled on right. Difference percentage shown. Peer count: "vs 52 similar stores". Above average: Your bar is longer, green indicator. Below average: Peer bar is longer, amber/red indicator. Hover shows peer group composition tooltip.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture</title>
+        <section>Project Structure - Dashboard Routes</section>
+        <snippet>Dashboard routes follow Next.js App Router pattern: src/app/(dashboard)/dashboard/peer-benchmarks/page.tsx for Peer comparison page. Server Components for data fetching, Client Components for interactivity.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Decision Architecture</title>
+        <section>Technology Decisions</section>
+        <snippet>Next.js 16.0.1 with App Router, TypeScript 5.x strict mode, Prisma 6.17.0 ORM with PostgreSQL, Tailwind CSS 4.x for styling, Vitest 4.0 for unit/integration testing.</snippet>
+      </doc>
+      <doc>
+        <path>docs/testing-strategy.md</path>
+        <title>Testing Strategy</title>
+        <section>Integration Tests (Middle Layer)</section>
+        <snippet>Integration tests use Vitest 4.0 with test database. Located in tests/integration/**/*.test.ts. Coverage includes API endpoints, Server Actions, service layer integration, and database operations. Target: 80%+ coverage for critical services.</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-2-dashboard-user-experience.md</path>
+        <title>Epic 2: Dashboard & User Experience</title>
+        <section>Story 2.5: Peer Benchmarks Tab</section>
+        <snippet>Display comparative metrics table with key metrics (conversion rate, AOV, cart abandonment, bounce rate). Show user value, peer average, and percentile ranking. Visual indicators for at-a-glance comparison. Link to relevant recommendations for underperforming metrics.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/1-5-business-matching-algorithm.md</path>
+        <title>Story 1.5: Business Matching Algorithm (Prerequisite)</title>
+        <section>Story Overview</section>
+        <snippet>System matches businesses with similar peer groups based on industry (exact match), revenue range (±1 tier), product types (overlap), platform. Peer groups calculated on profile creation. Minimum peer group size: 10 businesses. Status: done.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-4-journey-insights-tab-visual-funnels.md</path>
+        <title>Story 2.4: Journey Insights Tab (Previous Story)</title>
+        <section>Dev Notes - Learnings</section>
+        <snippet>Server Component + Client Component pattern established. Business ownership verification via siteId filtering. Bold Purple theme (#7c3aed) consistently applied. Vitest integration tests with 12 passing tests. Zero TypeScript errors achieved - maintain standard.</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database-schema</kind>
+        <symbol>Business</symbol>
+        <lines>26-46</lines>
+        <reason>Business model contains peerGroupId field and relationships needed for peer matching queries. Index on [industry, revenueRange] supports peer group filtering.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database-schema</kind>
+        <symbol>Session</symbol>
+        <lines>59-73</lines>
+        <reason>Session model contains bounced, converted, and journeyPath fields needed for metrics calculation (conversion rate, bounce rate, cart abandonment). Index on [siteId, createdAt] supports efficient time-range queries.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>database-schema</kind>
+        <symbol>PeerGroup</symbol>
+        <lines>48-57</lines>
+        <reason>PeerGroup model stores businessIds array for querying businesses in same peer group. Created by Story 1.5 business matching algorithm.</reason>
+      </artifact>
+      <artifact>
+        <path>src/lib/auth.ts</path>
+        <kind>authentication</kind>
+        <symbol>auth</symbol>
+        <lines>0-50</lines>
+        <reason>NextAuth configuration provides auth() function for Server Components. Use to get session.user.id, then query business via userId to ensure ownership verification.</reason>
+      </artifact>
+      <artifact>
+        <path>src/app/(dashboard)/dashboard/journey-insights/page.tsx</path>
+        <kind>server-component</kind>
+        <symbol>JourneyInsightsPage</symbol>
+        <lines>0-70</lines>
+        <reason>Reference pattern for Server Component data fetching: auth() → business lookup → session queries → service calculation → pass to client component. Implements business ownership verification via siteId filtering.</reason>
+      </artifact>
+      <artifact>
+        <path>src/services/analytics/journey-calculator.ts</path>
+        <kind>service</kind>
+        <symbol>calculateFunnelStages</symbol>
+        <lines>0-80</lines>
+        <reason>Reference pattern for analytics service layer: pure functions, TypeScript typed params/returns, detailed JSDoc, session aggregation logic. Follow same pattern for peer-calculator.ts service.</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/dashboard/journey-funnel.tsx</path>
+        <kind>client-component</kind>
+        <symbol>JourneyFunnel</symbol>
+        <lines>0-60</lines>
+        <reason>Reference pattern for Client Component visualization: 'use client' directive, typed props interface, useState for interactivity, responsive design, Tailwind CSS styling. Follow same pattern for PeerComparisonTable component.</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/dashboard/sidebar.tsx</path>
+        <kind>component</kind>
+        <symbol>navItems</symbol>
+        <lines>19-32</lines>
+        <reason>Sidebar navigation already includes "Peer Benchmarks" link to /dashboard/peer-benchmarks with Users icon. No modification needed.</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/ui/card.tsx</path>
+        <kind>ui-component</kind>
+        <symbol>Card</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui Card component already installed (Story 2.1). Use for metric comparison cards in PeerComparisonTable.</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/ui/badge.tsx</path>
+        <kind>ui-component</kind>
+        <symbol>Badge</symbol>
+        <lines>all</lines>
+        <reason>shadcn/ui Badge component already installed (Story 2.2). Use for percentile badges (Top 25%, Median, Bottom 25%).</reason>
+      </artifact>
+      <artifact>
+        <path>src/lib/utils.ts</path>
+        <kind>utility</kind>
+        <symbol>cn</symbol>
+        <lines>all</lines>
+        <reason>Tailwind CSS class utility function for conditional styling. Use for performance-based color classes.</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <ecosystem name="node">
+        <package name="next" version="16.0.1" />
+        <package name="react" version="19.2.0" />
+        <package name="typescript" version="5.x" />
+        <package name="@prisma/client" version="6.17.0" />
+        <package name="next-auth" version="5.0.0-beta.25" />
+        <package name="tailwindcss" version="4.x" />
+        <package name="date-fns" version="latest" />
+        <package name="lucide-react" version="latest" />
+        <package name="vitest" version="4.0" />
+      </ecosystem>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    - **Server Component Data Fetching**: Use async Server Component pattern in page.tsx. Call auth() first, query business via userId, fetch peer group businesses via peerGroupId, query sessions for metrics calculation. Never expose data from other businesses.
+    - **Business Ownership Verification**: All Prisma queries MUST filter by siteId matching user's business. Verify session.user.id → business.userId → business.siteId. Never query sessions or businesses without this verification.
+    - **Client Component Interactivity**: Create Client Component (peer-comparison-table.tsx) with 'use client' directive for interactive visualization. Server Component passes computed data as props. No data fetching in Client Components.
+    - **Service Layer Pattern**: Create peer-calculator.ts service with pure functions (no Prisma queries). Export typed functions with JSDoc. Follow journey-calculator.ts pattern: calculateUserMetrics, calculatePeerMetrics, calculatePercentile, generateExplanation.
+    - **Type Safety**: Use TypeScript strict mode. Create types/peer.ts for MetricData, MetricComparison, Percentile interfaces. Import @prisma/client types (Session, Business) for service functions.
+    - **Loading and Error States**: Create loading.tsx (skeleton with 4 metric rows) and error.tsx (user-friendly error with retry) co-located with page.tsx. Follow Next.js App Router conventions.
+    - **Tailwind CSS Styling**: Use Tailwind utility classes only. Bold Purple theme (#7c3aed primary, #f97316 secondary). Semantic colors: green (#10b981 above average), amber (#fbbf24 slightly below), red (#ef4444 significantly below), gray (#6b7280 at average).
+    - **Accessibility**: WCAG AA compliance required. 4.5:1 contrast ratio for all text. ARIA labels for comparison data. Keyboard navigation support. Screen reader friendly table semantics.
+    - **Responsive Design**: Desktop (1280px+): full table with 4 columns. Tablet (768px): horizontal scroll or compact table. Mobile (375px): stacked metric cards. Test all breakpoints.
+    - **Performance**: Page load target under 2 seconds. Metrics calculation under 500ms. Use Prisma select to fetch only needed fields. Efficient peer group queries with indexed fields [industry, revenueRange, peerGroupId].
+    - **Edge Cases**: Handle no peer group assigned (show message "We're finding similar businesses"). Handle insufficient peers (less than 10, show warning). Handle new businesses with less than 100 sessions (show "Collecting more data"). Handle missing session data gracefully.
+    - **Testing**: Create integration tests in tests/integration/dashboard/peer-benchmarks.test.ts. Test peer group filtering, metrics calculation accuracy, business ownership verification, percentile calculation, edge cases. Use Vitest 4.0. Achieve 80%+ coverage.
+    - **Build Validation**: Run npm run build before completion. Zero TypeScript errors required (maintain Story 2.4 standard). Fix all compilation errors immediately.
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>auth()</name>
+      <kind>function</kind>
+      <signature>async function auth(): Promise&lt;Session | null&gt;</signature>
+      <path>src/lib/auth.ts</path>
+      <description>NextAuth.js auth function for Server Components. Returns session with user.id or null. Use to verify authentication and get userId for business lookup.</description>
+    </interface>
+    <interface>
+      <name>prisma.business.findUnique</name>
+      <kind>database-query</kind>
+      <signature>findUnique({ where: { userId: string }, include?: { peerGroup: boolean } })</signature>
+      <path>src/lib/prisma.ts</path>
+      <description>Prisma query to fetch business by userId. Include peerGroup to get peer group details. Returns Business with peerGroupId field.</description>
+    </interface>
+    <interface>
+      <name>prisma.business.findMany</name>
+      <kind>database-query</kind>
+      <signature>findMany({ where: { peerGroupId: string, id: { not: string } } })</signature>
+      <path>src/lib/prisma.ts</path>
+      <description>Prisma query to fetch peer group businesses. Filter by peerGroupId and exclude current business (id: { not: business.id }). Use select to fetch only needed fields (siteId for session queries).</description>
+    </interface>
+    <interface>
+      <name>prisma.session.findMany</name>
+      <kind>database-query</kind>
+      <signature>findMany({ where: { siteId: string, createdAt?: { gte: Date } }, take?: number })</signature>
+      <path>src/lib/prisma.ts</path>
+      <description>Prisma query to fetch sessions for metrics calculation. Filter by siteId for ownership verification. Use take: 1000 to limit to recent sessions. Returns Session[] with bounced, converted, journeyPath fields.</description>
+    </interface>
+    <interface>
+      <name>calculateUserMetrics</name>
+      <kind>service-function</kind>
+      <signature>function calculateUserMetrics(sessions: Session[]): MetricData</signature>
+      <path>src/services/analytics/peer-calculator.ts (NEW)</path>
+      <description>Calculate user's metrics from sessions array. Returns conversionRate, avgOrderValue, cartAbandonmentRate, bounceRate. Pure function, no database queries.</description>
+    </interface>
+    <interface>
+      <name>calculatePeerMetrics</name>
+      <kind>service-function</kind>
+      <signature>async function calculatePeerMetrics(peerBusinesses: Business[]): Promise&lt;MetricData&gt;</signature>
+      <path>src/services/analytics/peer-calculator.ts (NEW)</path>
+      <description>Calculate aggregate peer metrics by querying sessions for each peer business, calculating metrics, and averaging. Returns MetricData with peer averages.</description>
+    </interface>
+    <interface>
+      <name>calculatePercentile</name>
+      <kind>service-function</kind>
+      <signature>function calculatePercentile(userValue: number, peerValues: number[]): { percentile: 'top-25' | 'median' | 'bottom-25', percentileValue: number }</signature>
+      <path>src/services/analytics/peer-calculator.ts (NEW)</path>
+      <description>Calculate user's percentile ranking among peers. Returns categorical percentile (top-25, median, bottom-25) and exact percentile value (0-100).</description>
+    </interface>
+    <interface>
+      <name>PeerComparisonTable</name>
+      <kind>react-component</kind>
+      <signature>function PeerComparisonTable({ data, peerCount, industryName }: Props): JSX.Element</signature>
+      <path>src/components/dashboard/peer-comparison-table.tsx (NEW)</path>
+      <description>Client Component for peer comparison visualization. Displays horizontal bar charts for each metric with color-coded performance indicators, percentile badges, explanations, and links to recommendations.</description>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>
+      Testing follows the testing pyramid model with Vitest 4.0 for unit and integration tests. Integration tests use test database with Prisma client. Tests are located in tests/integration/**/*.test.ts. Coverage target: 80%+ for critical services (peer metrics calculation, percentile calculation). All tests use TypeScript strict mode with proper typing. Test patterns established in Story 2.4: business isolation verification, field fetching validation, edge case handling.
+    </standards>
+    <locations>
+      - tests/integration/dashboard/peer-benchmarks.test.ts (NEW - integration tests for page)
+      - tests/unit/services/peer-calculator.test.ts (NEW - unit tests for calculation service)
+      - Existing test infrastructure: vitest.config.ts, test database setup in tests/setup.ts
+    </locations>
+    <ideas>
+      <test ac="AC#1" idea="Integration: Fetch peer group businesses filtered by peerGroupId, verify current business excluded (id: { not: business.id })">Validates peer group query correctly filters businesses in same group and excludes current user's business</test>
+      <test ac="AC#2" idea="Unit: Calculate metrics from sample sessions - conversion rate, AOV, cart abandonment, bounce rate - verify accuracy">Tests calculateUserMetrics function with known session data to ensure correct metric calculations</test>
+      <test ac="AC#2" idea="Unit: Calculate peer metrics by averaging multiple business metrics - verify aggregation logic">Tests calculatePeerMetrics function aggregates metrics correctly across peer businesses</test>
+      <test ac="AC#3" idea="Unit: Calculate percentile ranking - test top-25 (≥75%), median (25-74%), bottom-25 (&lt;25%) thresholds">Validates calculatePercentile function correctly categorizes user position relative to peers</test>
+      <test ac="AC#1" idea="Integration: Verify business ownership - user only sees their own data vs peer averages, no raw peer data exposed">Critical security test ensuring data privacy and business isolation</test>
+      <test ac="AC#5" idea="Integration: Test edge case - no peer group assigned (peerGroupId null) - verify appropriate message displayed">Tests graceful handling when user doesn't have peer group yet</test>
+      <test ac="AC#5" idea="Integration: Test edge case - insufficient peer data (&lt;10 businesses) - verify warning message displayed">Tests handling of small peer groups with statistical validity warning</test>
+      <test ac="AC#1" idea="Integration: Test edge case - new business with &lt;100 sessions - verify 'collecting data' message">Tests handling of businesses without enough data for accurate benchmarks</test>
+      <test ac="AC#7" idea="Integration: Verify recommendations link only shown for underperforming metrics (user value &lt; peer average)">Tests conditional rendering of recommendation links based on performance</test>
+    </ideas>
+  </tests>
+</story-context>
