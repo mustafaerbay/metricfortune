@@ -33,9 +33,20 @@ describe('Peer Benchmarks Integration Tests', () => {
       where: { siteId: { startsWith: 'site-peer-test' } }
     });
     await prisma.peerGroup.deleteMany({
-      where: { id: peerGroupId }
+      where: {
+        OR: [
+          { id: peerGroupId },
+          { id: 'other-peer-group' }
+        ]
+      }
     });
-    await prisma.user.deleteMany({ where: { email: testUserEmail } });
+    await prisma.user.deleteMany({
+      where: {
+        email: {
+          contains: 'peer'
+        }
+      }
+    });
 
     // Create test user and business
     const user = await prisma.user.create({
@@ -129,6 +140,18 @@ describe('Peer Benchmarks Integration Tests', () => {
         data: {
           email: 'other-peer@example.com',
           passwordHash: await hash('password123', 10)
+        }
+      });
+
+      // Create other peer group first
+      await prisma.peerGroup.create({
+        data: {
+          id: 'other-peer-group',
+          criteria: {
+            industry: 'electronics',
+            revenueRange: '$5-10M'
+          },
+          businessIds: []
         }
       });
 
