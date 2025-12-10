@@ -16,7 +16,7 @@ vi.mock('next/server', () => ({
       // Add any headers from init
       if (init?.headers) {
         if (init.headers instanceof Headers) {
-          init.headers.forEach((value, key) => {
+          init.headers.forEach((value: string, key: string) => {
             headers.set(key, value);
           });
         } else if (typeof init.headers === 'object') {
