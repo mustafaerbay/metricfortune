@@ -7,9 +7,6 @@ on:
   pull_request:
     branches:
       - main
-env:
-  SHOPIFY_API_KEY: ${{ secrets.SHOPIFY_API_KEY }}
-  SHOPIFY_API_SECRET: ${{ secrets.SHOPIFY_API_SECRET }}
 jobs:
   test:
     runs-on: ubuntu-latest
@@ -123,8 +120,11 @@ jobs:
         run: npm run build
         env:
           SKIP_ENV_VALIDATION: true
-          SHOPIFY_API_KEY: ${{ secrets.SHOPIFY_API_KEY }}
-          SHOPIFY_API_SECRET: ${{ secrets.SHOPIFY_API_SECRET }}
+          DATABASE_URL: postgresql://postgres:postgres@localhost:5432/dummy_db
+          SHOPIFY_API_KEY: ${{ secrets.SHOPIFY_API_KEY || 'dummy-key-for-build' }}
+          SHOPIFY_API_SECRET: ${{ secrets.SHOPIFY_API_SECRET || 'dummy-secret-for-build' }}
+          NEXTAUTH_URL: http://localhost:3000
+          NEXTAUTH_SECRET: dummy-secret-for-build
       - name: Check build output
         run: |
           if [ ! -d ".next" ]; then

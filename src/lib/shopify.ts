@@ -5,39 +5,66 @@
  */
 
 import '@shopify/shopify-api/adapters/node';
-import { shopifyApi, ApiVersion } from '@shopify/shopify-api';
+import { shopifyApi, ApiVersion, Shopify } from '@shopify/shopify-api';
 
-if (!process.env.SHOPIFY_API_KEY) {
-  throw new Error('SHOPIFY_API_KEY environment variable is not set');
-}
-
-if (!process.env.SHOPIFY_API_SECRET) {
-  throw new Error('SHOPIFY_API_SECRET environment variable is not set');
-}
-
-if (!process.env.NEXTAUTH_URL) {
-  throw new Error('NEXTAUTH_URL environment variable is not set');
-}
-
-// Extract hostname from NEXTAUTH_URL for Shopify API configuration
-const hostName = process.env.NEXTAUTH_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
+let shopifyInstance: Shopify | null = null;
 
 /**
- * Shopify API client singleton
+ * Get Shopify API client singleton (lazy initialization)
  *
- * Configured with:
- * - API credentials from environment variables
- * - Required scopes: read_orders, read_products, write_script_tags
- * - OAuth redirect handling
+ * This is initialized lazily to avoid requiring environment variables during build time.
+ * The variables are only validated when the Shopify API is actually used at runtime.
  */
-export const shopify = shopifyApi({
-  apiKey: process.env.SHOPIFY_API_KEY,
-  apiSecretKey: process.env.SHOPIFY_API_SECRET,
-  scopes: ['read_orders', 'read_products', 'write_script_tags'],
-  hostName,
-  apiVersion: ApiVersion.October24, // Use October 2024 API version (stable)
-  isEmbeddedApp: false, // MetricFortune is a standalone app, not embedded in Shopify Admin
-  isPrivateApp: false,
+export function getShopify(): Shopify {
+  if (shopifyInstance) {
+    return shopifyInstance;
+  }
+
+  // Validate environment variables at runtime
+  if (!process.env.SHOPIFY_API_KEY) {
+    throw new Error('SHOPIFY_API_KEY environment variable is not set');
+  }
+
+  if (!process.env.SHOPIFY_API_SECRET) {
+    throw new Error('SHOPIFY_API_SECRET environment variable is not set');
+  }
+
+  if (!process.env.NEXTAUTH_URL) {
+    throw new Error('NEXTAUTH_URL environment variable is not set');
+  }
+
+  // Extract hostname from NEXTAUTH_URL for Shopify API configuration
+  const hostName = process.env.NEXTAUTH_URL.replace(/^https?:\/\//, '').replace(/\/$/, '');
+
+  /**
+   * Shopify API client singleton
+   *
+   * Configured with:
+   * - API credentials from environment variables
+   * - Required scopes: read_orders, read_products, write_script_tags
+   * - OAuth redirect handling
+   */
+  shopifyInstance = shopifyApi({
+    apiKey: process.env.SHOPIFY_API_KEY,
+    apiSecretKey: process.env.SHOPIFY_API_SECRET,
+    scopes: ['read_orders', 'read_products', 'write_script_tags'],
+    hostName,
+    apiVersion: ApiVersion.October24, // Use October 2024 API version (stable)
+    isEmbeddedApp: false, // MetricFortune is a standalone app, not embedded in Shopify Admin
+    isPrivateApp: false,
+  });
+
+  return shopifyInstance;
+}
+
+/**
+ * Legacy export for backwards compatibility
+ * @deprecated Use getShopify() instead
+ */
+export const shopify = new Proxy({} as Shopify, {
+  get(target, prop) {
+    return getShopify()[prop as keyof Shopify];
+  }
 });
 
 /**
@@ -77,7 +104,8 @@ export function sanitizeShopDomain(shop: string): string {
  * @returns Shopify session object
  */
 export function createShopifySession(shopDomain: string, accessToken: string) {
-  const session = shopify.session.customAppSession(shopDomain);
+  const shopifyClient = getShopify();
+  const session = shopifyClient.session.customAppSession(shopDomain);
   session.accessToken = accessToken;
   return session;
 }
