@@ -10,10 +10,34 @@ import { clearDatabase, testPrisma } from '../helpers/database';
 vi.mock('next/server', () => ({
   NextRequest: class NextRequest {},
   NextResponse: {
-    json: vi.fn((data, init) => ({
-      status: init?.status || 200,
-      json: async () => data,
-    })),
+    json: vi.fn((data, init) => {
+      const headers = new Map<string, string>();
+
+      // Add any headers from init
+      if (init?.headers) {
+        if (init.headers instanceof Headers) {
+          init.headers.forEach((value, key) => {
+            headers.set(key, value);
+          });
+        } else if (typeof init.headers === 'object') {
+          Object.entries(init.headers).forEach(([key, value]) => {
+            headers.set(key, String(value));
+          });
+        }
+      }
+
+      return {
+        status: init?.status || 200,
+        json: async () => data,
+        headers: {
+          get: (key: string) => headers.get(key),
+          set: (key: string, value: string) => headers.set(key, value),
+          has: (key: string) => headers.has(key),
+          delete: (key: string) => headers.delete(key),
+          forEach: (callback: (value: string, key: string) => void) => headers.forEach(callback),
+        },
+      };
+    }),
     redirect: vi.fn((url) => ({ url, status: 302 })),
   },
 }));
