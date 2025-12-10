@@ -224,7 +224,7 @@ describe("Recommendation Detail - Server Actions", () => {
       // Try to mark another business's recommendation as planned (should fail)
       const planResult = await planRecommendation(otherRecommendation.id);
       expect(planResult.success).toBe(false);
-      expect(planResult.error).toContain("not found");
+      expect(planResult.error).toContain("Unauthorized");
 
       // Try to mark as implemented (should fail)
       const implementResult = await markRecommendationImplemented(
@@ -232,12 +232,12 @@ describe("Recommendation Detail - Server Actions", () => {
         new Date()
       );
       expect(implementResult.success).toBe(false);
-      expect(implementResult.error).toContain("not found");
+      expect(implementResult.error).toContain("Unauthorized");
 
       // Try to dismiss (should fail)
       const dismissResult = await dismissRecommendation(otherRecommendation.id);
       expect(dismissResult.success).toBe(false);
-      expect(dismissResult.error).toContain("not found");
+      expect(dismissResult.error).toContain("Unauthorized");
 
       // Verify the other business's recommendation was not modified
       const unchanged = await prisma.recommendation.findUnique({

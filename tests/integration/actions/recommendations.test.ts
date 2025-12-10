@@ -3,25 +3,51 @@
  * Tests the recommendations.ts Server Actions with real database operations
  */
 
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { getRecommendations, markImplemented, dismissRecommendation, planRecommendation } from '@/actions/recommendations';
 import { createTestUser, seedBusiness } from '../../helpers/database';
 import { testPrisma } from '../../helpers/database';
+import * as authLib from '@/lib/auth';
 
 describe('Recommendation Server Actions Integration Tests', () => {
   let businessId: string;
+  let userId: string;
   let recommendationId: string;
 
   beforeEach(async () => {
+    // Create test user
+    const user = await testPrisma.user.create({
+      data: {
+        email: `test-${Date.now()}@example.com`,
+        passwordHash: 'hashed_password',
+        emailVerified: true,
+      },
+    });
+    userId = user.id;
+
     // Create test business
-    const business = await seedBusiness({
-      name: 'Test Business',
-      industry: 'fashion',
-      revenueRange: '1M-5M',
-      productTypes: ['clothing'],
-      platform: 'Shopify',
+    const business = await testPrisma.business.create({
+      data: {
+        userId: user.id,
+        name: 'Test Business',
+        industry: 'fashion',
+        revenueRange: '1M-5M',
+        productTypes: ['clothing'],
+        platform: 'shopify',
+        siteId: `test-site-${Date.now()}`,
+      },
     });
     businessId = business.id;
+
+    // Mock auth to return test user session
+    vi.spyOn(authLib, 'auth').mockResolvedValue({
+      user: {
+        id: userId,
+        email: user.email,
+        businessId: businessId,
+      },
+      expires: new Date(Date.now() + 86400000).toISOString(),
+    } as any);
 
     // Create test recommendation
     const recommendation = await testPrisma.recommendation.create({
@@ -37,6 +63,11 @@ describe('Recommendation Server Actions Integration Tests', () => {
       },
     });
     recommendationId = recommendation.id;
+  });
+
+  afterEach(async () => {
+    // Restore auth mock
+    vi.restoreAllMocks();
   });
 
   describe('getRecommendations', () => {
