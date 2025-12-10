@@ -102,14 +102,14 @@ jobs:
           name: codecov-umbrella
           fail_ci_if_error: false
 
-      - name: Generate test report
-        uses: dorny/test-reporter@v1
-        if: always()
-        with:
-          name: Test Results
-          path: 'test-results/*.xml'
-          reporter: jest-junit
-          fail-on-error: false
+      # - name: Generate test report
+      #   uses: dorny/test-reporter@v1
+      #   if: always()
+      #   with:
+      #     name: Test Results
+      #     path: 'test-results/*.xml'
+      #     reporter: jest-junit
+      #     fail-on-error: false
 
   test-build:
     runs-on: ubuntu-latest
