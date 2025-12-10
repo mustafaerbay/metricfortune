@@ -46,6 +46,18 @@ describe('Peer Benchmarks Integration Tests', () => {
     });
     testUserId = user.id;
 
+    // Create peer group first (before business to satisfy foreign key)
+    await prisma.peerGroup.create({
+      data: {
+        id: peerGroupId,
+        criteria: {
+          industry: 'fashion',
+          revenueRange: '$1-5M'
+        },
+        businessIds: []
+      }
+    });
+
     const business = await prisma.business.create({
       data: {
         userId: testUserId,
@@ -60,12 +72,10 @@ describe('Peer Benchmarks Integration Tests', () => {
     });
     testBusinessId = business.id;
 
-    // Create peer group
-    await prisma.peerGroup.create({
+    // Update peer group with business ID
+    await prisma.peerGroup.update({
+      where: { id: peerGroupId },
       data: {
-        id: peerGroupId,
-        industry: 'fashion',
-        revenueRange: '$1-5M',
         businessIds: [testBusinessId]
       }
     });
