@@ -41,8 +41,7 @@ describe('Peer Benchmarks Integration Tests', () => {
     const user = await prisma.user.create({
       data: {
         email: testUserEmail,
-        name: 'Peer Test User',
-        password: await hash('password123', 10)
+        passwordHash: await hash('password123', 10)
       }
     });
     testUserId = user.id;
@@ -52,7 +51,6 @@ describe('Peer Benchmarks Integration Tests', () => {
         userId: testUserId,
         siteId: testSiteId,
         name: 'Test Business',
-        domain: 'test.example.com',
         industry: 'fashion',
         revenueRange: '$1-5M',
         productTypes: ['clothing'],
@@ -81,7 +79,6 @@ describe('Peer Benchmarks Integration Tests', () => {
           userId: testUserId,
           siteId: 'site-peer-test-peer1',
           name: 'Peer Business 1',
-          domain: 'peer1.example.com',
           industry: 'fashion',
           revenueRange: '$1-5M',
           productTypes: ['clothing'],
@@ -95,7 +92,6 @@ describe('Peer Benchmarks Integration Tests', () => {
           userId: testUserId,
           siteId: 'site-peer-test-peer2',
           name: 'Peer Business 2',
-          domain: 'peer2.example.com',
           industry: 'fashion',
           revenueRange: '$1-5M',
           productTypes: ['clothing'],
@@ -110,7 +106,6 @@ describe('Peer Benchmarks Integration Tests', () => {
           userId: testUserId,
           siteId: 'site-peer-test-other',
           name: 'Other Business',
-          domain: 'other.example.com',
           industry: 'electronics',
           revenueRange: '$5-10M',
           productTypes: ['gadgets'],
@@ -215,7 +210,6 @@ describe('Peer Benchmarks Integration Tests', () => {
           userId: testUserId,
           siteId: 'site-peer-test-peer1',
           name: 'Peer 1',
-          domain: 'peer1.example.com',
           industry: 'fashion',
           revenueRange: '$1-5M',
           productTypes: ['clothing'],
@@ -229,7 +223,6 @@ describe('Peer Benchmarks Integration Tests', () => {
           userId: testUserId,
           siteId: 'site-peer-test-peer2',
           name: 'Peer 2',
-          domain: 'peer2.example.com',
           industry: 'fashion',
           revenueRange: '$1-5M',
           productTypes: ['clothing'],
@@ -298,8 +291,7 @@ describe('Peer Benchmarks Integration Tests', () => {
       const otherUser = await prisma.user.create({
         data: {
           email: 'other-user@example.com',
-          name: 'Other User',
-          password: await hash('password123', 10)
+          passwordHash: await hash('password123', 10)
         }
       });
 
@@ -308,7 +300,6 @@ describe('Peer Benchmarks Integration Tests', () => {
           userId: otherUser.id,
           siteId: 'site-other-user',
           name: 'Other Business',
-          domain: 'other.example.com',
           industry: 'fashion',
           revenueRange: '$1-5M',
           productTypes: ['clothing'],
@@ -411,7 +402,6 @@ describe('Peer Benchmarks Integration Tests', () => {
             userId: testUserId,
             siteId: `site-peer-test-peer${i}`,
             name: `Peer ${i}`,
-            domain: `peer${i}.example.com`,
             industry: 'fashion',
             revenueRange: '$1-5M',
             productTypes: ['clothing'],
@@ -482,7 +472,6 @@ describe('Peer Benchmarks Integration Tests', () => {
           userId: testUserId,
           siteId: 'site-peer-high-performer',
           name: 'High Performer',
-          domain: 'highperformer.example.com',
           industry: 'fashion',
           revenueRange: '$1-5M',
           productTypes: ['clothing'],

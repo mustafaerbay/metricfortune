@@ -41,7 +41,10 @@ describe('Journey Insights Integration Tests', () => {
         userId: testUserId,
         siteId: testSiteId,
         name: 'Test Business',
-        domain: 'test.example.com',
+        industry: 'ecommerce',
+        revenueRange: '100k-500k',
+        productTypes: ['physical'],
+        platform: 'shopify',
       },
     });
   });
@@ -427,7 +430,10 @@ describe('Journey Insights Integration Tests', () => {
           userId: otherUser.id,
           siteId: otherSiteId,
           name: 'Other Business',
-          domain: 'other.example.com',
+          industry: 'ecommerce',
+          revenueRange: '100k-500k',
+          productTypes: ['physical'],
+          platform: 'shopify',
         },
       });
 
