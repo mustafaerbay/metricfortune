@@ -84,9 +84,16 @@ describe('Peer Benchmarks Integration Tests', () => {
   describe('Peer Group Business Fetching', () => {
     it('should fetch peer group businesses filtered by peerGroupId', async () => {
       // Create additional peer businesses
+      const peer1User = await prisma.user.create({
+        data: {
+          email: 'peer1@example.com',
+          passwordHash: await hash('password123', 10)
+        }
+      });
+
       const peer1 = await prisma.business.create({
         data: {
-          userId: testUserId,
+          userId: peer1User.id,
           siteId: 'site-peer-test-peer1',
           name: 'Peer Business 1',
           industry: 'fashion',
@@ -97,9 +104,16 @@ describe('Peer Benchmarks Integration Tests', () => {
         }
       });
 
+      const peer2User = await prisma.user.create({
+        data: {
+          email: 'peer2@example.com',
+          passwordHash: await hash('password123', 10)
+        }
+      });
+
       const peer2 = await prisma.business.create({
         data: {
-          userId: testUserId,
+          userId: peer2User.id,
           siteId: 'site-peer-test-peer2',
           name: 'Peer Business 2',
           industry: 'fashion',
@@ -111,9 +125,16 @@ describe('Peer Benchmarks Integration Tests', () => {
       });
 
       // Create business in different peer group (should NOT be fetched)
+      const otherUser = await prisma.user.create({
+        data: {
+          email: 'other-peer@example.com',
+          passwordHash: await hash('password123', 10)
+        }
+      });
+
       await prisma.business.create({
         data: {
-          userId: testUserId,
+          userId: otherUser.id,
           siteId: 'site-peer-test-other',
           name: 'Other Business',
           industry: 'electronics',
@@ -215,9 +236,16 @@ describe('Peer Benchmarks Integration Tests', () => {
 
     it('should calculate peer metrics by averaging multiple business metrics', async () => {
       // Create peer businesses with sessions
+      const peer1User = await prisma.user.create({
+        data: {
+          email: 'peer1-metrics@example.com',
+          passwordHash: await hash('password123', 10)
+        }
+      });
+
       const peer1 = await prisma.business.create({
         data: {
-          userId: testUserId,
+          userId: peer1User.id,
           siteId: 'site-peer-test-peer1',
           name: 'Peer 1',
           industry: 'fashion',
@@ -228,9 +256,16 @@ describe('Peer Benchmarks Integration Tests', () => {
         }
       });
 
+      const peer2User = await prisma.user.create({
+        data: {
+          email: 'peer2-metrics@example.com',
+          passwordHash: await hash('password123', 10)
+        }
+      });
+
       const peer2 = await prisma.business.create({
         data: {
-          userId: testUserId,
+          userId: peer2User.id,
           siteId: 'site-peer-test-peer2',
           name: 'Peer 2',
           industry: 'fashion',
@@ -406,10 +441,17 @@ describe('Peer Benchmarks Integration Tests', () => {
 
     it('should handle insufficient peer data (<10 businesses)', async () => {
       // Create only 5 peer businesses
-      const peerPromises = Array.from({ length: 5 }, (_, i) =>
-        prisma.business.create({
+      const peerPromises = Array.from({ length: 5 }, async (_, i) => {
+        const user = await prisma.user.create({
           data: {
-            userId: testUserId,
+            email: `peer-insufficient-${i}@example.com`,
+            passwordHash: await hash('password123', 10)
+          }
+        });
+
+        return prisma.business.create({
+          data: {
+            userId: user.id,
             siteId: `site-peer-test-peer${i}`,
             name: `Peer ${i}`,
             industry: 'fashion',
@@ -418,8 +460,8 @@ describe('Peer Benchmarks Integration Tests', () => {
             platform: 'shopify',
             peerGroupId: peerGroupId
           }
-        })
-      );
+        });
+      });
 
       await Promise.all(peerPromises);
 
@@ -477,9 +519,16 @@ describe('Peer Benchmarks Integration Tests', () => {
   describe('Recommendations Link for Underperforming Metrics', () => {
     it('should identify underperforming metrics (user value < peer average)', async () => {
       // Create peer businesses with better performance
+      const peer1User = await prisma.user.create({
+        data: {
+          email: 'peer1-high@example.com',
+          passwordHash: await hash('password123', 10)
+        }
+      });
+
       const peer1 = await prisma.business.create({
         data: {
-          userId: testUserId,
+          userId: peer1User.id,
           siteId: 'site-peer-high-performer',
           name: 'High Performer',
           industry: 'fashion',
