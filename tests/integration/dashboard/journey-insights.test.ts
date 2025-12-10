@@ -31,7 +31,6 @@ describe('Journey Insights Integration Tests', () => {
     const user = await prisma.user.create({
       data: {
         email: testUserEmail,
-        name: 'Journey Test User',
         passwordHash: await hash('password123', 10),
       },
     });
@@ -419,7 +418,6 @@ describe('Journey Insights Integration Tests', () => {
       const otherUser = await prisma.user.create({
         data: {
           email: 'other@example.com',
-          name: 'Other User',
           passwordHash: await hash('password123', 10),
         },
       });
