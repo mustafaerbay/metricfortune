@@ -32,7 +32,7 @@ describe('Journey Insights Integration Tests', () => {
       data: {
         email: testUserEmail,
         name: 'Journey Test User',
-        password: await hash('password123', 10),
+        passwordHash: await hash('password123', 10),
       },
     });
     testUserId = user.id;
@@ -420,7 +420,7 @@ describe('Journey Insights Integration Tests', () => {
         data: {
           email: 'other@example.com',
           name: 'Other User',
-          password: await hash('password123', 10),
+          passwordHash: await hash('password123', 10),
         },
       });
 
