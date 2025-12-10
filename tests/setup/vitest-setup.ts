@@ -18,6 +18,12 @@ vi.mock('next/server', () => ({
   },
 }));
 
+// Mock next/cache functions
+vi.mock('next/cache', () => ({
+  revalidatePath: vi.fn(),
+  revalidateTag: vi.fn(),
+}));
+
 // Setup before all tests in a file
 beforeAll(async () => {
   // Ensure database connection

@@ -4,7 +4,7 @@
  */
 
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
-import { getRecommendations, markImplemented, dismissRecommendation, planRecommendation } from '@/actions/recommendations';
+import { getRecommendations, markRecommendationImplemented, dismissRecommendation, planRecommendation } from '@/actions/recommendations';
 import { createTestUser, seedBusiness } from '../../helpers/database';
 import { testPrisma } from '../../helpers/database';
 import * as authLib from '@/lib/auth';
@@ -113,9 +113,9 @@ describe('Recommendation Server Actions Integration Tests', () => {
     });
   });
 
-  describe('markImplemented', () => {
+  describe('markRecommendationImplemented', () => {
     it('should mark recommendation as implemented', async () => {
-      const result = await markImplemented(recommendationId);
+      const result = await markRecommendationImplemented(recommendationId, new Date());
 
       expect(result.success).toBe(true);
 
@@ -128,7 +128,7 @@ describe('Recommendation Server Actions Integration Tests', () => {
     });
 
     it('should return error for invalid recommendationId', async () => {
-      const result = await markImplemented('');
+      const result = await markRecommendationImplemented('', new Date());
 
       expect(result.success).toBe(false);
       expect(result.error).toBeDefined();
@@ -139,6 +139,9 @@ describe('Recommendation Server Actions Integration Tests', () => {
     it('should dismiss recommendation', async () => {
       const result = await dismissRecommendation(recommendationId);
 
+      if (!result.success) {
+        console.log('dismissRecommendation error:', result.error);
+      }
       expect(result.success).toBe(true);
 
       // Verify in database
