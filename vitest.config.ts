@@ -23,6 +23,11 @@ export default defineConfig({
         '**/mockData',
       ],
     },
+    server: {
+      deps: {
+        inline: ['next-auth', 'next'],
+      },
+    },
   },
   resolve: {
     alias: {
