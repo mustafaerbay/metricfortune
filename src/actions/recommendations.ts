@@ -552,3 +552,110 @@ export async function planRecommendation(
     };
   }
 }
+
+/**
+ * Update implementation notes for a recommendation (Story 2.6)
+ *
+ * Allows updating implementation notes after a recommendation has been implemented.
+ * Used for documenting implementation experience, challenges, and lessons learned.
+ *
+ * @param recommendationId - Recommendation ID to update notes for
+ * @param notes - Implementation notes (max 500 characters)
+ * @returns Updated recommendation record
+ *
+ * @example
+ * const result = await updateImplementationNotes('rec_abc123', 'Installation went smoothly...');
+ */
+export async function updateImplementationNotes(
+  recommendationId: string,
+  notes: string
+): Promise<ActionResult<Recommendation>> {
+  try {
+    console.log(
+      `[updateImplementationNotes] Updating notes for recommendation ${recommendationId}`
+    );
+
+    // Validate input
+    const recommendationValidation = recommendationIdSchema.safeParse(recommendationId);
+    if (!recommendationValidation.success) {
+      return {
+        success: false,
+        error: recommendationValidation.error.issues[0].message,
+      };
+    }
+
+    // Validate notes length
+    if (notes.length > 500) {
+      return {
+        success: false,
+        error: "Implementation notes must be 500 characters or less",
+      };
+    }
+
+    // Get authenticated user
+    const session = await auth();
+    if (!session?.user?.id) {
+      return {
+        success: false,
+        error: "Authentication required",
+      };
+    }
+
+    // Get recommendation with business ownership check
+    const existingRecommendation = await prisma.recommendation.findUnique({
+      where: { id: recommendationId },
+      include: {
+        business: {
+          select: {
+            userId: true,
+          },
+        },
+      },
+    });
+
+    if (!existingRecommendation) {
+      return {
+        success: false,
+        error: "Recommendation not found",
+      };
+    }
+
+    // Verify user owns the business
+    if (existingRecommendation.business.userId !== session.user.id) {
+      return {
+        success: false,
+        error: "Unauthorized: You can only update your own recommendations",
+      };
+    }
+
+    // Update recommendation notes
+    const updatedRecommendation = await prisma.recommendation.update({
+      where: { id: recommendationId },
+      data: {
+        implementationNotes: notes,
+      },
+    });
+
+    // Revalidate recommendations page to show updated notes
+    revalidatePath("/dashboard/recommendations");
+    revalidatePath(`/dashboard/recommendations/${recommendationId}`);
+
+    console.log(
+      `[updateImplementationNotes] Notes updated for recommendation ${recommendationId}`
+    );
+
+    return {
+      success: true,
+      data: updatedRecommendation,
+    };
+  } catch (error) {
+    console.error("[updateImplementationNotes] Error:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error
+          ? error.message
+          : "Failed to update implementation notes",
+    };
+  }
+}

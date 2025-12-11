@@ -1,0 +1,397 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>6</storyId>
+    <title>Implementation Tracking & Results</title>
+    <status>drafted</status>
+    <generatedAt>2025-12-11</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-6-implementation-tracking-results.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>e-commerce business owner</asA>
+    <iWant>to track before/after metrics for recommendations I've implemented</iWant>
+    <soThat>I can see if changes actually improved my conversion rates</soThat>
+    <tasks>
+      <task id="1" ac="1">
+        <description>Create Implementation Tracking page or filter</description>
+        <subtasks>
+          - Add "Implemented" filter to src/app/(dashboard)/dashboard/recommendations/page.tsx
+          - Query recommendations with status="IMPLEMENTED" from Prisma
+          - Sort by implementation date (most recent first)
+          - Display empty state if no implemented recommendations
+          - Pass filtered data to ImplementedRecommendationsList component
+        </subtasks>
+      </task>
+      <task id="2" ac="2,5">
+        <description>Build ImplementedRecommendationCard component</description>
+        <subtasks>
+          - Create src/components/dashboard/implemented-recommendation-card.tsx as Client Component
+          - Display implementation date with relative time
+          - Calculate time since implementation for status determination
+          - Show before/after metrics (conversion rate, cart abandonment rate)
+          - Calculate change percentage with positive/negative indicators
+          - Show status badge (Too early, Positive trend, No change, Negative trend)
+          - Style with Bold Purple theme and semantic colors
+        </subtasks>
+      </task>
+      <task id="3" ac="3">
+        <description>Create before/after metrics calculation service</description>
+        <subtasks>
+          - Create src/services/analytics/implementation-tracker.ts
+          - Implement calculateBeforeMetrics (7 days pre-implementation)
+          - Implement calculateAfterMetrics (7 days post-implementation)
+          - Implement calculateMetricChange (percentage with trend direction)
+          - Add unit tests for all calculation functions
+        </subtasks>
+      </task>
+      <task id="4" ac="4">
+        <description>Build metric trend chart component</description>
+        <subtasks>
+          - Create src/components/dashboard/metric-trend-chart.tsx as Client Component
+          - Use Recharts for line chart (14-day period: 7 before + 7 after)
+          - Show vertical line indicator for implementation date
+          - Plot conversion rate and cart abandonment trend lines
+          - Add tooltips with exact values
+          - Responsive chart sizing with purple accent colors
+        </subtasks>
+      </task>
+      <task id="5" ac="6">
+        <description>Implement success celebration UI</description>
+        <subtasks>
+          - Create celebration component for positive results (≥10% improvement)
+          - Show confetti animation or visual success indicator
+          - Display congratulations message
+          - Add optional share button
+          - Make celebration dismissible with localStorage
+          - Trigger once per recommendation per session
+        </subtasks>
+      </task>
+      <task id="6" ac="7">
+        <description>Add implementation notes feature</description>
+        <subtasks>
+          - Add implementationNotes field to Recommendation model
+          - Create Server Action: updateImplementationNotes
+          - Build notes editor component with Textarea
+          - Display existing notes below metrics
+          - Auto-save on blur or manual save
+          - 500 character limit
+        </subtasks>
+      </task>
+      <task id="7" ac="2,7">
+        <description>Update Recommendation model and migration</description>
+        <subtasks>
+          - Add implementationNotes: String? field to Recommendation model
+          - Ensure implementedAt: DateTime? field exists
+          - Generate Prisma migration
+          - Apply migration to database
+          - Update TypeScript types from Prisma client
+        </subtasks>
+      </task>
+      <task id="8">
+        <description>Create integration tests</description>
+        <subtasks>
+          - Test querying recommendations filtered by IMPLEMENTED status
+          - Test before/after metrics calculation with mock data
+          - Test edge cases: &lt;7 days, insufficient data
+          - Test metric change calculation scenarios
+          - Test implementation notes CRUD
+          - Place tests in tests/integration/dashboard/implementation-tracking.test.ts
+        </subtasks>
+      </task>
+      <task id="9" ac="3,5">
+        <description>Handle edge cases and loading states</description>
+        <subtasks>
+          - Show "Too early to measure" badge if &lt;7 days
+          - Handle missing session data gracefully
+          - Warn about confidence during low-traffic periods
+          - Display loading skeleton while fetching
+          - Error handling with retry option
+        </subtasks>
+      </task>
+      <task id="10">
+        <description>Style with Bold Purple theme and responsive layout</description>
+        <subtasks>
+          - Apply theme colors: purple (#7c3aed), green (#10b981), red (#ef4444), amber (#fbbf24)
+          - Ensure 4.5:1 contrast ratio for all indicators
+          - Responsive card layout: stacked on mobile, side-by-side on desktop
+          - Chart responsive: full width mobile, max 600px desktop
+        </subtasks>
+      </task>
+      <task id="11">
+        <description>Accessibility validation (WCAG AA)</description>
+        <subtasks>
+          - Add ARIA labels for metric changes
+          - Verify keyboard navigation
+          - Ensure trend indicators have text labels (not color alone)
+          - Screen reader test for metric changes and status
+          - Verify chart tooltips are keyboard accessible
+          - Add semantic HTML for comparison tables
+        </subtasks>
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <criterion id="AC1">
+      <description>"Implemented" tab/filter shows all implemented recommendations with status</description>
+    </criterion>
+    <criterion id="AC2">
+      <description>Each implemented recommendation displays:</description>
+      <details>
+        - Implementation date
+        - Before metrics (conversion rate, cart abandonment rate from pre-implementation period)
+        - After metrics (same metrics from post-implementation period)
+        - Change percentage (with positive/negative indicators)
+        - Time since implementation
+      </details>
+    </criterion>
+    <criterion id="AC3">
+      <description>Automatic calculation of before/after periods (7 days before vs 7 days after implementation)</description>
+    </criterion>
+    <criterion id="AC4">
+      <description>Visual charts showing metric trends over time</description>
+    </criterion>
+    <criterion id="AC5">
+      <description>Status indicators: "Too early to measure" (&lt;7 days), "Positive trend", "No change detected", "Negative trend"</description>
+    </criterion>
+    <criterion id="AC6">
+      <description>Success celebrations for positive results (visual feedback, optional share)</description>
+    </criterion>
+    <criterion id="AC7">
+      <description>Ability to add notes about implementation experience</description>
+    </criterion>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>Functional Requirements - FR015</section>
+        <snippet>System shall allow users to mark recommendations as "Implemented," "Dismissed," or "Planned" and track before/after metrics for implemented changes</snippet>
+      </doc>
+      <doc>
+        <path>docs/epics/epic-2-dashboard-user-experience.md</path>
+        <title>Epic 2: Dashboard & User Experience</title>
+        <section>Story 2.6: Implementation Tracking & Results (lines 109-130)</section>
+        <snippet>Complete story specification with 7 acceptance criteria: Implemented tab/filter, before/after metrics display (implementation date, conversion rate, cart abandonment), automatic 7-day period calculation, visual trend charts, status indicators (too early/positive/negative trend), success celebrations, and implementation notes</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Technical Architecture</title>
+        <section>Epic 2 Story Mapping</section>
+        <snippet>Story 2.6 Implementation Tracking: Before/after metrics calculation, trend visualization components. Key architecture challenge: high-volume time-series data processing and before/after impact measurement</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>Journey 2: View and Implement Recommendation (lines 462-537)</section>
+        <snippet>Implementation tracking pattern follows task management UX (Planned → In Progress → Done). Mark as Implemented flow includes date picker, system tracks before/after metrics, status changes to "Tracking Results". Results shown 7-14 days later with email notification. Before/after metrics tracking uses celebratory but data-driven feedback approach</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>Implementation Tracking Pattern (lines 108-112)</section>
+        <snippet>Uses task management pattern (similar to Asana, Todoist) with before/after metrics tracking. Feedback should be celebratory but data-driven showing clear metrics</snippet>
+      </doc>
+      <doc>
+        <path>docs/testing-strategy.md</path>
+        <title>Testing Strategy</title>
+        <section>Testing Pyramid & Integration Tests</section>
+        <snippet>Integration tests use Vitest 4.0 with test database, located in tests/integration/**/*.test.ts. Should test API endpoints, Server Actions, service layer integration, and database operations. Target 80%+ coverage for critical services</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-3-recommendation-detail-view.md</path>
+        <title>Story 2.3: Recommendation Detail View</title>
+        <section>Mark as Implemented Action</section>
+        <snippet>Includes implementation date picker when marking as implemented. Recommendation status changes reflected immediately. Sets implementedAt field on Recommendation model</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-5-peer-benchmarks-tab.md</path>
+        <title>Story 2.5: Peer Benchmarks Tab</title>
+        <section>Metrics Calculation Patterns</section>
+        <snippet>Service layer pattern from src/services/analytics/peer-calculator.ts provides metrics calculation reference. Uses journeyPath array analysis for cart/checkout/conversion detection. Includes confidence levels based on session count thresholds</snippet>
+      </doc>
+    </docs>
+    <code>
+      <artifact>
+        <path>src/app/(dashboard)/dashboard/recommendations/page.tsx</path>
+        <kind>page</kind>
+        <symbol>RecommendationsPage</symbol>
+        <lines>35-110</lines>
+        <reason>Existing recommendations page with status filtering. Already supports IMPLEMENTED filter via searchParams. Needs to pass additional data (implementedAt, metrics) to components for this story</reason>
+      </artifact>
+      <artifact>
+        <path>src/services/analytics/peer-calculator.ts</path>
+        <kind>service</kind>
+        <symbol>calculateUserMetrics, isCartPage, isCheckoutPage</symbol>
+        <lines>1-69</lines>
+        <reason>Metrics calculation service pattern to reuse. Shows how to calculate conversion rate, cart abandonment from Session.journeyPath arrays. Reference pattern for implementation-tracker.ts service</reason>
+      </artifact>
+      <artifact>
+        <path>src/actions/recommendations.ts</path>
+        <kind>action</kind>
+        <symbol>markRecommendationImplemented</symbol>
+        <lines>257-365</lines>
+        <reason>Existing Server Action that sets implementedAt and implementationNotes. Already used by Story 2.3. Need to add updateImplementationNotes action for editing notes separately</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>schema</kind>
+        <symbol>Recommendation, Session</symbol>
+        <lines>104-122, 59-73</lines>
+        <reason>Recommendation model already has implementedAt (line 116) and implementationNotes (line 117) fields. Session model has journeyPath, converted, bounced for metrics calculation. Index on [siteId, createdAt] for efficient date-range queries</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/dashboard/recommendation-card.tsx</path>
+        <kind>component</kind>
+        <symbol>RecommendationCard</symbol>
+        <lines>full-file</lines>
+        <reason>Existing card component pattern for recommendations list. Reference for creating ImplementedRecommendationCard with similar structure but different data display</reason>
+      </artifact>
+      <artifact>
+        <path>src/components/dashboard/peer-comparison-table.tsx</path>
+        <kind>component</kind>
+        <symbol>PeerComparisonTable</symbol>
+        <lines>full-file</lines>
+        <reason>Visual comparison pattern for metrics with before/after structure. Reference for displaying metric changes with semantic colors (green/red)</reason>
+      </artifact>
+    </code>
+    <dependencies>
+      <node>
+        <framework>next@16.0.1</framework>
+        <framework>react@19.2.0</framework>
+        <framework>react-dom@19.2.0</framework>
+        <package>@prisma/client@6.17.0</package>
+        <package>date-fns@4.1.0</package>
+        <package>@radix-ui/react-tooltip@1.2.8</package>
+        <package>lucide-react@0.553.0</package>
+        <package>clsx@2.1.1</package>
+        <package>tailwind-merge@3.4.0</package>
+        <package>zod@4.1.12</package>
+        <required>recharts (NOT INSTALLED - needs: npm install recharts)</required>
+        <required>shadcn/ui textarea component (NOT INSTALLED - needs: npx shadcn add textarea)</required>
+      </node>
+      <testing>
+        <package>vitest@4.0</package>
+        <package>@playwright/test@1.56.1</package>
+        <package>@vitest/ui@4.0</package>
+      </testing>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <architecture>
+      <constraint>Next.js App Router: Server Components for data fetching, Client Components for interactivity</constraint>
+      <constraint>Service layer for calculations: implementation-tracker.ts handles all before/after metrics logic</constraint>
+      <constraint>Business isolation: All queries must filter by userId → businessId → siteId for data privacy</constraint>
+      <constraint>Server Actions for mutations: Use src/actions/recommendations.ts pattern with auth verification</constraint>
+    </architecture>
+    <data>
+      <constraint>Session queries use createdAt with date range filtering (7-day windows)</constraint>
+      <constraint>All metrics calculated from Session.journeyPath analysis (no direct Session-to-Order linking)</constraint>
+      <constraint>Date manipulation uses date-fns library (subDays, addDays, differenceInDays)</constraint>
+      <constraint>Performance: Metrics calculation must complete in &lt;500ms (NFR001)</constraint>
+    </data>
+    <ui>
+      <constraint>Use shadcn/ui components: Card, Badge, Textarea</constraint>
+      <constraint>Bold Purple theme: #7c3aed for primary, semantic colors for trends (green #10b981, red #ef4444, amber #fbbf24)</constraint>
+      <constraint>WCAG AA compliance: 4.5:1 contrast ratio, keyboard navigation, ARIA labels, text labels not color alone</constraint>
+      <constraint>Responsive layout: stacked on mobile, side-by-side on desktop</constraint>
+    </ui>
+    <testing>
+      <constraint>Maintain zero TypeScript errors standard - run npm run build before completion</constraint>
+      <constraint>Unit tests use journeyPath patterns (not non-existent fields)</constraint>
+      <constraint>Integration tests in tests/integration/dashboard/ using Vitest 4.0</constraint>
+      <constraint>Test data privacy: business isolation in all queries</constraint>
+    </testing>
+  </constraints>
+  <interfaces>
+    <interface>
+      <name>calculateBeforeMetrics</name>
+      <kind>service function</kind>
+      <signature>async function calculateBeforeMetrics(siteId: string, implementedAt: Date): Promise&lt;MetricsData&gt;</signature>
+      <path>src/services/analytics/implementation-tracker.ts</path>
+    </interface>
+    <interface>
+      <name>calculateAfterMetrics</name>
+      <kind>service function</kind>
+      <signature>async function calculateAfterMetrics(siteId: string, implementedAt: Date): Promise&lt;MetricsData&gt;</signature>
+      <path>src/services/analytics/implementation-tracker.ts</path>
+    </interface>
+    <interface>
+      <name>calculateMetricChange</name>
+      <kind>service function</kind>
+      <signature>function calculateMetricChange(before: number, after: number): ChangeMetric</signature>
+      <path>src/services/analytics/implementation-tracker.ts</path>
+    </interface>
+    <interface>
+      <name>updateImplementationNotes</name>
+      <kind>server action</kind>
+      <signature>async function updateImplementationNotes(recommendationId: string, notes: string): Promise&lt;ActionResult&lt;Recommendation&gt;&gt;</signature>
+      <path>src/actions/recommendations.ts</path>
+    </interface>
+    <interface>
+      <name>prisma.session.findMany</name>
+      <kind>database query</kind>
+      <signature>findMany({ where: { siteId, createdAt: { gte, lt } } })</signature>
+      <path>@prisma/client</path>
+    </interface>
+    <interface>
+      <name>prisma.recommendation.findMany</name>
+      <kind>database query</kind>
+      <signature>findMany({ where: { businessId, status: "IMPLEMENTED" }, orderBy: { implementedAt: "desc" } })</signature>
+      <path>@prisma/client</path>
+    </interface>
+  </interfaces>
+  <tests>
+    <standards>
+      Testing follows the pyramid model with Vitest 4.0 for unit/integration tests and Playwright 1.56.1 for E2E.
+      Unit tests target 80%+ coverage for critical services (implementation-tracker.ts). Integration tests verify
+      Server Actions, service layer integration, and database operations. All tests use test database (TEST_DATABASE_URL)
+      with fixtures and clearDatabase() helper. Tests must use Session.journeyPath patterns for metrics calculation.
+      Build validation critical: maintain zero TypeScript errors, run npm run build before story completion.
+    </standards>
+    <locations>
+      <location>tests/unit/services/implementation-tracker.test.ts</location>
+      <location>tests/integration/dashboard/implementation-tracking.test.ts</location>
+      <location>tests/integration/actions/recommendations.test.ts</location>
+    </locations>
+    <ideas>
+      <test-idea ac="AC1,AC2">
+        <description>Integration: Query recommendations filtered by IMPLEMENTED status</description>
+        <approach>Create test business with recommendations in various statuses. Query with status=IMPLEMENTED filter. Verify only IMPLEMENTED recommendations returned, sorted by implementedAt DESC</approach>
+      </test-idea>
+      <test-idea ac="AC3">
+        <description>Unit: Calculate before metrics from session data</description>
+        <approach>Mock sessions with journeyPath arrays in 7-day period before implementedAt. Test conversion rate calculation (converted/total). Test cart abandonment (cart pages - checkout pages / cart pages). Verify confidence levels based on session count</approach>
+      </test-idea>
+      <test-idea ac="AC3">
+        <description>Unit: Calculate after metrics from session data</description>
+        <approach>Mock sessions with journeyPath in 7-day period after implementedAt. Calculate same metrics as before. Verify date range filtering works correctly with subDays/addDays</approach>
+      </test-idea>
+      <test-idea ac="AC3,AC5">
+        <description>Unit: Calculate metric change with trend direction</description>
+        <approach>Test scenarios: positive change (&gt;5% = positive trend), negative change (&lt;-5% = negative trend), neutral change (-5% to +5% = no change). Verify formatted output with +/- signs and colors</approach>
+      </test-idea>
+      <test-idea ac="AC5">
+        <description>Integration: Edge case - recommendation implemented &lt;7 days ago</description>
+        <approach>Create recommendation with implementedAt 3 days ago. Verify status shows "Too early to measure". Confirm after metrics query returns insufficient data message</approach>
+      </test-idea>
+      <test-idea ac="AC3">
+        <description>Integration: Edge case - insufficient session data (&lt;100 sessions)</description>
+        <approach>Create recommendation with implementedAt, but only 20 sessions in before period. Verify confidence level set to LOW. Display "Insufficient data" warning to user</approach>
+      </test-idea>
+      <test-idea ac="AC7">
+        <description>Integration: Implementation notes CRUD operations</description>
+        <approach>Test updateImplementationNotes Server Action. Create note, update existing note, verify 500 char limit validation. Test auth verification (only owner can update)</approach>
+      </test-idea>
+      <test-idea ac="AC2,AC4">
+        <description>Integration: Full before/after metrics pipeline</description>
+        <approach>Seed test data: recommendation implemented 14 days ago, mock sessions before/after with known conversion rates. Calculate metrics, verify change percentage matches expected. Test business isolation (can't see other business data)</approach>
+      </test-idea>
+    </ideas>
+  </tests>
+</story-context>
