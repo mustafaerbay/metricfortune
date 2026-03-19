@@ -255,23 +255,32 @@ export async function fetchDailyMetrics(
   const now = new Date();
   const effectiveEnd = endDate < now ? endDate : now;
 
-  const dailyMetrics: DailyMetric[] = [];
+  // Single query for all sessions in the full window (replaces N+1 per-day queries)
+  const allSessions = await prisma.session.findMany({
+    where: {
+      siteId,
+      createdAt: {
+        gte: startOfDay(startDate),
+        lte: endOfDay(effectiveEnd),
+      },
+    },
+  });
 
-  // Iterate through each day in the range
+  // Group sessions by day in memory
+  const sessionsByDay = new Map<string, Session[]>();
+  for (const session of allSessions) {
+    const dayKey = startOfDay(session.createdAt).toISOString();
+    const existing = sessionsByDay.get(dayKey) ?? [];
+    existing.push(session);
+    sessionsByDay.set(dayKey, existing);
+  }
+
+  // Build metrics for each day in the range
+  const dailyMetrics: DailyMetric[] = [];
   let currentDate = startDate;
   while (currentDate <= effectiveEnd) {
-    const dayStart = startOfDay(currentDate);
-    const dayEnd = endOfDay(currentDate);
-
-    const sessions = await prisma.session.findMany({
-      where: {
-        siteId,
-        createdAt: {
-          gte: dayStart,
-          lte: dayEnd,
-        },
-      },
-    });
+    const dayKey = startOfDay(currentDate).toISOString();
+    const sessions = sessionsByDay.get(dayKey) ?? [];
 
     dailyMetrics.push({
       date: currentDate,

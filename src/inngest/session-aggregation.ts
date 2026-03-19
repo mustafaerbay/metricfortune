@@ -20,6 +20,7 @@ import {
   createSessions,
 } from '@/services/analytics/session-aggregator';
 import { prisma } from '@/lib/prisma';
+import { subDays } from 'date-fns';
 
 /**
  * Key for storing last aggregation timestamp
@@ -110,6 +111,85 @@ export const sessionAggregationJob = inngest.createFunction(
           `[SessionAggregation] Updated last aggregation time to ${endTime.toISOString()}`
         );
       });
+
+      // Step 6: Check for significant metric changes (AC #6 — Story 2.7)
+      // For each unique siteId processed, compute WoW conversion rate delta.
+      // Fire 'metrics/significant-change' event when drop exceeds 20%.
+      if (sessions.length > 0) {
+        const siteIds = [...new Set(sessions.map((s: any) => s.siteId as string))];
+
+        for (const siteId of siteIds) {
+          await step.run(`check-metric-change-${siteId}`, async () => {
+            const now = endTime;
+            const weekAgo = subDays(now, 7);
+            const twoWeeksAgo = subDays(now, 14);
+
+            const [thisWeekSessions, lastWeekSessions] = await Promise.all([
+              prisma.session.findMany({
+                where: { siteId, createdAt: { gte: weekAgo, lt: now } },
+                select: { converted: true },
+              }),
+              prisma.session.findMany({
+                where: { siteId, createdAt: { gte: twoWeeksAgo, lt: weekAgo } },
+                select: { converted: true },
+              }),
+            ]);
+
+            if (lastWeekSessions.length === 0) {
+              return { skipped: true, reason: 'no-last-week-data' };
+            }
+
+            const thisWeekRate =
+              thisWeekSessions.length > 0
+                ? (thisWeekSessions.filter((s) => s.converted).length /
+                    thisWeekSessions.length) *
+                  100
+                : 0;
+            const lastWeekRate =
+              (lastWeekSessions.filter((s) => s.converted).length /
+                lastWeekSessions.length) *
+              100;
+
+            if (lastWeekRate === 0) {
+              return { skipped: true, reason: 'zero-last-week-rate' };
+            }
+
+            const changePercent =
+              ((thisWeekRate - lastWeekRate) / lastWeekRate) * 100;
+
+            // Only fire event for significant drops (>20% WoW decline)
+            if (changePercent >= -20) {
+              return { skipped: true, reason: 'no-significant-drop', change: changePercent };
+            }
+
+            const business = await prisma.business.findUnique({
+              where: { siteId },
+              select: { id: true, userId: true },
+            });
+
+            if (!business) {
+              return { skipped: true, reason: 'business-not-found' };
+            }
+
+            await inngest.send({
+              name: 'metrics/significant-change',
+              data: {
+                businessId: business.id,
+                siteId,
+                metric: 'conversion_rate',
+                change: changePercent,
+                userId: business.userId,
+              },
+            });
+
+            console.log(
+              `[SessionAggregation] Fired metrics/significant-change for siteId=${siteId}, change=${changePercent.toFixed(1)}%`
+            );
+
+            return { fired: true, siteId, change: changePercent };
+          });
+        }
+      }
 
       // Calculate execution time
       const executionTimeMs = Date.now() - jobStartTime;

@@ -25,7 +25,7 @@ export function SuccessCelebration({
   useEffect(() => {
     // Check if celebration was already shown for this recommendation
     const storageKey = `celebration-${recommendationId}`;
-    const wasShown = sessionStorage.getItem(storageKey);
+    const wasShown = localStorage.getItem(storageKey);
 
     if (!wasShown) {
       // Show celebration after a brief delay
@@ -42,8 +42,8 @@ export function SuccessCelebration({
     setIsAnimating(false);
     setTimeout(() => {
       setIsVisible(false);
-      // Remember dismissal in session storage
-      sessionStorage.setItem(`celebration-${recommendationId}`, 'true');
+      // Remember dismissal in localStorage for cross-session persistence
+      localStorage.setItem(`celebration-${recommendationId}`, 'true');
     }, 300);
   };
 

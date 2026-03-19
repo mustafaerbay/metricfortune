@@ -1,0 +1,388 @@
+<story-context id="bmad/bmm/workflows/4-implementation/story-context/template" v="1.0">
+  <metadata>
+    <epicId>2</epicId>
+    <storyId>7</storyId>
+    <title>Email Notifications &amp; Digests</title>
+    <status>drafted</status>
+    <generatedAt>2026-03-19</generatedAt>
+    <generator>BMAD Story Context Workflow</generator>
+    <sourceStoryPath>docs/stories/2-7-email-notifications-digests.md</sourceStoryPath>
+  </metadata>
+
+  <story>
+    <asA>an e-commerce business owner</asA>
+    <iWant>to receive weekly email notifications with new recommendations and digest summaries</iWant>
+    <soThat>I'm proactively informed about optimization opportunities without needing to check the dashboard daily</soThat>
+    <tasks>
+      <!-- Prisma schema changes -->
+      <task id="T1" status="todo">Add email preference fields to User model (AC: #5, #8)
+        - emailNotificationsEnabled Boolean @default(true)
+        - emailDigestFrequency String @default("weekly")  // "weekly" | "off"
+        - emailUnsubscribeToken String? @unique
+        - timezone String @default("UTC")
+        - lastDigestSentAt DateTime?
+        - Migration: npx prisma migrate dev --name add-email-preferences
+        - Backfill: generate unsubscribeTokens with crypto.randomUUID() for existing users
+      </task>
+
+      <!-- React Email template -->
+      <task id="T2" status="todo">Create weekly digest email template (AC: #2, #3, #4, #7)
+        - File: src/emails/weekly-digest.tsx
+        - Props: { userName, businessName, recommendations: DigestRecommendation[], conversionTrend, implementationWins[], unsubscribeUrl, dashboardUrl }
+        - Sections: Header, Top 2-3 recommendations with deep links, Quick stats, Implementation wins (conditional), Footer + unsubscribe
+        - Inline styles only; brand color #7c3aed; mobile-responsive single-column; min font 16px; touch targets 44px
+        - Alt text on all images; semantic HTML
+      </task>
+
+      <!-- Inngest scheduled function -->
+      <task id="T3" status="todo">Create weekly digest Inngest scheduled function (AC: #1)
+        - File: src/inngest/weekly-digest.ts
+        - Cron: { cron: "0 8 * * 1" } (Monday 8am UTC)
+        - Per-user step.run for retries; idempotency via lastDigestSentAt (skip if &lt;6 days ago)
+        - Fetch top 2-3 NEW recommendations sorted by impact; skip user if none
+        - Reuse implementation-tracker metrics for conversion trend
+        - Send via Resend from insights@metricfortune.app
+        - Update lastDigestSentAt after successful send
+        - Register in src/app/api/inngest/route.ts
+      </task>
+
+      <!-- Metric change notification -->
+      <task id="T4" status="todo">Create significant metric change notification (AC: #6)
+        - File: src/inngest/metric-change-notify.ts
+        - Triggered by event: "metrics/significant-change" (conversion rate drops &gt;20% WoW)
+        - Inline simple alert template (no separate template file needed for MVP)
+        - Respect emailNotificationsEnabled preference
+        - Register in src/app/api/inngest/route.ts
+      </task>
+
+      <!-- Settings UI -->
+      <task id="T5" status="todo">Build email preferences settings UI (AC: #5)
+        - Update src/app/(dashboard)/dashboard/settings/page.tsx — add Email Notifications section
+        - New Client Component: src/components/dashboard/email-preferences-form.tsx
+        - Controls: weekly digest toggle, timezone selector (Intl.supportedValuesOf or ~20 hardcoded), save button
+        - Save triggers updateEmailPreferences Server Action
+      </task>
+
+      <!-- Server Action -->
+      <task id="T6" status="todo">Create email preferences Server Action (AC: #5)
+        - File: src/actions/email-preferences.ts ('use server')
+        - export async function updateEmailPreferences(data: EmailPreferencesInput): Promise&lt;ActionResult&gt;
+        - Auth check: auth() + session.user.id guard (pattern: recommendations.ts:596-629)
+        - Validate: emailNotificationsEnabled (boolean), emailDigestFrequency ("weekly"|"off"), timezone (string, max 50 chars)
+        - prisma.user.update + revalidatePath('/dashboard/settings')
+        - Return { success: true } or { error: string }
+      </task>
+
+      <!-- Unsubscribe endpoint -->
+      <task id="T7" status="todo">Create unsubscribe API endpoint (AC: #8)
+        - File: src/app/api/unsubscribe/route.ts
+        - GET /api/unsubscribe?token=&lt;token&gt;
+        - Lookup by emailUnsubscribeToken; set emailNotificationsEnabled = false
+        - Redirect to /unsubscribed confirmation page
+        - New page: src/app/unsubscribed/page.tsx
+        - No auth required (token is the credential)
+      </task>
+
+      <!-- Tests -->
+      <task id="T8" status="todo">Write unit and integration tests
+        - tests/unit/inngest/weekly-digest.test.ts — digest filtering logic (skip no-recs, skip recent, correct rec selection)
+        - tests/unit/emails/weekly-digest.test.ts — template renders with various data shapes
+        - tests/integration/email/email-preferences.test.ts — updateEmailPreferences Server Action (auth, ownership, validation)
+        - tests/integration/email/unsubscribe.test.ts — GET /api/unsubscribe (valid token, invalid token, already unsubscribed)
+        - Follow Vitest patterns in tests/unit/services/implementation-tracker.test.ts
+        - Mock Resend in all tests; real DB for integration tests
+      </task>
+    </tasks>
+  </story>
+
+  <acceptanceCriteria>
+    <ac id="AC1">Weekly digest email sent every Monday morning (user's configured timezone, default UTC)</ac>
+    <ac id="AC2">Email contains: Top 2-3 new recommendations with one-sentence summaries and impact level</ac>
+    <ac id="AC3">One-click deep links from email directly to recommendation detail view in dashboard</ac>
+    <ac id="AC4">Email also includes: Quick stats (conversion rate trend this week vs last week) and implementation wins (positive trend results from Story 2.6 data)</ac>
+    <ac id="AC5">Email preferences manageable in user settings page: frequency (weekly/off), notification types</ac>
+    <ac id="AC6">Transactional emails sent for: significant metric changes (conversion rate drops &gt;20% week-over-week)</ac>
+    <ac id="AC7">Email templates are mobile-responsive and accessible (semantic HTML, alt text, sufficient contrast)</ac>
+    <ac id="AC8">Unsubscribe functionality: one-click unsubscribe link in every email, compliant with CAN-SPAM/GDPR</ac>
+  </acceptanceCriteria>
+
+  <artifacts>
+    <docs>
+      <doc>
+        <path>docs/PRD.md</path>
+        <title>Product Requirements Document</title>
+        <section>FR014 — Weekly Email Digest</section>
+        <snippet>Defines the weekly digest requirement: top 2-3 recommendations with summaries, quick conversion stats, and implementation wins. Drives AC #2, #4.</snippet>
+      </doc>
+      <doc>
+        <path>docs/architecture.md</path>
+        <title>Architecture Document</title>
+        <section>Email Service &amp; Background Jobs</section>
+        <snippet>Email service: Resend (resend ^6.2.0) + React Email (@react-email/components ^0.0.25, react-email ^4.2.3). Background jobs: Inngest 3.44.4 for scheduled (cron) and event-triggered functions. All async — zero impact on dashboard response times.</snippet>
+      </doc>
+      <doc>
+        <path>docs/testing-strategy.md</path>
+        <title>Testing Strategy</title>
+        <section>Background Job Testing (Inngest) &amp; Mocking Strategy</section>
+        <snippet>Unit tests mock Inngest client and test job logic in isolation. Integration tests use real DB. Mock external services (Resend, Inngest) in unit tests. Follow Arrange-Act-Assert pattern with describe blocks mapped to acceptance criteria.</snippet>
+      </doc>
+      <doc>
+        <path>docs/ux-design-specification.md</path>
+        <title>UX Design Specification</title>
+        <section>Settings page &amp; Email Preferences</section>
+        <snippet>Settings page should follow existing card-based layout. Email preferences section follows same Card/CardHeader/CardContent pattern as business profile section. Brand color #7c3aed (Bold Purple) for primary actions.</snippet>
+      </doc>
+      <doc>
+        <path>docs/stories/2-6-implementation-tracking-results.md</path>
+        <title>Story 2.6 — Implementation Tracking &amp; Results (done)</title>
+        <section>Dev Agent Record — Learnings</section>
+        <snippet>Auth+Ownership pattern: auth() → lookup Business by siteId → verify business.userId === session.user.id. Inngest step.run pattern for per-user retries. implementation-tracker.ts has calculateBeforeMetrics/calculateAfterMetrics — reuse for conversion trend in digest. Zero TypeScript errors required before marking done.</snippet>
+      </doc>
+    </docs>
+
+    <code>
+      <artifact>
+        <path>src/emails/verify-email.tsx</path>
+        <kind>email-template</kind>
+        <symbol>VerifyEmailTemplate</symbol>
+        <lines>1-119</lines>
+        <reason>Only existing React Email template in the project. Shows inline-styles-only pattern, Body/Container/Heading/Text/Button/Section component usage, and style object structure to follow exactly for weekly-digest.tsx.</reason>
+      </artifact>
+      <artifact>
+        <path>src/inngest/recommendation-generation.ts</path>
+        <kind>inngest-function</kind>
+        <symbol>recommendationGenerationJob</symbol>
+        <lines>49-226</lines>
+        <reason>Gold standard for Inngest function structure: createFunction with id/name/retries, step.run per item for per-item retries, structured logging, error handling returning partial results. weekly-digest.ts MUST follow this pattern.</reason>
+      </artifact>
+      <artifact>
+        <path>src/inngest/session-aggregation.ts</path>
+        <kind>inngest-function</kind>
+        <symbol>sessionAggregationJob</symbol>
+        <lines>36-60</lines>
+        <reason>Shows combined cron + event trigger pattern and step.run usage for scheduled jobs. Reference for weekly-digest cron configuration.</reason>
+      </artifact>
+      <artifact>
+        <path>src/app/api/inngest/route.ts</path>
+        <kind>route</kind>
+        <symbol>serve</symbol>
+        <lines>1-31</lines>
+        <reason>Inngest function registration file. weeklyDigestJob and metricChangeNotifyJob must be imported and added to the functions array here.</reason>
+      </artifact>
+      <artifact>
+        <path>src/actions/implementation-tracking.ts</path>
+        <kind>server-action</kind>
+        <symbol>getDailyMetrics</symbol>
+        <lines>1-37</lines>
+        <reason>Reference for auth + business ownership check pattern using auth() + prisma.business.findUnique + userId comparison. updateEmailPreferences must follow same guard structure.</reason>
+      </artifact>
+      <artifact>
+        <path>src/actions/recommendations.ts</path>
+        <kind>server-action</kind>
+        <symbol>updateImplementationNotes</symbol>
+        <lines>590-629</lines>
+        <reason>Auth + ownership check pattern with explicit error return { success: false, error: "..." } shape. Email preferences Server Action must follow this pattern exactly.</reason>
+      </artifact>
+      <artifact>
+        <path>src/services/analytics/implementation-tracker.ts</path>
+        <kind>service</kind>
+        <symbol>calculateBeforeMetrics, calculateAfterMetrics, fetchDailyMetrics</symbol>
+        <lines>1-60</lines>
+        <reason>Conversion rate and cart abandonment calculation logic. Weekly digest job should reuse calculateConversionRate-equivalent patterns to compute this-week vs last-week conversion trend (AC #4).</reason>
+      </artifact>
+      <artifact>
+        <path>src/app/(dashboard)/dashboard/settings/page.tsx</path>
+        <kind>page</kind>
+        <symbol>SettingsPage</symbol>
+        <lines>1-123</lines>
+        <reason>Existing settings page ("use client"). Email Notifications section must be added as a new Card component after existing Business Profile and Site ID cards. Note: page is currently a Client Component — fetch preferences in Server Component wrapper or via useEffect.</reason>
+      </artifact>
+      <artifact>
+        <path>prisma/schema.prisma</path>
+        <kind>schema</kind>
+        <symbol>User model</symbol>
+        <lines>13-24</lines>
+        <reason>Current User model lacks email preference fields. Five new fields required: emailNotificationsEnabled, emailDigestFrequency, emailUnsubscribeToken, timezone, lastDigestSentAt. New indexes needed: emailUnsubscribeToken.</reason>
+      </artifact>
+      <artifact>
+        <path>tests/unit/services/implementation-tracker.test.ts</path>
+        <kind>test</kind>
+        <symbol>describe blocks with vi.mock pattern</symbol>
+        <lines>1-60</lines>
+        <reason>Reference test file showing Vitest patterns: describe/it/expect, vi for mocking, beforeEach reset. New tests for weekly-digest and email-preferences must follow this exact structure.</reason>
+      </artifact>
+    </code>
+
+    <dependencies>
+      <node>
+        <email>
+          <package name="resend" version="^6.2.0">Transactional email sending SDK. Already configured — verify RESEND_API_KEY in .env</package>
+          <package name="react-email" version="^4.2.3">React Email framework for template rendering</package>
+          <package name="@react-email/components" version="^0.0.25">Body, Button, Container, Head, Heading, Html, Preview, Section, Text, Hr, Link components</package>
+        </email>
+        <scheduling>
+          <package name="inngest" version="^3.44.4">Background job orchestration — scheduled (cron) and event-triggered functions with step.run for per-step retries</package>
+        </scheduling>
+        <database>
+          <package name="@prisma/client" version="6.17.0">ORM for User model updates and preference queries</package>
+          <package name="prisma" version="6.17.0">Schema migration: npx prisma migrate dev --name add-email-preferences</package>
+        </database>
+        <utilities>
+          <package name="date-fns" version="^4.1.0">differenceInDays (idempotency check in digest job), subDays (WoW comparison for conversion trend)</package>
+          <package name="zod" version="^4.1.12">Input validation in Server Action for email preferences</package>
+          <package name="next-auth" version="^5.0.0-beta.30">auth() session retrieval for Server Action auth guard</package>
+        </utilities>
+        <testing>
+          <package name="vitest" version="4.0">Unit and integration test runner</package>
+        </testing>
+      </node>
+    </dependencies>
+  </artifacts>
+
+  <constraints>
+    <constraint id="C1" source="Dev Notes">Inngest registered functions must be added to the serve() array in src/app/api/inngest/route.ts — both weeklyDigestJob and metricChangeNotifyJob.</constraint>
+    <constraint id="C2" source="Dev Notes">React Email requires inline styles only — no CSS classes, no Tailwind, no external stylesheets. All styles must be JS objects.</constraint>
+    <constraint id="C3" source="Dev Notes">Per-user step.run in the weekly digest job — wrap each user's send in its own step.run(`send-digest-${user.id}`) to enable per-user retries and prevent partial failures blocking others.</constraint>
+    <constraint id="C4" source="Dev Notes">Idempotency guard required: check lastDigestSentAt; skip user if digest sent within last 6 days (differenceInDays check).</constraint>
+    <constraint id="C5" source="Architecture">Unsubscribe endpoint (/api/unsubscribe) requires NO authentication — the emailUnsubscribeToken IS the credential. CAN-SPAM/GDPR compliance.</constraint>
+    <constraint id="C6" source="Dev Notes — Technical Debt Advisory">Consider adding import 'server-only' to service files used exclusively server-side (from Story 2.6 review).</constraint>
+    <constraint id="C7" source="Dev Notes">Environment variables required: RESEND_API_KEY (email sending), NEXT_PUBLIC_APP_URL (deep link base URL). Verify both exist in .env before implementing.</constraint>
+    <constraint id="C8" source="NFR001">Digest sending is async via Inngest — must have zero impact on dashboard response times (&lt;500ms navigation NFR).</constraint>
+    <constraint id="C9" source="Architecture">Brand color for email template: #7c3aed (Bold Purple). Mobile-responsive: single-column layout, min font-size 16px, touch-friendly buttons min 44px height.</constraint>
+    <constraint id="C10" source="Dev Notes">Run npm run build before marking story done — zero TypeScript errors required (learning from Story 2.6).</constraint>
+    <constraint id="C11" source="Settings page">Current settings page is "use client" — email preferences form should be a separate Client Component (email-preferences-form.tsx) added as a Card section. Fetch initial preferences either via useEffect or by converting settings page to a Server Component wrapper.</constraint>
+  </constraints>
+
+  <interfaces>
+    <interface>
+      <name>WeeklyDigestEmailProps</name>
+      <kind>TypeScript interface</kind>
+      <signature>
+interface DigestRecommendation {
+  id: string;
+  title: string;
+  summary: string;
+  impactLevel: 'HIGH' | 'MEDIUM' | 'LOW';
+  dashboardUrl: string;
+}
+
+interface WeeklyDigestEmailProps {
+  userName: string;
+  businessName: string;
+  recommendations: DigestRecommendation[];
+  conversionTrend: { thisWeek: number; lastWeek: number; change: number } | null;
+  implementationWins: { title: string; improvement: string }[];
+  unsubscribeUrl: string;
+}
+      </signature>
+      <path>src/emails/weekly-digest.tsx (NEW)</path>
+    </interface>
+
+    <interface>
+      <name>EmailPreferencesInput</name>
+      <kind>TypeScript interface / Server Action input</kind>
+      <signature>
+interface EmailPreferencesInput {
+  emailNotificationsEnabled: boolean;
+  emailDigestFrequency: 'weekly' | 'off';
+  timezone: string; // max 50 chars
+}
+
+type ActionResult = { success: true } | { success: false; error: string };
+
+export async function updateEmailPreferences(data: EmailPreferencesInput): Promise&lt;ActionResult&gt;
+      </signature>
+      <path>src/actions/email-preferences.ts (NEW)</path>
+    </interface>
+
+    <interface>
+      <name>GET /api/unsubscribe</name>
+      <kind>REST endpoint</kind>
+      <signature>
+GET /api/unsubscribe?token={emailUnsubscribeToken}
+
+Success: redirect to /unsubscribed
+Invalid token: redirect to /unsubscribed?error=invalid
+No token: redirect to /unsubscribed?error=invalid
+      </signature>
+      <path>src/app/api/unsubscribe/route.ts (NEW)</path>
+    </interface>
+
+    <interface>
+      <name>Resend email send</name>
+      <kind>External SDK call</kind>
+      <signature>
+resend.emails.send({
+  from: 'MetricFortune Insights &lt;insights@metricfortune.app&gt;',
+  to: user.email,
+  subject: `Your ${recommendations.length} optimization opportunities this week`,
+  react: WeeklyDigestEmail({ userName, businessName, recommendations, conversionTrend, implementationWins, unsubscribeUrl }),
+})
+      </signature>
+      <path>src/inngest/weekly-digest.ts (NEW)</path>
+    </interface>
+
+    <interface>
+      <name>Inngest Event: metrics/significant-change</name>
+      <kind>Inngest event trigger</kind>
+      <signature>
+// Published from session aggregation job when conversion rate drops &gt;20% WoW
+await inngest.send({
+  name: 'metrics/significant-change',
+  data: { businessId: string; siteId: string; metric: string; change: number; userId: string }
+})
+
+// Consumed by metricChangeNotifyJob in src/inngest/metric-change-notify.ts
+      </signature>
+      <path>src/inngest/metric-change-notify.ts (NEW)</path>
+    </interface>
+
+    <interface>
+      <name>User model email preference fields (Prisma)</name>
+      <kind>Prisma schema additions</kind>
+      <signature>
+model User {
+  // ... existing fields ...
+  emailNotificationsEnabled Boolean   @default(true)
+  emailDigestFrequency      String    @default("weekly") // "weekly" | "off"
+  emailUnsubscribeToken     String?   @unique
+  timezone                  String    @default("UTC")
+  lastDigestSentAt          DateTime?
+
+  @@index([emailUnsubscribeToken])
+}
+      </signature>
+      <path>prisma/schema.prisma (MODIFIED)</path>
+    </interface>
+  </interfaces>
+
+  <tests>
+    <standards>Use Vitest 4.0 for all unit and integration tests. Follow Arrange-Act-Assert structure with describe blocks grouped by function/module. Map tests to AC IDs with inline comments (// AC #1: ...). Mock all external services (Resend client, Inngest) in unit tests using vi.mock(). Integration tests use the real PostgreSQL test database via TEST_DATABASE_URL with clearDatabase() before each test. Coverage target: 80%+ for new src/actions/*.ts and src/inngest/*.ts files.</standards>
+
+    <locations>
+      <location>tests/unit/inngest/weekly-digest.test.ts</location>
+      <location>tests/unit/emails/weekly-digest.test.ts</location>
+      <location>tests/integration/email/email-preferences.test.ts</location>
+      <location>tests/integration/email/unsubscribe.test.ts</location>
+      <location>tests/fixtures/ (reuse existing fixtures for User/Business/Recommendation data)</location>
+    </locations>
+
+    <ideas>
+      <idea ac="AC1">weekly-digest.test.ts: Mock cron trigger; verify function queries users where emailNotificationsEnabled=true AND emailDigestFrequency='weekly'</idea>
+      <idea ac="AC1">weekly-digest.test.ts: Test idempotency — user with lastDigestSentAt = 3 days ago should be skipped (differenceInDays &lt; 6)</idea>
+      <idea ac="AC1">weekly-digest.test.ts: User with lastDigestSentAt = 7 days ago should NOT be skipped</idea>
+      <idea ac="AC2">weekly-digest.test.ts: User with 0 NEW recommendations should be skipped (no email sent)</idea>
+      <idea ac="AC2">weekly-digest.test.ts: User with 5 NEW recommendations should only get top 2-3 by impact level</idea>
+      <idea ac="AC7">emails/weekly-digest.test.ts: Template renders without error when implementationWins is empty array (conditional section hidden)</idea>
+      <idea ac="AC7">emails/weekly-digest.test.ts: Template renders without error when conversionTrend is null</idea>
+      <idea ac="AC7">emails/weekly-digest.test.ts: Template renders with full data shape (all sections present)</idea>
+      <idea ac="AC5">email-preferences.test.ts: Unauthenticated call to updateEmailPreferences returns { success: false, error: 'Authentication required' }</idea>
+      <idea ac="AC5">email-preferences.test.ts: Valid update persists emailNotificationsEnabled, emailDigestFrequency, timezone to DB</idea>
+      <idea ac="AC5">email-preferences.test.ts: Invalid emailDigestFrequency value (not "weekly"|"off") returns validation error</idea>
+      <idea ac="AC8">unsubscribe.test.ts: GET with valid token sets emailNotificationsEnabled=false and redirects to /unsubscribed</idea>
+      <idea ac="AC8">unsubscribe.test.ts: GET with invalid/unknown token redirects to /unsubscribed?error=invalid</idea>
+      <idea ac="AC8">unsubscribe.test.ts: GET with missing token param redirects to /unsubscribed?error=invalid</idea>
+      <idea ac="AC6">metric-change-notify: Verify function respects emailNotificationsEnabled=false (no email sent)</idea>
+    </ideas>
+  </tests>
+</story-context>

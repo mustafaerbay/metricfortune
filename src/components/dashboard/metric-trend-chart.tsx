@@ -14,7 +14,7 @@ import {
 } from 'recharts';
 import { format } from 'date-fns';
 import type { DailyMetric } from '@/types/implementation';
-import { fetchDailyMetrics } from '@/services/analytics/implementation-tracker';
+import { getDailyMetrics } from '@/actions/implementation-tracking';
 import { Skeleton } from '@/components/ui/skeleton';
 
 interface MetricTrendChartProps {
@@ -71,7 +71,7 @@ export function MetricTrendChart({ implementedAt, siteId }: MetricTrendChartProp
       try {
         setLoading(true);
         setError(null);
-        const metrics = await fetchDailyMetrics(siteId, implementedAt);
+        const metrics = await getDailyMetrics(siteId, implementedAt);
         setData(metrics);
       } catch (err) {
         console.error('Failed to fetch daily metrics:', err);
@@ -95,13 +95,18 @@ export function MetricTrendChart({ implementedAt, siteId }: MetricTrendChartProp
 
   if (error) {
     return (
-      <div className="flex h-64 items-center justify-center rounded-lg bg-red-50 text-sm text-red-600">
-        {error}
+      <div className="flex h-64 flex-col items-center justify-center gap-2 rounded-lg bg-red-50 p-4 text-center text-sm text-red-600">
+        <p>
+          <span className="font-semibold">Unable to load metric trends.</span>{' '}
+          This may be a temporary issue — please try refreshing the page. If the problem
+          persists, check your internet connection or contact support.
+        </p>
         <button
           onClick={() => window.location.reload()}
-          className="ml-2 underline hover:no-underline"
+          className="mt-1 rounded border border-red-300 px-3 py-1 text-xs font-medium hover:bg-red-100"
+          aria-label="Retry loading metric trend chart"
         >
-          Retry
+          Refresh page
         </button>
       </div>
     );

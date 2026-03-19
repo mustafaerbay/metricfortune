@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from "react";
 import { getBusinessProfile, updateBusinessProfile } from "@/actions/business-profile";
+import { getEmailPreferences } from "@/actions/email-preferences";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { EmailPreferencesForm } from "@/components/dashboard/email-preferences-form";
 
 const INDUSTRIES = ["Fashion", "Electronics", "Home & Garden", "Beauty & Health", "Food & Beverage", "Sports & Outdoors", "Other"];
 const REVENUE_RANGES = ["$0-500K", "$500K-1M", "$1M-5M", "$5M-10M", "$10M+"];
@@ -19,19 +21,30 @@ export default function SettingsPage() {
   const [platform, setPlatform] = useState("");
   const [siteId, setSiteId] = useState("");
   const [message, setMessage] = useState("");
+  const [emailPrefs, setEmailPrefs] = useState<{
+    emailNotificationsEnabled: boolean;
+    emailDigestFrequency: string;
+    timezone: string;
+  } | null>(null);
 
   useEffect(() => {
     fetchProfile();
   }, []);
 
   const fetchProfile = async () => {
-    const result = await getBusinessProfile();
-    if (result.success && result.data) {
-      setName(result.data.name);
-      setIndustry(result.data.industry);
-      setRevenueRange(result.data.revenueRange);
-      setPlatform(result.data.platform);
-      setSiteId(result.data.siteId);
+    const [profileResult, emailResult] = await Promise.all([
+      getBusinessProfile(),
+      getEmailPreferences(),
+    ]);
+    if (profileResult.success && profileResult.data) {
+      setName(profileResult.data.name);
+      setIndustry(profileResult.data.industry);
+      setRevenueRange(profileResult.data.revenueRange);
+      setPlatform(profileResult.data.platform);
+      setSiteId(profileResult.data.siteId);
+    }
+    if (emailResult.success && emailResult.data) {
+      setEmailPrefs(emailResult.data);
     }
     setLoading(false);
   };
@@ -118,6 +131,14 @@ export default function SettingsPage() {
           </div>
         </CardContent>
       </Card>
+
+      {emailPrefs && (
+        <EmailPreferencesForm
+          initialEnabled={emailPrefs.emailNotificationsEnabled}
+          initialFrequency={emailPrefs.emailDigestFrequency}
+          initialTimezone={emailPrefs.timezone}
+        />
+      )}
     </div>
   );
 }

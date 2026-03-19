@@ -17,6 +17,7 @@ const MAX_CHARACTERS = 500;
 
 export function NotesEditor({ recommendationId, initialNotes }: NotesEditorProps) {
   const [notes, setNotes] = useState(initialNotes);
+  const [savedNotes, setSavedNotes] = useState(initialNotes);
   const [saveState, setSaveState] = useState<SaveState>('idle');
   const [error, setError] = useState<string | null>(null);
 
@@ -29,7 +30,7 @@ export function NotesEditor({ recommendationId, initialNotes }: NotesEditorProps
       return;
     }
 
-    if (notes === initialNotes) {
+    if (notes === savedNotes) {
       // No changes to save
       return;
     }
@@ -41,6 +42,7 @@ export function NotesEditor({ recommendationId, initialNotes }: NotesEditorProps
       const result = await updateImplementationNotes(recommendationId, notes);
 
       if (result.success) {
+        setSavedNotes(notes);
         setSaveState('saved');
         // Reset to idle after 2 seconds
         setTimeout(() => setSaveState('idle'), 2000);
@@ -53,11 +55,11 @@ export function NotesEditor({ recommendationId, initialNotes }: NotesEditorProps
       setError('An unexpected error occurred');
       console.error('Failed to save implementation notes:', err);
     }
-  }, [notes, initialNotes, recommendationId, isOverLimit]);
+  }, [notes, savedNotes, recommendationId, isOverLimit]);
 
   // Auto-save on blur if there are changes
   const handleBlur = () => {
-    if (notes !== initialNotes && !isOverLimit) {
+    if (notes !== savedNotes && !isOverLimit) {
       handleSave();
     }
   };
@@ -135,7 +137,7 @@ export function NotesEditor({ recommendationId, initialNotes }: NotesEditorProps
           variant="outline"
           disabled={
             saveState === 'saving' ||
-            notes === initialNotes ||
+            notes === savedNotes ||
             isOverLimit
           }
           className="h-8 gap-1 text-xs"
