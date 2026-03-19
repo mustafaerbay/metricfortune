@@ -1,6 +1,8 @@
 import { NextResponse } from 'next/server';
 import { auth } from '@/lib/auth';
 import { triggerSessionAggregation } from '@/inngest/session-aggregation';
+import { aggregateSessions, createSessions } from '@/services/analytics/session-aggregator';
+import { prisma } from '@/lib/prisma';
 
 /**
  * POST /api/admin/trigger-session-aggregation
@@ -26,7 +28,47 @@ export async function POST(request: Request) {
       `[Admin] Manually triggering session aggregation by user: ${session.user.email}`
     );
 
-    // Trigger the Inngest job
+    // Check for ?direct=true to bypass Inngest and run synchronously
+    const url = new URL(request.url);
+    const direct = url.searchParams.get('direct') === 'true';
+
+    if (direct) {
+      // Run aggregation directly without Inngest (useful when Inngest dev server is not running)
+      const endTime = new Date();
+
+      // Find earliest unprocessed event (same logic as Inngest job)
+      const latestSession = await prisma.session.findFirst({
+        orderBy: { createdAt: 'desc' },
+        select: { createdAt: true },
+      });
+
+      let startTime: Date;
+      if (latestSession) {
+        startTime = latestSession.createdAt;
+      } else {
+        const earliest = await prisma.trackingEvent.findFirst({
+          orderBy: { timestamp: 'asc' },
+          select: { timestamp: true },
+        });
+        startTime = earliest?.timestamp ?? new Date(Date.now() - 24 * 60 * 60 * 1000);
+      }
+
+      console.log(`[Admin] Direct aggregation: ${startTime.toISOString()} → ${endTime.toISOString()}`);
+
+      const sessionsData = await aggregateSessions(startTime, endTime);
+      const result = await createSessions(sessionsData);
+
+      return NextResponse.json({
+        success: true,
+        message: 'Direct aggregation completed',
+        sessionsProcessed: sessionsData.length,
+        sessionsCreated: result.created,
+        errors: result.errors,
+        range: { from: startTime.toISOString(), to: endTime.toISOString() },
+      });
+    }
+
+    // Default: trigger via Inngest
     const result = await triggerSessionAggregation();
 
     return NextResponse.json({

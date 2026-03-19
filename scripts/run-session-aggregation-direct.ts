@@ -15,11 +15,24 @@ async function main() {
   console.log('🚀 Running Session Aggregation Directly...\n');
 
   try {
-    // Step 1: Determine time range
+    // Step 1: Determine time range — use earliest TrackingEvent to catch all historical data
     const endTime = new Date();
-    const startTime = new Date(endTime.getTime() - 30 * 24 * 60 * 60 * 1000); // Last 30 days
-
-    console.log(`📅 Processing events from ${startTime.toISOString()} to ${endTime.toISOString()}\n`);
+    const latestSession = await prisma.session.findFirst({
+      orderBy: { createdAt: 'desc' },
+      select: { createdAt: true },
+    });
+    let startTime: Date;
+    if (latestSession) {
+      startTime = latestSession.createdAt;
+      console.log(`📅 Incremental run: from last session at ${startTime.toISOString()}\n`);
+    } else {
+      const earliest = await prisma.trackingEvent.findFirst({
+        orderBy: { timestamp: 'asc' },
+        select: { timestamp: true },
+      });
+      startTime = earliest?.timestamp ?? new Date(endTime.getTime() - 30 * 24 * 60 * 60 * 1000);
+      console.log(`📅 First run: processing all events from ${startTime.toISOString()} to ${endTime.toISOString()}\n`);
+    }
 
     // Step 2: Check tracking events
     const eventCount = await prisma.trackingEvent.count({

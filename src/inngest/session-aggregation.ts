@@ -71,9 +71,22 @@ export const sessionAggregationJob = inngest.createFunction(
 
       // Step 2: Determine time range for this run
       const endTime = new Date();
-      const startTime = lastAggregationTime
-        ? new Date(lastAggregationTime)
-        : new Date(Date.now() - 24 * 60 * 60 * 1000); // Default: last 24 hours
+      let startTime: Date;
+      if (lastAggregationTime) {
+        startTime = new Date(lastAggregationTime);
+      } else {
+        // First run: find the earliest TrackingEvent so we don't miss historical data
+        const earliest = await step.run('get-earliest-event-time', async () => {
+          const event = await prisma.trackingEvent.findFirst({
+            orderBy: { timestamp: 'asc' },
+            select: { timestamp: true },
+          });
+          return event?.timestamp ?? null;
+        });
+        startTime = earliest
+          ? new Date(earliest)
+          : new Date(Date.now() - 24 * 60 * 60 * 1000);
+      }
 
       console.log(
         `[SessionAggregation] Processing time range: ${startTime.toISOString()} to ${endTime.toISOString()}`
